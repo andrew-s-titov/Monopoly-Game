@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<header>
+    <script type="text/javascript" th:src="@{/js/app.js}"></script>
+    <link rel="icon" type="image/ico" th:href="@{/favicon.ico}" href="/favicon.ico"/>
+</header>
+<title>Monopoly Game</title>
+
+<style>
+    .image-row td {
+        border-left: 2px solid #dddddd;
+        border-right: 2px solid #dddddd;
+        border-top: 2px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    .name-row td {
+        border-left: 2px solid #dddddd;
+        border-right: 2px solid #dddddd;
+        border-bottom: 2px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    table, tr, td {
+        text-align: center;
+        padding: 0;
+        border-collapse: collapse;
+    }
+    body, button, input {
+        font-family: Arial, serif;
+        font-size: 20px;
+    }
+    button {
+        font-family: Arial, serif;
+        font-size: 20px;
+    }
+    button:hover {
+        cursor: pointer;
+    }
+    #playerNameInput {
+        text-align: center;
+    }
+    .corner-field {
+        width: 90px;
+        height: 90px;
+    }
+    .vertical-field {
+        width: 50px;
+        height: 90px;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+    }
+    .horizontal-field {
+        width: 90px;
+        height: 50px;
+    }
+    .price-vertical-field {
+        width: 13px;
+        height: 50px;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+    }
+    .price-horizontal-field {
+        width: 50px;
+        height: 13px;
+    }
+    .price-corner-square-field {
+        height: 13px;
+        width: 13px;
+    }
+    .price-corner-vertical-field {
+        height: 90px;
+        width: 13px;
+    }
+    .price-corner-horizontal-field {
+        height: 13px;
+        width: 90px;
+    }
+    .corner-field, .horizontal-field, .vertical-field {
+        background-color: white;
+        font-size: 13px;
+    }
+    .price-vertical-field, .price-horizontal-field {
+        font-size: 13px;
+        color: white;
+        font-weight: bold;
+    }
+    .player-icon {
+        height: 90px;
+        width: 150px;
+        margin: 0;
+    }
+    .player-name {
+        font-weight: bold;
+        font-size: 17px;
+        margin: 0;
+    }
+    .player-money {
+        font-size: 13px;
+        margin: 0;
+    }
+    .player-icon, .player-name, .player-money {
+        background-color: darkslategray;
+        color: white;
+    }
+    #playerMessage {
+        border: none;
+        display: block;
+        background-color: darkslategray;
+        color: white;
+        padding-left: 10px;
+        font-size: 15px;
+        width: 350px;
+        height: 30px
+    }
+    #playerMessage:focus {
+        outline: none;
+        border-bottom: rgba(5,29,29,0.63) solid 2px;
+    }
+    #messageButton {
+        background-color: rgba(5,29,29,0.63);
+        border: none;
+        display: block;
+        font-size: 15px;
+        width: 100px;
+        height: 30px;
+        color: white;
+        font-weight: normal;
+    }
+    #messageContainer {
+        background-color: darkslategray;
+        width: 470px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+    }
+
+    .chip {
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        position: fixed;
+        box-shadow: 0.8px 0.8px grey;
+        transition: left 0.4s, top 0.4s, right 0.4s, down 0.4s;
+        transition-timing-function: linear;
+    }
+
+    div::-webkit-scrollbar {
+        width: 7px;
+    }
+    div::-webkit-scrollbar-track {
+        border-radius: 10px;
+    }
+    div::-webkit-scrollbar-thumb {
+        background: rgba(5,29,29,0.63);
+        border-radius: 10px;
+    }
+    div::-webkit-scrollbar-thumb:hover {
+        cursor: pointer;
+    }
+</style>
+
+<body>
+<div id="startPage">
+    <div id="welcome" style="text-align:center">Welcome to the Monopoly game!</div>
+    <br>
+    <div th:if="${gameStarted}" style="text-align:center">
+        <div th:if="${needToReconnect != null}">
+            <div id="reconnect" th:text="${needToReconnect}" style="display: none"></div>
+        </div>
+        <div th:if="${needToReconnect == null}">Sorry, but the game already started. Please, try to join later.</div>
+    </div>
+    <div th:if="!${gameStarted}" style="text-align:center">
+        <label for="playerNameInput" >Enter your nickname:</label>
+        <br>
+        <input id="playerNameInput" type="text" autocomplete="off" autofocus/>
+        <br>
+        <button id="submitPlayerName" onclick="joinToRoom()" style="margin-top: 50px">Join the game</button>
+    </div>
+
+    <div id="errorMessage" style="position: fixed; bottom: 100px; display: none; width: 70%; left: 15%; right: 15%;
+        background-color: rgba(255,154,72,0.77); text-align: center; padding: 10px; border-radius: 10px"></div>
+</div>
+<div id="playersBeforeGame" style="display: none; text-align:center">
+    <p>Registered players:</p>
+    <table style="margin-left:auto; margin-right:auto; border-collapse: collapse">
+        <tr class="image-row">
+            <td style="width: 200px; height: 250px">
+                <img id="player0Image" src="../static/images/user.png" th:src="@{images/user.png}" style="display: none"/>
+            </td>
+            <td style="width: 200px; height: 250px">
+                <img id="player1Image" src="../static/images/user.png" th:src="@{images/user.png}" style="display: none"/>
+            </td>
+            <td style="width: 200px; height: 250px">
+                <img id="player2Image" src="../static/images/user.png" th:src="@{images/user.png}" style="display: none"/>
+            </td>
+            <td style="width: 200px; height: 250px">
+                <img id="player3Image" src="../static/images/user.png" th:src="@{images/user.png}" style="display: none"/>
+            </td>
+            <td style="width: 200px; height: 250px">
+                <img id="player4Image" src="../static/images/user.png" th:src="@{images/user.png}" style="display: none"/>
+            </td>
+        </tr>
+        <tr class="name-row">
+            <td id="player0" style="width: 200px; height: 50px"></td>
+            <td id="player1" style="width: 200px; height: 50px"></td>
+            <td id="player2" style="width: 200px; height: 50px"></td>
+            <td id="player3" style="width: 200px; height: 50px"></td>
+            <td id="player4" style="width: 200px; height: 50px"></td>
+        </tr>
+    </table>
+    <br>
+    <button onclick="startGame()">Start Game!</button>
+    <p id="beforeGameMessage"></p>
+
+    <button onclick="disconnectPlayer()">Leave</button>
+</div>
+
+<div id="map" style="display: none">
+    <table style="margin-left: 300px">
+        <tr>
+            <td>
+                <table id="playersTable" style="border-collapse: collapse; border: 2px darkslategray solid">
+                    <tr>
+                        <td>
+                            <div id="player0-group" class="player-group">
+                                <div id="player0-icon" class="player-icon"></div>
+                                <div id="player0-name" class="player-name"></div>
+                                <div id="player0-money" class="player-money"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="player1-group" class="player-group">
+                                <div id="player1-icon" class="player-icon"></div>
+                                <div id="player1-name" class="player-name"></div>
+                                <div id="player1-money" class="player-money"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="player2-group" class="player-group">
+                                <div id="player2-icon" class="player-icon"></div>
+                                <div id="player2-name" class="player-name"></div>
+                                <div id="player2-money" class="player-money"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="player3-group" class="player-group">
+                                <div id="player3-icon" class="player-icon"></div>
+                                <div id="player3-name" class="player-name"></div>
+                                <div id="player3-money" class="player-money"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="player4-group" class="player-group">
+                                <div id="player4-icon" class="player-icon"></div>
+                                <div id="player4-name" class="player-name"></div>
+                                <div id="player4-money" class="player-money"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table id="mapTable" style="margin-right: auto; margin-left: auto">
+                    <tr>
+                        <td class="price-corner-square-field"></td>
+                        <td id="field0-price" class="price-corner-horizontal-field"></td>
+                        <td id="field1-price" class="price-horizontal-field"></td>
+                        <td id="field2-price" class="price-horizontal-field"></td>
+                        <td id="field3-price" class="price-horizontal-field"></td>
+                        <td id="field4-price" class="price-horizontal-field"></td>
+                        <td id="field5-price" class="price-horizontal-field"></td>
+                        <td id="field6-price" class="price-horizontal-field"></td>
+                        <td id="field7-price" class="price-horizontal-field"></td>
+                        <td id="field8-price" class="price-horizontal-field"></td>
+                        <td id="field9-price" class="price-horizontal-field"></td>
+                        <td id="field10-price" class="price-corner-horizontal-field"></td>
+                        <td class="price-corner-square-field"></td>
+                    </tr>
+                    <tr>
+                        <td class="price-corner-vertical-field"></td>
+                        <td id="field0" class="corner-field"></td>
+                        <td id="field1" class="vertical-field"></td>
+                        <td id="field2" class="vertical-field"></td>
+                        <td id="field3" class="vertical-field"></td>
+                        <td id="field4" class="vertical-field"></td>
+                        <td id="field5" class="vertical-field"></td>
+                        <td id="field6" class="vertical-field"></td>
+                        <td id="field7" class="vertical-field"></td>
+                        <td id="field8" class="vertical-field"></td>
+                        <td id="field9" class="vertical-field"></td>
+                        <td id="field10" class="corner-field"></td>
+                        <td class="price-corner-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field39-price" class="price-vertical-field"></td>
+                        <td id="field39" class="horizontal-field"></td>
+                        <td colspan="9" rowspan="8">
+                            <div id="messageContainer">
+                                <div id="height-filler" style="height: 100%"></div>
+                            </div>
+                        </td>
+                        <td id="field11" class="horizontal-field"></td>
+                        <td id="field11-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field38-price" class="price-vertical-field"></td>
+                        <td id="field38" class="horizontal-field"></td>
+                        <td id="field12" class="horizontal-field"></td>
+                        <td id="field12-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field37-price" class="price-vertical-field"></td>
+                        <td id="field37" class="horizontal-field"></td>
+                        <td id="field13" class="horizontal-field"></td>
+                        <td id="field13-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field36-price" class="price-vertical-field"></td>
+                        <td id="field36" class="horizontal-field"></td>
+                        <td id="field14" class="horizontal-field"></td>
+                        <td id="field14-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field35-price" class="price-vertical-field"></td>
+                        <td id="field35" class="horizontal-field"></td>
+                        <td id="field15" class="horizontal-field"></td>
+                        <td id="field15-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field34-price" class="price-vertical-field"></td>
+                        <td id="field34" class="horizontal-field"></td>
+                        <td id="field16" class="horizontal-field"></td>
+                        <td id="field16-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field33-price" class="price-vertical-field"></td>
+                        <td id="field33" class="horizontal-field"></td>
+                        <td id="field17" class="horizontal-field"></td>
+                        <td id="field17-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field32-price" class="price-vertical-field"></td>
+                        <td id="field32" class="horizontal-field"></td>
+                        <td id="field18" class="horizontal-field"></td>
+                        <td id="field18-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td id="field31-price" class="price-vertical-field"></td>
+                        <td id="field31" class="horizontal-field"></td>
+                        <td colspan="7" style="background-color: darkslategray">
+                            <input id="playerMessage" autocomplete="false" placeholder="Enter a message..."/>
+                        </td>
+                        <td colspan="2" style="background-color: darkslategray">
+                            <button id="messageButton" onclick="processPlayerMessage()">send</button>
+                        </td>
+                        <td id="field19" class="horizontal-field"></td>
+                        <td id="field19-price" class="price-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td class="price-corner-vertical-field"></td>
+                        <td id="field30" class="corner-field"></td>
+                        <td id="field29" class="vertical-field"></td>
+                        <td id="field28" class="vertical-field"></td>
+                        <td id="field27" class="vertical-field"></td>
+                        <td id="field26" class="vertical-field"></td>
+                        <td id="field25" class="vertical-field"></td>
+                        <td id="field24" class="vertical-field"></td>
+                        <td id="field23" class="vertical-field"></td>
+                        <td id="field22" class="vertical-field"></td>
+                        <td id="field21" class="vertical-field"></td>
+                        <td id="field20" class="corner-field"></td>
+                        <td class="price-corner-vertical-field"></td>
+                    </tr>
+                    <tr>
+                        <td class="price-corner-square-field"></td>
+                        <td id="field30-price" class="price-corner-horizontal-field"></td>
+                        <td id="field29-price" class="price-horizontal-field"></td>
+                        <td id="field28-price" class="price-horizontal-field"></td>
+                        <td id="field27-price" class="price-horizontal-field"></td>
+                        <td id="field26-price" class="price-horizontal-field"></td>
+                        <td id="field25-price" class="price-horizontal-field"></td>
+                        <td id="field24-price" class="price-horizontal-field"></td>
+                        <td id="field23-price" class="price-horizontal-field"></td>
+                        <td id="field22-price" class="price-horizontal-field"></td>
+                        <td id="field21-price" class="price-horizontal-field"></td>
+                        <td id="field20-price" class="price-corner-horizontal-field"></td>
+                        <td class="price-corner-square-field"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+   </table>
+</div>
+
+</body>
+</html>

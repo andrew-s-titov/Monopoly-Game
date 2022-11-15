@@ -1,0 +1,18 @@
+100 - user identification
+101 - player connected
+102 - player disconnected
+200 - chat message
+201 - system message
+300 - game map refresh
+301 - turn starts
+302 - dice rolling start
+303 - dice result event
+304 - new player position
+305 - money change event
+306 - buy or auction proposal
+307 - property new owner change
+308 - jail release process
+309 - auction raise
+310 - auction buy
+
+500 - error with message
