@@ -6,7 +6,6 @@ import com.monopolynew.event.GameMapRefreshEvent;
 import com.monopolynew.game.state.Auction;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.GameMap;
-import com.monopolynew.map.PurchasableField;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,15 +16,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class Game {
 
-    private final boolean withTeleport;
-
+    @Getter
+    private final UUID id = UUID.randomUUID();
     private final Map<String, Player> players = new HashMap<>();
 
-    private boolean gameInProgress = false;
+    private final boolean withTeleport;
+
+    private boolean inProgress = false;
     @Getter @Setter
     private GameStage stage;
     @Getter @Setter
@@ -35,19 +37,15 @@ public class Game {
     @Getter @Setter
     private BuyProposal buyProposal;
     private Iterator<Player> playerIterator;
+    @Getter
     private GameMap gameMap;
     private String whoseTurn;
-
-
-    public GameMap getCurrentMap() {
-        return this.gameMap;
-    }
 
     public Collection<Player> getPlayers() {
         return this.players.values();
     }
 
-    public Player getPlayer(@NonNull String playerId) {
+    public Player getPlayerById(@NonNull String playerId) {
         Assert.notNull(playerId, "Cannot get player with 'null' id");
         return this.players.get(playerId);
     }
@@ -56,7 +54,7 @@ public class Game {
         return this.players.containsKey(playerId);
     }
 
-    public boolean usernameTaken(String username) {
+    public boolean isUsernameTaken(String username) {
         return this.players.values().stream()
                 .anyMatch(player -> player.getName().equalsIgnoreCase(username.strip()));
     }
@@ -65,16 +63,16 @@ public class Game {
         this.players.put(player.getId(), player);
     }
 
-    public void disconnectPlayer(String playerId) {
+    public void removePlayer(String playerId) {
         this.players.remove(playerId);
     }
 
-    public boolean isGameInProgress() {
-        return this.gameInProgress;
+    public boolean isInProgress() {
+        return this.inProgress;
     }
 
     public void startGame() {
-        this.gameInProgress = true;
+        this.inProgress = true;
         this.stage = GameStage.TURN_START;
         this.gameMap = new GameMap(this.withTeleport);
         this.whoseTurn = nextPlayer().getId();
@@ -85,7 +83,7 @@ public class Game {
         this.gameMap = null;
         this.whoseTurn = null;
         this.playerIterator = null;
-        this.gameInProgress = false;
+        this.inProgress = false;
     }
 
     public Player getCurrentPlayer() {

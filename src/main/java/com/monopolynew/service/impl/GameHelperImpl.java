@@ -44,11 +44,11 @@ public class GameHelperImpl implements GameHelper {
             if (newPosition == 0) {
                 player.addMoney(Rules.CIRCLE_MONEY);
                 gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(
-                        String.format("%s receives $%sk for hitting %s field",
-                                player.getName(), Rules.CIRCLE_MONEY * 2, game.getCurrentMap().getField(0).getName())));
+                        String.format("%s received $%s for hitting %s field",
+                                player.getName(), Rules.CIRCLE_MONEY * 2, game.getGameMap().getField(0).getName())));
             } else {
                 gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(
-                        String.format("%s receives $%sk for starting a new circle",
+                        String.format("%s received $%s for starting a new circle",
                                 player.getName(), Rules.CIRCLE_MONEY)));
             }
             gameMessageExchanger.sendToAllPlayers(new MoneyChangeEvent(
@@ -58,7 +58,7 @@ public class GameHelperImpl implements GameHelper {
     }
 
     @Override
-    public void sendToJail(Game game, Player player, @Nullable String reason) {
+    public void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason) {
         player.resetDoublets();
         player.imprison();
         gameMessageExchanger.sendToAllPlayers(
@@ -72,7 +72,7 @@ public class GameHelperImpl implements GameHelper {
         field.newOwner(player);
         player.takeMoney(price);
         gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(
-                String.format("%s buys %s for $%sk", player.getName(), field.getName(), price)));
+                String.format("%s is buying %s for $%s", player.getName(), field.getName(), price)));
         gameMessageExchanger.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(player))));
         gameMessageExchanger.sendToAllPlayers(new PropertyNewOwnerChangeEvent(
@@ -96,15 +96,6 @@ public class GameHelperImpl implements GameHelper {
         }
     }
 
-    private void checkPlayerCanMakeMove(Player player) {
-        if (player.isSkipping()) {
-            throw new IllegalStateException("skipping player cannot do regular turn");
-        }
-        if (player.isImprisoned()) {
-            throw new IllegalStateException("imprisoned player cannot do regular turn");
-        }
-    }
-
     private void changePlayerPosition(Player player, int fieldId) {
         player.changePosition(fieldId);
         gameMessageExchanger.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldId));
@@ -113,7 +104,7 @@ public class GameHelperImpl implements GameHelper {
     @Override
     public int computePlayerAssets(Game game, Player player) {
         int assetSum = player.getMoney();
-        List<PurchasableField> playerFields = Arrays.stream(game.getCurrentMap().getFields())
+        List<PurchasableField> playerFields = Arrays.stream(game.getGameMap().getFields())
                 .filter(field -> field instanceof PurchasableField)
                 .map(field -> (PurchasableField) field)
                 .filter(field -> field.getOwner().equals(player))
@@ -133,8 +124,7 @@ public class GameHelperImpl implements GameHelper {
     private Player toNextPlayer(Game game) {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isSkipping()) {
-            gameMessageExchanger.sendToAllPlayers(
-                    SystemMessageEvent.text(nextPlayer.getName() + " is skipping his turn"));
+            gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his turn"));
             nextPlayer.skip();
             processMortgage(game);
             nextPlayer = toNextPlayer(game);
@@ -143,7 +133,7 @@ public class GameHelperImpl implements GameHelper {
     }
 
     private void processMortgage(Game game) {
-        Arrays.stream(game.getCurrentMap().getFields())
+        Arrays.stream(game.getGameMap().getFields())
                 .filter(field -> field instanceof PurchasableField)
                 .map(field -> (PurchasableField) field)
                 .filter(PurchasableField::isMortgaged)

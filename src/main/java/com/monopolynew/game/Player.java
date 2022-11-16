@@ -54,7 +54,7 @@ public class Player {
 
     public void skip() {
         if (skipsTurns < 1) {
-            throw new IllegalStateException(String.format("%s wasn't skipping", name));
+            throw new IllegalStateException(name + " wasn't skipping");
         }
         skipsTurns--;
     }
@@ -73,7 +73,7 @@ public class Player {
 
     public void doTime() {
         if (jailTurns < 1) {
-            throw new IllegalStateException(String.format("%s wasn't in jail", name));
+            throw new IllegalStateException(name + " wasn't in jail");
         }
         jailTurns--;
     }

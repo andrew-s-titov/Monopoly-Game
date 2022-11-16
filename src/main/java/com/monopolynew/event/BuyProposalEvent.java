@@ -22,6 +22,6 @@ public class BuyProposalEvent implements WebsocketEvent {
 
     public static BuyProposalEvent fromProposal(BuyProposal buyProposal) {
         PurchasableField field = buyProposal.getField();
-        return new BuyProposalEvent(buyProposal.getPlayerId(), field.getName(), field.getPrice());
+        return new BuyProposalEvent(buyProposal.getPlayer().getId(), field.getName(), field.getPrice());
     }
 }

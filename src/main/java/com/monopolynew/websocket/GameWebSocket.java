@@ -46,7 +46,7 @@ public class GameWebSocket implements GameMessageExchanger {
         var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
         var sessionId = session.getId();
 
-        if (gameHolder.getGame().isGameInProgress()) {
+        if (gameHolder.getGame().isInProgress()) {
             if (gameHolder.getGame().playerExists(playerId)) {
                 activeSessions.put(sessionId, new PlayerSession(playerId, session));
                 sendToSession(session, gameHolder.getGame().mapRefreshEvent());
@@ -65,7 +65,7 @@ public class GameWebSocket implements GameMessageExchanger {
             }
             // sending a new player event to show other players
             activeSessions.values().stream()
-                    .map(playerSession -> gameHolder.getGame().getPlayer(playerSession.getPlayerId()))
+                    .map(playerSession -> gameHolder.getGame().getPlayerById(playerSession.getPlayerId()))
                     .forEach(player -> sendToSession(session, PlayerConnectedEvent.fromPlayer(player)));
         }
         sendToSession(session, new UserIdentificationEvent(playerId));
@@ -87,11 +87,11 @@ public class GameWebSocket implements GameMessageExchanger {
         CloseReason.CloseCode closeCode = reason.getCloseCode();
         if (closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE) || closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
             var playerId = activeSessions.get(sessionId).getPlayerId();
-            var player = gameHolder.getGame().getPlayer(playerId);
-            if (player != null && !gameHolder.getGame().isGameInProgress()) {
+            var player = gameHolder.getGame().getPlayerById(playerId);
+            if (player != null && !gameHolder.getGame().isInProgress()) {
                 // we don't need to send this if game is in progress
                 sendToAllPlayers(PlayerDisconnectedEvent.fromPlayer(player));
-                gameHolder.getGame().disconnectPlayer(playerId);
+                gameHolder.getGame().removePlayer(playerId);
             }
             // if game in progress - do not remove to let reconnect
         } else if (closeCode.equals(CloseReason.CloseCodes.VIOLATED_POLICY)) {

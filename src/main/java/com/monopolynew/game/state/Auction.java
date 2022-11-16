@@ -32,7 +32,7 @@ public class Auction {
         this.participants = game.getPlayers().stream()
                 .filter(player -> !player.equals(auctionInitiator))
                 .filter(player -> player.getMoney() >= auctionPrice)
-                .collect(Collectors.toList());;
+                .collect(Collectors.toList());
         this.playerIterator = participants.iterator();
     }
 

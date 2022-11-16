@@ -9,7 +9,7 @@ public interface GameHelper {
 
     int movePlayer(Game game, Player player);
 
-    void sendToJail(Game game, Player player, @Nullable String reason);
+    void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason);
 
     void doBuyField(PurchasableField field, int price, Player player);
 
