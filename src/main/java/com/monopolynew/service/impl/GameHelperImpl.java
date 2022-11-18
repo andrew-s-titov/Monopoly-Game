@@ -3,6 +3,7 @@ package com.monopolynew.service.impl;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.StreetNewOwnerChange;
 import com.monopolynew.enums.GameStage;
+import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.ChipMoveEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
@@ -12,11 +13,13 @@ import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
+import com.monopolynew.game.state.BuyProposal;
+import com.monopolynew.map.FieldAction;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.websocket.GameMessageExchanger;
+import com.monopolynew.websocket.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -30,75 +33,66 @@ import java.util.stream.Collectors;
 @Component
 public class GameHelperImpl implements GameHelper {
 
-    private final GameMessageExchanger gameMessageExchanger;
+    private final GameEventSender gameEventSender;
 
     @Override
-    public int movePlayer(Game game, Player player) {
+    public void movePlayerForward(Game game, Player player, int newPosition) {
         int currentPosition = player.getPosition();
-        int result = currentPosition + game.getLastDice().getSum();
-        boolean newCircle = result > GameMap.LAST_FIELD_INDEX;
-        int newPosition = newCircle ? result - GameMap.LAST_FIELD_INDEX - 1 : result;
+        boolean newCircle = newPosition < currentPosition;
         changePlayerPosition(player, newPosition);
         if (newCircle) {
             player.addMoney(Rules.CIRCLE_MONEY);
             if (newPosition == 0) {
                 player.addMoney(Rules.CIRCLE_MONEY);
-                gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(
+                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                         String.format("%s received $%s for hitting %s field",
-                                player.getName(), Rules.CIRCLE_MONEY * 2, game.getGameMap().getField(0).getName())));
+                                player.getName(), Rules.CIRCLE_MONEY * 2, FieldAction.START.getName())));
             } else {
-                gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(
+                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                         String.format("%s received $%s for starting a new circle",
                                 player.getName(), Rules.CIRCLE_MONEY)));
             }
-            gameMessageExchanger.sendToAllPlayers(new MoneyChangeEvent(
+            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(player))));
         }
-        return newPosition;
+    }
+
+    @Override
+    public void changePlayerPosition(Player player, int fieldId) {
+        player.changePosition(fieldId);
+        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldId));
     }
 
     @Override
     public void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason) {
         player.resetDoublets();
         player.imprison();
-        gameMessageExchanger.sendToAllPlayers(
+        gameEventSender.sendToAllPlayers(
                 SystemMessageEvent.text(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
         changePlayerPosition(player, GameMap.JAIL_FIELD_NUMBER);
         endTurn(game);
     }
 
     @Override
-    public void doBuyField(PurchasableField field, int price, Player player) {
-        field.newOwner(player);
-        player.takeMoney(price);
-        gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(
-                String.format("%s is buying %s for $%s", player.getName(), field.getName(), price)));
-        gameMessageExchanger.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
-                MoneyState.fromPlayer(player))));
-        gameMessageExchanger.sendToAllPlayers(new PropertyNewOwnerChangeEvent(
-                Collections.singletonList(new StreetNewOwnerChange(player.getId(), field.getId()))));
-        // TODO: check if player now owns all group, send event for price change for every field
+    public void sendBuyProposal(Game game, Player player, PurchasableField field) {
+        var buyProposal = new BuyProposal(player, field);
+        game.setBuyProposal(buyProposal);
+        game.setStage(GameStage.BUY_PROPOSAL);
+        gameEventSender.sendToPlayer(player.getId(), BuyProposalEvent.fromProposal(buyProposal));
     }
 
     @Override
-    public void endTurn(Game game) {
-        processMortgage(game);
-        Player currentPlayer = game.getCurrentPlayer();
-        Player nextPlayer = game.getLastDice().isDoublet() && !currentPlayer.isSkipping() && !currentPlayer.isImprisoned() ?
-                currentPlayer : toNextPlayer(game);
-        if (nextPlayer.isImprisoned()) {
-            game.setStage(GameStage.JAIL_RELEASE);
-            String playerId = nextPlayer.getId();
-            gameMessageExchanger.sendToPlayer(playerId,
-                    new JailReleaseProcessEvent(playerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
-        } else {
-            gameMessageExchanger.sendToAllPlayers(TurnStartEvent.forPlayer(nextPlayer));
-        }
-    }
+    public void doBuyField(PurchasableField field, int price, Player player) {
+        field.newOwner(player);
+        player.takeMoney(price);
+        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                String.format("%s is buying %s for $%s", player.getName(), field.getName(), price)));
+        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
+                MoneyState.fromPlayer(player))));
+        gameEventSender.sendToAllPlayers(new PropertyNewOwnerChangeEvent(
+                Collections.singletonList(new StreetNewOwnerChange(player.getId(), field.getId()))));
 
-    private void changePlayerPosition(Player player, int fieldId) {
-        player.changePosition(fieldId);
-        gameMessageExchanger.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldId));
+        // TODO: check if player now owns all group, send event for price change for every field
     }
 
     @Override
@@ -121,10 +115,26 @@ public class GameHelperImpl implements GameHelper {
         return assetSum;
     }
 
+    @Override
+    public void endTurn(Game game) {
+        processMortgage(game);
+        Player currentPlayer = game.getCurrentPlayer();
+        Player nextPlayer = (game.getLastDice().isDoublet() && !currentPlayer.isSkipping() && !currentPlayer.isImprisoned()) ?
+                currentPlayer : toNextPlayer(game);
+        if (nextPlayer.isImprisoned()) {
+            game.setStage(GameStage.JAIL_RELEASE);
+            String playerId = nextPlayer.getId();
+            gameEventSender.sendToPlayer(playerId,
+                    new JailReleaseProcessEvent(playerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
+        } else {
+            gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(nextPlayer));
+        }
+    }
+
     private Player toNextPlayer(Game game) {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isSkipping()) {
-            gameMessageExchanger.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his turn"));
+            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his turn"));
             nextPlayer.skip();
             processMortgage(game);
             nextPlayer = toNextPlayer(game);

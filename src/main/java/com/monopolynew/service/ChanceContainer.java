@@ -1,12 +1,11 @@
 package com.monopolynew.service;
 
-import com.monopolynew.event.WebsocketEvent;
 import com.monopolynew.game.Game;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 public interface ChanceContainer {
 
-    List<Function<Game, List<WebsocketEvent>>> getChances();
+    List<Consumer<Game>> getChances();
 }

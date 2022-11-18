@@ -10,7 +10,8 @@ import java.util.Map;
 
 public class GameMap {
 
-    public static final int LAST_FIELD_INDEX = 39;
+    public static final int NUMBER_OF_FIELDS = 40;
+    public static final int LAST_FIELD_INDEX = NUMBER_OF_FIELDS - 1;
     public static final int COMPANY_FIELD_GROUP = 1;
     public static final int UTILITY_FIELD_GROUP = 4;
     public static final int JAIL_FIELD_NUMBER = 10;

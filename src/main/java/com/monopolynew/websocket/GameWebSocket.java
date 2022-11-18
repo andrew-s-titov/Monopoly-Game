@@ -8,6 +8,7 @@ import com.monopolynew.event.ErrorEvent;
 import com.monopolynew.event.PlayerConnectedEvent;
 import com.monopolynew.event.PlayerDisconnectedEvent;
 import com.monopolynew.event.UserIdentificationEvent;
+import com.monopolynew.event.WebsocketEvent;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.service.GameHolder;
@@ -33,7 +34,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @ServerEndpoint(value = "/connect/{username}", configurator = SpringWebsocketCustomConfigurer.class)
-public class GameWebSocket implements GameMessageExchanger {
+public class GameWebSocket implements GameEventSender {
 
     private final ObjectMapper objectMapper;
     private final GameHolder gameHolder;
@@ -110,20 +111,20 @@ public class GameWebSocket implements GameMessageExchanger {
     }
 
     @Override
-    public void sendToAllPlayers(Object payload) {
+    public void sendToAllPlayers(WebsocketEvent event) {
         if (!CollectionUtils.isEmpty(activeSessions)) {
             activeSessions.values().stream()
                     .map(PlayerSession::getSession)
-                    .forEach(session -> sendToSession(session, payload));
+                    .forEach(session -> sendToSession(session, event));
         }
     }
 
     @Override
-    public void sendToPlayer(String playerId, Object payload) {
+    public void sendToPlayer(String playerId, WebsocketEvent event) {
         activeSessions.values().stream()
                 .filter(playerSession -> playerSession.getPlayerId().equals(playerId))
                 .findAny()
-                .ifPresent(playerSession -> sendToSession(playerSession.getSession(), payload));
+                .ifPresent(playerSession -> sendToSession(playerSession.getSession(), event));
     }
 
     @Override

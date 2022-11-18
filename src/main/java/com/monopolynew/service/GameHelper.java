@@ -7,9 +7,13 @@ import org.springframework.lang.Nullable;
 
 public interface GameHelper {
 
-    int movePlayer(Game game, Player player);
+    void movePlayerForward(Game game, Player player, int newPosition);
+
+    void changePlayerPosition(Player player, int fieldId);
 
     void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason);
+
+    void sendBuyProposal(Game game, Player player, PurchasableField field);
 
     void doBuyField(PurchasableField field, int price, Player player);
 
