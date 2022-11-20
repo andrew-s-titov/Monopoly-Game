@@ -51,6 +51,11 @@ public class GameController {
         gameService.processBuyProposal(action);
     }
 
+    @GetMapping("/pay")
+    public void processPayment() {
+        gameService.processPayment();
+    }
+
     @GetMapping("/auction/buy")
     public void processAuctionBuyProposal(@RequestParam("action") ProposalAction action) {
         gameService.processAuctionBuyProposal(action);

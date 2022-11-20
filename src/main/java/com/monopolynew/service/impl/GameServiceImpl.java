@@ -50,6 +50,7 @@ public class GameServiceImpl implements GameService {
     private final ChanceExecutor chanceExecutor;
     private final GameEventSender gameEventSender;
     private final GameMapRefresher gameMapRefresher;
+    private final PaymentProcessor paymentProcessor;
 
     @Override
     public boolean isGameStarted() {
@@ -208,6 +209,12 @@ public class GameServiceImpl implements GameService {
         }
     }
 
+    @Override
+    public void processPayment() {
+        Game game = gameHolder.getGame();
+        paymentProcessor.processPayment(game);
+    }
+
     private void doRegularMove(Game game) {
         if (!GameStage.TURN_START.equals(game.getStage())) {
             throw new IllegalStateException("cannot make move - wrong game stage");
@@ -245,18 +252,16 @@ public class GameServiceImpl implements GameService {
                     break;
                 }
                 case INCOME_TAX: {
-                    collectTax(currentPlayer, Rules.INCOME_TAX, FieldAction.INCOME_TAX.getName());
-                    gameHelper.endTurn(game);
+                    prepareTaxPayment(game, currentPlayer, Rules.INCOME_TAX, FieldAction.INCOME_TAX.getName());
                     break;
                 }
                 case LUXURY_TAX: {
-                    collectTax(currentPlayer, Rules.LUXURY_TAX, FieldAction.LUXURY_TAX.getName());
-                    gameHelper.endTurn(game);
+                    prepareTaxPayment(game, currentPlayer, Rules.LUXURY_TAX, FieldAction.LUXURY_TAX.getName());
                     break;
                 }
                 default: {
                     // TODO: teleport implementation
-                    // money event on start is processed on change position
+                    // money event on START field is processed on change position
                     gameHelper.endTurn(game);
                     break;
                 }
@@ -281,11 +286,8 @@ public class GameServiceImpl implements GameService {
         return newCircle ? result - GameMap.NUMBER_OF_FIELDS : result;
     }
 
-    private void collectTax(Player player, int tax, String taxName) {
-        player.takeMoney(tax);
-        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
-                MoneyState.fromPlayer(player))));
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                String.format("%s is paying $%s as %s", player.getName(), tax, taxName)));
+    private void prepareTaxPayment(Game game, Player player, int tax, String taxName) {
+        String paymentComment = String.format("%s is paying $%s as %s", player.getName(), tax, taxName);
+        paymentProcessor.createPayCheck(game, player, null, tax, paymentComment);
     }
 }

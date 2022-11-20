@@ -1,5 +1,6 @@
 package com.monopolynew.game;
 
+import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.game.state.Auction;
@@ -39,6 +40,9 @@ public class Game {
     @Getter
     @Setter
     private BuyProposal buyProposal;
+    @Getter
+    @Setter
+    private CheckToPay checkToPay;
     private Iterator<Player> playerIterator;
     @Getter
     private GameMap gameMap;

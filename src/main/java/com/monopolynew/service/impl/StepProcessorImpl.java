@@ -1,8 +1,5 @@
 package com.monopolynew.service.impl;
 
-import com.monopolynew.dto.MoneyState;
-import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
@@ -15,8 +12,6 @@ import com.monopolynew.websocket.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @Component
 public class StepProcessorImpl implements StepProcessor {
@@ -24,6 +19,7 @@ public class StepProcessorImpl implements StepProcessor {
     private final GameEventSender gameEventSender;
     private final GameHelper gameHelper;
     private final AuctionManager auctionManager;
+    private final PaymentProcessor paymentProcessor;
 
     @Override
     public void processStepOnPurchasableField(Game game, Player player, PurchasableField field) {
@@ -60,28 +56,9 @@ public class StepProcessorImpl implements StepProcessor {
     }
 
     private void processRentPayment(Game game, Player player, PurchasableField field, int rent) {
-        int playerMoney = player.getMoney();
         Player owner = field.getOwner();
-        if (playerMoney >= rent) {
-            player.takeMoney(rent);
-            owner.addMoney(rent);
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                    String.format("%s is paying %s $%s rent for %s",
-                            player.getName(), owner.getName(), rent, field.getName())));
-            gameEventSender.sendToAllPlayers(
-                    new MoneyChangeEvent(
-                            List.of(MoneyState.fromPlayer(player), MoneyState.fromPlayer(owner)))
-            );
-            gameHelper.endTurn(game);
-        } else {
-            int playersAssets = gameHelper.computePlayerAssets(game, player);
-            if (playersAssets >= rent) {
-                // TODO: send message with proposal to sell something
-                // TODO: if rent > 90 % of assets - propose to give up
-            } else {
-                // TODO: auto-bankruptcy
-            }
-            gameHelper.endTurn(game); // TODO: remove on logic edit
-        }
+        String paymentComment = String.format("%s is paying %s $%s rent for %s",
+                player.getName(), owner.getName(), rent, field.getName());
+        paymentProcessor.createPayCheck(game, player, owner, rent, paymentComment);
     }
 }

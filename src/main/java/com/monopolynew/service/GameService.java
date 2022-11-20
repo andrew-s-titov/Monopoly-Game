@@ -26,4 +26,6 @@ public interface GameService {
     void processAuctionRaiseProposal(ProposalAction action);
 
     void processJailAction(JailAction jailAction);
+
+    void processPayment();
 }

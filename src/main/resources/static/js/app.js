@@ -138,6 +138,9 @@ function openWebsocket(username) {
         if (socketMessageCode === 311) {
             onFieldViewChange(socketMessage);
         }
+        if (socketMessageCode === 312) {
+            onPayCommand(socketMessage);
+        }
     })
 }
 
@@ -420,9 +423,9 @@ function onBuyProposal(socketMessage) {
     let price = socketMessage.price;
     let field = socketMessage.field_name;
     if (thisPlayerId === playerId) {
-        let acceptButton = createProposalButton('Buy', 'http://localhost:8080/game/buy?action=ACCEPT');
-        let auctionButton = createProposalButton('Auction', 'http://localhost:8080/game/buy?action=DECLINE');
-        createProposalContainer('Do you like to buy ' + field + ' for $' + price + '?', acceptButton, auctionButton);
+        let acceptButton = createActionButton('Buy', 'http://localhost:8080/game/buy?action=ACCEPT');
+        let auctionButton = createActionButton('Auction', 'http://localhost:8080/game/buy?action=DECLINE');
+        createActionContainer('Do you like to buy ' + field + ' for $' + price + '?', acceptButton, auctionButton);
     }
 }
 
@@ -436,29 +439,48 @@ function onPropertyNewOwner(socketMessage) {
 }
 
 function onJailReleaseProcess(socketMessage) {
-    let payButton = createProposalButton('Pay $ ' + socketMessage.bail, 'http://localhost:8080/game/jail?action=PAY');
-    let luckButton = createProposalButton('Try luck', 'http://localhost:8080/game/jail?action=LUCK');
-    createProposalContainer('Chose a way out:', payButton, luckButton);
+    removePlayersOutline();
+    outlinePlayer(thisPlayerId);
+    let payButton = createActionButton('Pay $ ' + socketMessage.bail, 'http://localhost:8080/game/jail?action=PAY');
+    let luckButton = createActionButton('Try luck', 'http://localhost:8080/game/jail?action=LUCK');
+    createActionContainer('Chose a way out:', payButton, luckButton);
 }
 
 function onAuctionBuyProposal(socketMessage) {
-    let buyButton = createProposalButton('Buy', 'http://localhost:8080/game/auction/buy?action=ACCEPT');
-    let declineButton = createProposalButton('Decline', 'http://localhost:8080/game/auction/buy?action=DECLINE');
-    createProposalContainer(
+    let buyButton = createActionButton('Buy', 'http://localhost:8080/game/auction/buy?action=ACCEPT');
+    let declineButton = createActionButton('Decline', 'http://localhost:8080/game/auction/buy?action=DECLINE');
+    createActionContainer(
         'Do you want to buy ' + socketMessage.field_name + ' for ' + socketMessage.proposal + ' ?',
         buyButton, declineButton);
 }
 
 function onAuctionRaiseProposal(socketMessage) {
-    let raiseButton = createProposalButton('Raise', 'http://localhost:8080/game/auction/raise?action=ACCEPT');
-    let declineButton = createProposalButton('Decline', 'http://localhost:8080/game/auction/raise?action=DECLINE');
-    createProposalContainer(
+    let raiseButton = createActionButton('Raise', 'http://localhost:8080/game/auction/raise?action=ACCEPT');
+    let declineButton = createActionButton('Decline', 'http://localhost:8080/game/auction/raise?action=DECLINE');
+    createActionContainer(
         'Do you want to raise ' + socketMessage.field_name + ' price to $' + socketMessage.proposal + '?',
         raiseButton, declineButton);
 }
 
 function onFieldViewChange(socketMessage) {
     renderFieldViews(socketMessage.changes);
+}
+
+function onPayCommand(socketMessage) {
+    let oldContainer = document.getElementById(PROPOSAL_CONTAINER_ID);
+    if (oldContainer) {
+        oldContainer.remove();
+    }
+    let sum = socketMessage.sum;
+    let payable = socketMessage.payable;
+    let wiseToGiveUp = socketMessage.wise_to_give_up;
+    let payButton = createActionButton('Pay', 'http://localhost:8080/game/pay');
+    payButton.disabled = !payable;
+    let giveUpButton = null;
+    if (wiseToGiveUp) {
+        giveUpButton = createActionButton('Give up', 'http://localhost:8080/game/give_up');
+    }
+    createActionContainer('Pay $' + sum, payButton, giveUpButton);
 }
 
 function hideDice() {
@@ -536,7 +558,7 @@ function defineChipLeft(fieldNumber) {
     }
 }
 
-function createProposalContainer(text, button1, button2) {
+function createActionContainer(text, button1, button2) {
     let proposalContainer = document.createElement('div');
     proposalContainer.id = PROPOSAL_CONTAINER_ID;
     proposalContainer.style.width = '20%';
@@ -553,17 +575,20 @@ function createProposalContainer(text, button1, button2) {
     proposalPhrase.style.textAlign = 'center';
     proposalPhrase.style.marginTop = '20px';
     proposalContainer.appendChild(proposalPhrase);
-
-    button2.style.marginTop = '10px';
-    button1.addEventListener('click', () => proposalContainer.remove());
-    button2.addEventListener('click', () => proposalContainer.remove());
-    proposalContainer.appendChild(button1);
-    proposalContainer.appendChild(button2);
-
+    if (button1 != null) {
+        button1.addEventListener('click', () => proposalContainer.remove());
+        button1.style.marginBottom = '10px';
+        proposalContainer.appendChild(button1);
+    }
+    if (button2 != null) {
+        button2.addEventListener('click', () => proposalContainer.remove());
+        button2.style.marginBottom = '10px';
+        proposalContainer.appendChild(button2);
+    }
     document.getElementById('map').appendChild(proposalContainer);
 }
 
-function createProposalButton(text, url) {
+function createActionButton(text, url) {
     let proposalButton = document.createElement('button');
     proposalButton.innerText = text;
     proposalButton.style.display = 'block';
