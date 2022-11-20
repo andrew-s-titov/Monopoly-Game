@@ -46,7 +46,11 @@ public class ChanceContainerImpl implements ChanceContainer {
         this.gameHelper = gameHelper;
         this.stepProcessor = stepProcessor;
         this.gameEventSender = gameEventSender;
-        chances = List.of(
+        this.chances = createChances(gameHelper, stepProcessor, gameEventSender);
+    }
+
+    private List<Consumer<Game>> createChances(GameHelper gameHelper, StepProcessor stepProcessor, GameEventSender gameEventSender) {
+        return List.of(
                 moneyChance(50, true, "%s found $%s on the pavement"),
                 moneyChance(70, true, "%s won $%s in the lottery"),
                 moneyChance(10, true, "%s won last place in a beauty contest and got $ %s"),
@@ -117,6 +121,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     List<Integer> housesOnStreets = Arrays.stream(game.getGameMap().getFields())
                             .filter(field -> field instanceof StreetField)
                             .map(field -> (StreetField) field)
+                            .filter(field -> !field.isFree())
                             .filter(field -> field.getOwner().equals(currentPlayer))
                             .map(StreetField::getHouses)
                             .filter(houses -> houses > 0)
@@ -180,7 +185,7 @@ public class ChanceContainerImpl implements ChanceContainer {
 
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text("%s is TELEPORTING!"));
+                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is TELEPORTING!"));
                     GameMap gameMap = game.getGameMap();
                     List<Integer> purchasableFieldsIndexes = gameMap.getGroups().values().stream()
                             .flatMap(Collection::stream)

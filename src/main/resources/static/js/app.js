@@ -1,4 +1,6 @@
 const PLAYER_COLORS = ['cornflowerblue', 'crimson', 'mediumseagreen', 'purple', 'orange'];
+const GROUP_COLORS = ['pink', 'lightcoral', 'gold', 'darkcyan', 'firebrick',
+    'blue', 'greenyellow', 'darkturquoise', 'mediumpurple', 'slategrey'];
 const PLAYER_ID_COOKIE = 'player_id';
 const THROW_DICE_BUTTON_ID = 'throwDiceButton';
 const DICE_CONTAINER_ID = 'diceContainer';
@@ -133,6 +135,9 @@ function openWebsocket(username) {
         if (socketMessageCode === 310) {
             onAuctionBuyProposal(socketMessage);
         }
+        if (socketMessageCode === 311) {
+            onFieldViewChange(socketMessage);
+        }
     })
 }
 
@@ -156,7 +161,8 @@ function savePlayerIdToCookie(playerId) {
 }
 
 function getPlayerIdFromCookie() {
-    return document.cookie.split('; ').find((cookie) => cookie.startsWith(PLAYER_ID_COOKIE + '='));
+    let playerCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith(PLAYER_ID_COOKIE + '='));
+    return playerCookie.split('=')[1];
 }
 
 function startGame() {
@@ -197,8 +203,6 @@ function onGameStartOrMapRefresh(socketMessage) {
         savePlayerIdToCookie(thisPlayerId);
     }
 
-    console.log('saved cookie with id for current user');
-
     const players = socketMessage.players;
     for (let i = 0; i < players.length; i++) {
         let playerColor = PLAYER_COLORS[i];
@@ -227,6 +231,7 @@ function onGameStartOrMapRefresh(socketMessage) {
         chip.id = 'chip' + i;
         chip.className = 'chip';
         chip.style.background = PLAYER_COLORS[i];
+        chip.style.opacity = '0.8'
         let playerPosition = player.position;
         document.getElementById('map').appendChild(chip);
         chips.set(player.id, chip);
@@ -234,20 +239,9 @@ function onGameStartOrMapRefresh(socketMessage) {
     }
 
     playerToGo = socketMessage.current_player;
-    outlineCurrentPlayer(playerToGo);
+    outlinePlayer(playerToGo);
 
-    const groupColors = ['pink', 'lightcoral', 'gold', 'darkcyan', 'firebrick',
-        'blue', 'greenyellow', 'darkturquoise', 'mediumpurple', 'slategrey'];
-    const fields = socketMessage.fields;
-    for (let field of fields) {
-        let fieldId = field.id;
-        document.getElementById('field' + fieldId).innerHTML = field.name;
-        if (field.hasOwnProperty('price')) {
-            let colorField = document.getElementById('field' + fieldId + '-price');
-            colorField.innerHTML = '$ ' + field.price;
-            colorField.style.backgroundColor = groupColors[field.group]
-        }
-    }
+    renderFieldViews(socketMessage.fields);
 
     // auto-click 'send' button in message box if input is active
     let playerMessageInput = document.getElementById('playerMessage');
@@ -324,7 +318,7 @@ function sendMessageToChat(htmlDivMessage) {
 function onTurnStart(socketMessage) {
     removePlayersOutline();
     playerToGo = socketMessage.player_id;
-    outlineCurrentPlayer(playerToGo);
+    outlinePlayer(playerToGo);
     if (thisPlayerId === playerToGo) {
         let throwDiceButton = renderDiceButton();
         throwDiceButton.addEventListener('click', () => {
@@ -345,7 +339,7 @@ function processPlayerMessage() {
     }
 }
 
-function outlineCurrentPlayer(playerId) {
+function outlinePlayer(playerId) {
     let playerHtmlId = playersMap.get(playerId)[0];
     document.getElementById('player' + playerHtmlId + '-group').style.outline = '5px solid white';
 }
@@ -463,6 +457,10 @@ function onAuctionRaiseProposal(socketMessage) {
         raiseButton, declineButton);
 }
 
+function onFieldViewChange(socketMessage) {
+    renderFieldViews(socketMessage.changes);
+}
+
 function hideDice() {
     document.getElementById(DICE_CONTAINER_ID).remove();
 }
@@ -542,7 +540,7 @@ function createProposalContainer(text, button1, button2) {
     let proposalContainer = document.createElement('div');
     proposalContainer.id = PROPOSAL_CONTAINER_ID;
     proposalContainer.style.width = '20%';
-    proposalContainer.style.opacity = '0.7'
+    proposalContainer.style.opacity = '0.8'
     proposalContainer.style.position = 'fixed';
     proposalContainer.style.left = '45%';
     proposalContainer.style.top = '35%';
@@ -578,4 +576,22 @@ function createProposalButton(text, url) {
         httpRequester.send();
     });
     return proposalButton;
+}
+
+function renderFieldViews(fieldViews) {
+    for (let fieldView of fieldViews) {
+        let fieldId = fieldView.id;
+        let htmlField = document.getElementById('field' + fieldId);
+        htmlField.innerHTML = fieldView.name;
+        if (fieldView.hasOwnProperty('owner_id')) {
+            htmlField.style.backgroundColor = PLAYER_COLORS[playersMap.get(fieldView.owner_id)[0]];
+        } else {
+            htmlField.style.backgroundColor = 'white';
+        }
+        if (fieldView.hasOwnProperty('price_tag')) {
+            let priceTagField = document.getElementById('field' + fieldId + '-price');
+            priceTagField.innerHTML = fieldView.price_tag;
+            priceTagField.style.backgroundColor = GROUP_COLORS[fieldView.group];
+        }
+    }
 }

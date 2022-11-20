@@ -5,13 +5,15 @@ import lombok.Getter;
 
 import java.util.Objects;
 
-public class StreetField extends BasePurchasableField {
+public class StreetField extends BasePurchasableField implements StaticRentField {
 
     @Getter
     private final int housePrice;
     private final int[] rents;
     @Getter
     private int houses = 0;
+    @Getter
+    private int currentRent;
 
     public StreetField(int id, String name, int group, int price, int housePrice, int[] rents) {
         super(id, name, group, price);
@@ -22,13 +24,12 @@ public class StreetField extends BasePurchasableField {
         this.rents = rents;
     }
 
-    public int computeRent(boolean allGroupOwnedByTheSamePlayer) {
+    public void setNewRent(boolean allGroupOwnedByTheSamePlayer) {
         if (houses == 0) {
-            return allGroupOwnedByTheSamePlayer ? rents[0] * 2 : rents[0];
+            currentRent = allGroupOwnedByTheSamePlayer ? rents[0] * 2 : rents[0];
         } else {
-            return rents[houses];
+            currentRent = rents[houses];
         }
-        // TODO: rewrite logic
     }
 
     public void pledge() {

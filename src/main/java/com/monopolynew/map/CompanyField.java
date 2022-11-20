@@ -1,18 +1,23 @@
 package com.monopolynew.map;
 
+import lombok.Getter;
+
 import java.util.Objects;
 
-public class CompanyField extends BasePurchasableField {
+public class CompanyField extends BasePurchasableField implements StaticRentField {
 
-    private final int fare;
+    private final int defaultRent;
 
-    public CompanyField(int id, String name, int group, int price, int fare) {
+    @Getter
+    private int currentRent;
+
+    public CompanyField(int id, String name, int group, int price, int defaultRent) {
         super(id, name, group, price);
-        this.fare = fare;
+        this.defaultRent = defaultRent;
     }
 
-    public int computeFare(int ownedByTheSamePlayer) {
-        return (int) (fare * Math.pow(2, ownedByTheSamePlayer - 1));
+    public void setNewRent(int ownedByTheSamePlayer) {
+        this.currentRent = (int) (this.defaultRent * Math.pow(2, ownedByTheSamePlayer - 1));
     }
 
     @Override

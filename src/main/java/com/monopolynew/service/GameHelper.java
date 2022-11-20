@@ -15,7 +15,7 @@ public interface GameHelper {
 
     void sendBuyProposal(Game game, Player player, PurchasableField field);
 
-    void doBuyField(PurchasableField field, int price, Player player);
+    void doBuyField(Game game, PurchasableField field, int price, Player player);
 
     int computePlayerAssets(Game game, Player player);
 

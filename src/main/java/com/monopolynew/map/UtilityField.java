@@ -1,23 +1,35 @@
 package com.monopolynew.map;
 
 import com.monopolynew.dto.DiceResult;
+import lombok.Getter;
 
 import java.util.Objects;
 
 public class UtilityField extends BasePurchasableField {
 
+    private final int standardMultiplier;
+    private final int highMultiplier;
+
+    @Getter
+    private int currentMultiplier;
+
     public UtilityField(int id, String name, int group, int price, int standardMultiplier, int highMultiplier) {
         super(id, name, group, price);
         this.standardMultiplier = standardMultiplier;
         this.highMultiplier = highMultiplier;
+        this.currentMultiplier = standardMultiplier;
     }
 
-    private final int standardMultiplier;
-    private final int highMultiplier;
+    public void increaseMultiplier() {
+        this.currentMultiplier = highMultiplier;
+    }
 
-    public int computeFare(DiceResult diceResult, boolean allOwnedByTheSamePlayer) {
-        int diceSum = diceResult.getSum();
-        return allOwnedByTheSamePlayer ? diceSum * highMultiplier : diceSum * standardMultiplier;
+    public void decreaseMultiplier() {
+        this.currentMultiplier = standardMultiplier;
+    }
+
+    public int getRent(DiceResult diceResult) {
+        return diceResult.getSum() * this.currentMultiplier;
     }
 
     @Override

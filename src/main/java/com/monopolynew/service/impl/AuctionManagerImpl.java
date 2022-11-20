@@ -65,7 +65,7 @@ public class AuctionManagerImpl implements AuctionManager {
                         new AuctionBuyProposalEvent(playerId, auction.getField().getName(), auction.getAuctionPrice()));
             } else {
                 // automatically sell to the winner
-                gameHelper.doBuyField(auction.getField(), auction.getAuctionPrice(), player);
+                gameHelper.doBuyField(game, auction.getField(), auction.getAuctionPrice(), player);
                 finishAuction(game);
             }
         }
@@ -78,7 +78,7 @@ public class AuctionManagerImpl implements AuctionManager {
         Assert.notNull(action, NULL_ARG_MESSAGE);
         if (ProposalAction.ACCEPT.equals(action)) {
             Player buyer = auction.getCurrentParticipant();
-            gameHelper.doBuyField(auction.getField(), auction.getAuctionPrice(), buyer);
+            gameHelper.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyer);
         } else {
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text("No one took part in the auction"));
         }

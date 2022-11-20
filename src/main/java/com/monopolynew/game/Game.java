@@ -2,7 +2,6 @@ package com.monopolynew.game;
 
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.enums.GameStage;
-import com.monopolynew.event.GameMapRefreshEvent;
 import com.monopolynew.game.state.Auction;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.GameMap;
@@ -28,13 +27,17 @@ public class Game {
     private final boolean withTeleport;
 
     private boolean inProgress = false;
-    @Getter @Setter
+    @Getter
+    @Setter
     private GameStage stage;
-    @Getter @Setter
+    @Getter
+    @Setter
     private DiceResult lastDice;
-    @Getter @Setter
+    @Getter
+    @Setter
     private Auction auction;
-    @Getter @Setter
+    @Getter
+    @Setter
     private BuyProposal buyProposal;
     private Iterator<Player> playerIterator;
     @Getter
@@ -88,10 +91,6 @@ public class Game {
 
     public Player getCurrentPlayer() {
         return this.players.get(this.whoseTurn);
-    }
-
-    public GameMapRefreshEvent mapRefreshEvent() {
-        return new GameMapRefreshEvent(this.players.values(), this.gameMap.getFields(), this.whoseTurn);
     }
 
     public Player nextPlayer() {

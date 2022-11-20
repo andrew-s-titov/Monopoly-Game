@@ -12,6 +12,7 @@ import com.monopolynew.event.WebsocketEvent;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.service.GameHolder;
+import com.monopolynew.service.GameMapRefresher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,7 @@ public class GameWebSocket implements GameEventSender {
 
     private final ObjectMapper objectMapper;
     private final GameHolder gameHolder;
+    private final GameMapRefresher gameMapRefresher;
 
     private final Map<String, PlayerSession> activeSessions = new HashMap<>();
 
@@ -50,7 +52,7 @@ public class GameWebSocket implements GameEventSender {
         if (gameHolder.getGame().isInProgress()) {
             if (gameHolder.getGame().playerExists(playerId)) {
                 activeSessions.put(sessionId, new PlayerSession(playerId, session));
-                sendToSession(session, gameHolder.getGame().mapRefreshEvent());
+                sendToSession(session, gameMapRefresher.getRefreshEvent(gameHolder.getGame()));
             } else {
                 String message = "Game in progress";
                 closeSessionForViolation(session, message);

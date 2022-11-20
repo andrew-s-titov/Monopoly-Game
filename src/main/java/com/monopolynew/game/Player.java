@@ -17,6 +17,8 @@ public class Player {
     private int money = Rules.START_MONEY_AMOUNT;
     @Getter
     private int position = 0;
+    @Getter
+    private boolean justReleased = false;
     private int skipsTurns = 0;
     private int jailTurns = 0;
     private int doubletCount = 0;
@@ -80,6 +82,7 @@ public class Player {
 
     public void releaseFromJail() {
         this.jailTurns = 0;
+        this.justReleased = true;
     }
 
     public void incrementDoublets() {
@@ -91,7 +94,11 @@ public class Player {
     }
 
     public boolean committedFraud() {
-        return doubletCount == Rules.MAX_DOUBLETS;
+        return this.doubletCount == Rules.MAX_DOUBLETS;
+    }
+
+    public void clearCriminalRecord() {
+        this.justReleased = false;
     }
 
     @Override

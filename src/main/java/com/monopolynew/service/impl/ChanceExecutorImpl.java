@@ -6,10 +6,10 @@ import com.monopolynew.service.ChanceExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.Random;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -20,23 +20,25 @@ public class ChanceExecutorImpl implements ChanceExecutor {
 
     private final ChanceContainer chanceContainer;
 
-    private final Random random = new Random(); // TODO: when multiple games are allowed - thread local?
-    private final Map<UUID, List<Consumer<Game>>> chanceDecks = new ConcurrentHashMap<>();
+    private final Map<UUID, Queue<Consumer<Game>>> chanceDecks = new ConcurrentHashMap<>();
 
     @Override
-    public void executeRandomChance(Game game) {
-        List<Consumer<Game>> chanceDeck = getDeck(game);
-        int randomDeckIndex = random.nextInt(chanceDeck.size());
-        Consumer<Game> selectedChance = chanceDeck.get(randomDeckIndex);
-        chanceDeck.remove(randomDeckIndex);
+    public void executeChance(Game game) {
+        Queue<Consumer<Game>> chanceDeck = getDeck(game);
+        Consumer<Game> selectedChance = chanceDeck.poll();
+        if (selectedChance == null) {
+            throw new IllegalStateException("unexpectedly null chance (game consumer)");
+        }
         selectedChance.accept(game);
     }
 
-    private List<Consumer<Game>> getDeck(Game game) {
+    private Queue<Consumer<Game>> getDeck(Game game) {
         UUID gameId = game.getId();
-        List<Consumer<Game>> chanceDeck = chanceDecks.get(gameId);
+        Queue<Consumer<Game>> chanceDeck = chanceDecks.get(gameId);
         if (chanceDeck == null || chanceDeck.isEmpty()) {
-            chanceDeck = new ArrayList<>(chanceContainer.getChances());
+            var newDeck = new LinkedList<>(chanceContainer.getChances());
+            Collections.shuffle(newDeck);
+            chanceDeck = newDeck;
             chanceDecks.put(gameId, chanceDeck);
         }
         return chanceDeck;

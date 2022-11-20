@@ -12,7 +12,8 @@
 306 - buy or auction proposal
 307 - property new owner change
 308 - jail release process
-309 - auction raise
-310 - auction buy
+309 - auction raise proposal
+310 - auction buy proposal
+311 - field view change
 
 500 - error with message

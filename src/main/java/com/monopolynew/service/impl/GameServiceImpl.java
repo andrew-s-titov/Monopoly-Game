@@ -16,16 +16,15 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.ActionableField;
-import com.monopolynew.map.CompanyField;
+import com.monopolynew.map.FieldAction;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
-import com.monopolynew.map.StreetField;
-import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.ChanceExecutor;
 import com.monopolynew.service.GameHelper;
 import com.monopolynew.service.GameHolder;
+import com.monopolynew.service.GameMapRefresher;
 import com.monopolynew.service.GameService;
 import com.monopolynew.service.StepProcessor;
 import com.monopolynew.websocket.GameEventSender;
@@ -36,8 +35,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
 
@@ -52,6 +49,7 @@ public class GameServiceImpl implements GameService {
     private final AuctionManager auctionManager;
     private final ChanceExecutor chanceExecutor;
     private final GameEventSender gameEventSender;
+    private final GameMapRefresher gameMapRefresher;
 
     @Override
     public boolean isGameStarted() {
@@ -77,7 +75,7 @@ public class GameServiceImpl implements GameService {
             throw new IllegalStateException("No players registered - cannot start a game");
         }
         game.startGame();
-        gameEventSender.sendToAllPlayers(game.mapRefreshEvent());
+        gameEventSender.sendToAllPlayers(gameMapRefresher.getRefreshEvent(game));
         Player currentPlayer = game.getCurrentPlayer();
         gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(currentPlayer));
     }
@@ -118,31 +116,34 @@ public class GameServiceImpl implements GameService {
         }
         Player currentPlayer = game.getCurrentPlayer();
         GameStage stage = game.getStage();
-        if (stage.equals(GameStage.TURN_START)) {
+        if (GameStage.TURN_START.equals(stage)) {
             if (currentPlayer.committedFraud()) {
                 currentPlayer.resetDoublets();
                 gameHelper.sendToJailAndEndTurn(game, currentPlayer, "for fraud");
             } else {
                 doRegularMove(game);
             }
-        } else if (stage.equals(GameStage.JAIL_RELEASE)) {
+        } else if (GameStage.JAIL_RELEASE.equals(stage)) {
             if (lastDice.isDoublet()) {
-                currentPlayer.incrementDoublets();
                 currentPlayer.releaseFromJail();
                 game.setStage(GameStage.TURN_START);
-                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is pardoned under amnesty"));
+                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                        currentPlayer.getName() + " is pardoned under amnesty"));
                 // auto move without action proposal
                 doRegularMove(game);
             } else {
                 if (currentPlayer.lastTurnInPrison()) {
                     if (currentPlayer.getMoney() >= Rules.JAIL_BAIL) {
                         currentPlayer.takeMoney(Rules.JAIL_BAIL);
+                        currentPlayer.releaseFromJail();
+                        game.setStage(GameStage.TURN_START);
                         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                                 MoneyState.fromPlayer(currentPlayer))));
                         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                                 currentPlayer.getName() + " is released on bail"));
-                        gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(currentPlayer));
+                        doRegularMove(game);
                     } else {
+                        int allAssets = gameHelper.computePlayerAssets(game, currentPlayer);
                         // TODO: check if property is enough: yes - event to sell some; no - auto-loose
                     }
                 } else {
@@ -168,7 +169,7 @@ public class GameServiceImpl implements GameService {
         PurchasableField field = buyProposal.getField();
         game.setBuyProposal(null);
         if (action.equals(ProposalAction.ACCEPT)) {
-            gameHelper.doBuyField(field, field.getPrice(), buyer);
+            gameHelper.doBuyField(game, field, field.getPrice(), buyer);
             game.setStage(GameStage.TURN_START);
             gameHelper.endTurn(game);
         } else if (action.equals(ProposalAction.DECLINE)) {
@@ -224,13 +225,13 @@ public class GameServiceImpl implements GameService {
             var actionableField = (ActionableField) field;
             switch (actionableField.getAction()) {
                 case JAIL: {
-                    gameEventSender.sendToAllPlayers(
-                            SystemMessageEvent.text(currentPlayerName + " is visiting Jail for a tour"));
+                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                            currentPlayerName + " is visiting Jail for a tour"));
                     gameHelper.endTurn(game);
                     break;
                 }
                 case CHANCE: {
-                    chanceExecutor.executeRandomChance(game);
+                    chanceExecutor.executeChance(game);
                     break;
                 }
                 case ARRESTED: {
@@ -244,26 +245,18 @@ public class GameServiceImpl implements GameService {
                     break;
                 }
                 case INCOME_TAX: {
-                    currentPlayer.takeMoney(Rules.INCOME_TAX);
-                    gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
-                            MoneyState.fromPlayer(currentPlayer))));
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                            currentPlayerName+ " is paying income tax"));
+                    collectTax(currentPlayer, Rules.INCOME_TAX, FieldAction.INCOME_TAX.getName());
                     gameHelper.endTurn(game);
                     break;
                 }
                 case LUXURY_TAX: {
-                    currentPlayer.takeMoney(Rules.LUXURY_TAX);
-                    gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
-                            MoneyState.fromPlayer(currentPlayer))));
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                            currentPlayerName + " is paying luxury tax"));
+                    collectTax(currentPlayer, Rules.LUXURY_TAX, FieldAction.LUXURY_TAX.getName());
                     gameHelper.endTurn(game);
                     break;
                 }
                 default: {
                     // TODO: teleport implementation
-                    // money event on start processed on change position
+                    // money event on start is processed on change position
                     gameHelper.endTurn(game);
                     break;
                 }
@@ -286,5 +279,13 @@ public class GameServiceImpl implements GameService {
         int result = player.getPosition() + diceResult.getSum();
         boolean newCircle = result > GameMap.LAST_FIELD_INDEX;
         return newCircle ? result - GameMap.NUMBER_OF_FIELDS : result;
+    }
+
+    private void collectTax(Player player, int tax, String taxName) {
+        player.takeMoney(tax);
+        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
+                MoneyState.fromPlayer(player))));
+        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                String.format("%s is paying $%s as %s", player.getName(), tax, taxName)));
     }
 }
