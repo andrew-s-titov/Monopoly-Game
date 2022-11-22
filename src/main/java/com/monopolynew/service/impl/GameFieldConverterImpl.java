@@ -25,7 +25,7 @@ public class GameFieldConverterImpl implements GameFieldConverter {
         boolean mortgage = false;
         if (gameField instanceof PurchasableField) {
             PurchasableField purchasableField = (PurchasableField) gameField;
-            group = purchasableField.getGroup();
+            group = purchasableField.getGroupId();
             if (purchasableField.isFree()) {
                 priceTag = "$ " + purchasableField.getPrice();
             } else if (purchasableField.isMortgaged()) {

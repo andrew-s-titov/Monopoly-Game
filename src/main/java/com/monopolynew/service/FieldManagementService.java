@@ -26,5 +26,5 @@ public interface FieldManagementService {
 
     boolean mortgageAvailable(Game game, PurchasableField purchasableField);
 
-    boolean redeemAvailable(Game game, PurchasableField purchasableField);
+    boolean redemptionAvailable(Game game, PurchasableField purchasableField);
 }

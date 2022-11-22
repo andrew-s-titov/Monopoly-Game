@@ -80,7 +80,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     currentPlayer.addMoney(giftTotal);
                     moneyStates.add(MoneyState.fromPlayer(currentPlayer));
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                            String.format("%s has a birthday - every player is paying him(her) $%s",
+                            String.format("%s has a birthday - every player is paying him/her $%s",
                                     currentPlayer.getName(), giftSize)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
                     gameHelper.endTurn(game);
@@ -145,7 +145,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
                     int currentPosition = currentPlayer.getPosition();
-                    CompanyField nearestField = game.getGameMap().getGroups().get(GameMap.COMPANY_FIELD_GROUP).stream()
+                    CompanyField nearestField = game.getGameMap().getGroup(GameMap.COMPANY_FIELD_GROUP).stream()
                             .map(field -> (CompanyField) field)
                             .map(field -> {
                                 int fieldPosition = field.getId();
@@ -184,8 +184,8 @@ public class ChanceContainerImpl implements ChanceContainer {
                     var currentPlayer = game.getCurrentPlayer();
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is TELEPORTING!"));
                     GameMap gameMap = game.getGameMap();
-                    List<Integer> purchasableFieldsIndexes = gameMap.getGroups().values().stream()
-                            .flatMap(Collection::stream)
+                    List<Integer> purchasableFieldsIndexes = gameMap.getFields().stream()
+                            .filter(field -> field instanceof PurchasableField)
                             .map(GameField::getId)
                             .collect(Collectors.toList());
                     var random = new Random().nextInt(purchasableFieldsIndexes.size());

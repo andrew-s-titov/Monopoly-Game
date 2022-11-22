@@ -1,8 +1,8 @@
 package com.monopolynew.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
+import com.monopolynew.game.state.Auction;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +20,11 @@ public class AuctionRaiseProposalEvent implements WebsocketEvent {
 
     private final int proposal;
 
-    public static AuctionRaiseProposalEvent propose(Player player, String fieldName, int currentAuctionPrice) {
-        return new AuctionRaiseProposalEvent(player.getId(), fieldName, currentAuctionPrice + Rules.AUCTION_STEP);
+    public static AuctionRaiseProposalEvent fromAuction(Auction auction) {
+        return new AuctionRaiseProposalEvent(
+                auction.getCurrentParticipant().getId(),
+                auction.getField().getName(),
+                auction.getAuctionPrice() + Rules.AUCTION_STEP
+        );
     }
 }

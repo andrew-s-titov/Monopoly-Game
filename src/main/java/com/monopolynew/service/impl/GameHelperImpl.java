@@ -101,9 +101,9 @@ public class GameHelperImpl implements GameHelper {
         gameEventSender.sendToAllPlayers(new PropertyNewOwnerChangeEvent(
                 Collections.singletonList(new StreetNewOwnerChange(player.getId(), field.getId()))));
 
-        int fieldGroupId = field.getGroup();
+        int fieldGroupId = field.getGroupId();
         List<GameFieldView> newPriceViews;
-        List<PurchasableField> fieldGroup = game.getGameMap().getGroups().get(fieldGroupId);
+        List<PurchasableField> fieldGroup = game.getGameMap().getGroup(fieldGroupId);
         if (field instanceof StreetField) {
             boolean allGroupOwned = fieldGroup.stream()
                     .noneMatch(PurchasableField::isFree);
@@ -223,7 +223,7 @@ public class GameHelperImpl implements GameHelper {
     private Player toNextPlayer(Game game) {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isSkipping()) {
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his turn"));
+            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his/her turn"));
             nextPlayer.skip();
             nextPlayer = toNextPlayer(game);
         }

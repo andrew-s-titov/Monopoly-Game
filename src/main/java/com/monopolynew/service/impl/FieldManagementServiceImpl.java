@@ -46,11 +46,10 @@ public class FieldManagementServiceImpl implements FieldManagementService {
             var purchasableField = (PurchasableField) field;
             Player currentPlayer = game.getCurrentPlayer();
             if (currentPlayer.getId().equals(playerId) && !purchasableField.isFree() && currentPlayer.equals(purchasableField.getOwner())) {
-                if (mortgageAvailable(game, purchasableField)) {
-                    actions.add(FieldManagementAction.MORTGAGE);
-                }
-                if (redeemAvailable(game, purchasableField)) {
+                if (redemptionAvailable(game, purchasableField)) {
                     actions.add(FieldManagementAction.REDEEM);
+                } else if (mortgageAvailable(game, purchasableField)) {
+                    actions.add(FieldManagementAction.MORTGAGE);
                 }
                 if (purchasableField instanceof StreetField) {
                     var street = (StreetField) purchasableField;
@@ -86,10 +85,10 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     @Override
     public void redeemMortgagedProperty(Game game, int fieldId, String playerId) {
         doFieldManagement(game, playerId, fieldId,(g, f) -> {
-            if (redeemAvailable(g, f)) {
+            if (redemptionAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.redeem();
-                currentPlayer.takeMoney(getRedeemValue(f));
+                currentPlayer.takeMoney(getPropertyRedemptionValue(f));
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                 gameEventSender.sendToAllPlayers(new MortgageChangeEvent(
@@ -110,7 +109,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 Player currentPlayer = g.getCurrentPlayer();
                 if (housePurchaseAvailable(g, currentPlayer, streetField)) {
                     streetField.addHouse();
-                    g.getGameMap().getHousePurchaseMade().put(streetField.getGroup(), true);
+                    g.getGameMap().setPurchaseMadeFlag(streetField.getGroupId());
                     streetField.setNewRent(true);
                     currentPlayer.takeMoney(streetField.getHousePrice());
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
@@ -151,11 +150,11 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     public boolean housePurchaseAvailable(Game game, Player player, StreetField streetField) {
         int currentNumberOfHouses = streetField.getHouses();
         if (currentNumberOfHouses < Rules.MAX_HOUSES_ON_STREET && player.getMoney() >= streetField.getHousePrice()) {
-            int streetGroupId = streetField.getGroup();
-            if (game.getGameMap().getHousePurchaseMade().get(streetGroupId)) {
+            int streetGroupId = streetField.getGroupId();
+            if (game.getGameMap().isPurchaseMadeForGroup(streetGroupId)) {
                 return false;
             }
-            List<PurchasableField> streetGroup = game.getGameMap().getGroups().get(streetGroupId);
+            List<PurchasableField> streetGroup = game.getGameMap().getGroup(streetGroupId);
             boolean allOwned = streetGroup.stream()
                     .noneMatch(PurchasableField::isFree);
             if (allOwned) {
@@ -176,7 +175,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     @Override
     public boolean houseSaleAvailable(Game game, StreetField streetField) {
         if (streetField.getHouses() > 0) {
-            return game.getGameMap().getGroups().get(streetField.getGroup()).stream()
+            return game.getGameMap().getGroup(streetField.getGroupId()).stream()
                     .filter(f -> !f.equals(streetField))
                     .map(f -> (StreetField) f)
                     .allMatch(f -> f.getHouses() <= streetField.getHouses());
@@ -188,7 +187,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     public boolean mortgageAvailable(Game game, PurchasableField purchasableField) {
         if (!purchasableField.isMortgaged()) {
             if (purchasableField instanceof StreetField) {
-                return game.getGameMap().getGroups().get(purchasableField.getGroup()).stream()
+                return game.getGameMap().getGroup(purchasableField.getGroupId()).stream()
                         .map(field -> (StreetField) field)
                         .allMatch(field -> field.getHouses() == 0);
             } else {
@@ -199,11 +198,12 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public boolean redeemAvailable(Game game, PurchasableField purchasableField) {
-        return game.getCurrentPlayer().getMoney() < getRedeemValue(purchasableField);
+    public boolean redemptionAvailable(Game game, PurchasableField purchasableField) {
+        return purchasableField.isMortgaged()
+                && game.getCurrentPlayer().getMoney() >= getPropertyRedemptionValue(purchasableField);
     }
 
-    private int getRedeemValue(PurchasableField purchasableField) {
+    private int getPropertyRedemptionValue(PurchasableField purchasableField) {
         return purchasableField.getPrice() / 100 * 55;
     }
 

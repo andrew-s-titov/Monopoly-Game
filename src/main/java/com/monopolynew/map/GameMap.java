@@ -1,6 +1,7 @@
 package com.monopolynew.map;
 
 import lombok.Getter;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,9 +16,8 @@ public class GameMap {
     public static final int COMPANY_FIELD_GROUP = 1;
     public static final int UTILITY_FIELD_GROUP = 4;
     public static final int JAIL_FIELD_NUMBER = 10;
-    @Getter
+
     private final Map<Integer, List<PurchasableField>> groups;
-    @Getter
     private final Map<Integer, Boolean> housePurchaseMade;
     @Getter
     private final List<GameField> fields;
@@ -30,9 +30,31 @@ public class GameMap {
 
     public GameField getField(int position) {
         if (position > LAST_FIELD_INDEX || position < 0) {
-            throw new IllegalArgumentException("No field on position " + position);
+            throw new IllegalArgumentException("no field on position " + position);
         }
         return fields.get(position);
+    }
+
+    public List<PurchasableField> getGroup(int groupId) {
+        List<PurchasableField> fieldGroup = this.groups.get(groupId);
+        if (CollectionUtils.isEmpty(fieldGroup)) {
+            throw new IllegalArgumentException("no group found for id " + groupId);
+        }
+        return fieldGroup;
+    }
+
+    public boolean isPurchaseMadeForGroup(int groupId) {
+        if (!housePurchaseMade.containsKey(groupId)) {
+            throw new IllegalArgumentException("no group found for id " + groupId);
+        }
+        return this.housePurchaseMade.get(groupId);
+    }
+
+    public void setPurchaseMadeFlag(int groupId) {
+        if (!housePurchaseMade.containsKey(groupId)) {
+            throw new IllegalArgumentException("no group found for id " + groupId);
+        }
+        this.housePurchaseMade.put(groupId, true);
     }
 
     public void resetPurchaseHistory() {
@@ -69,8 +91,8 @@ public class GameMap {
                 new StreetField(23, "Madrid", 6, 220, 150, new int[]{18, 90, 250, 700, 875, 1050}),
                 new StreetField(24, "Athens", 6, 240, 150, new int[]{20, 100, 300, 750, 925, 1000}),
                 new CompanyField(25, "Lufthansa", COMPANY_FIELD_GROUP, 200, 25),
-                new StreetField(26, "Geneva", 7, 260, 150, new int[]{22, 110, 330, 880, 975, 1150}),
-                new StreetField(27, "Hamburg", 7, 260, 150, new int[]{22, 110, 330, 880, 975, 1150}),
+                new StreetField(26, "Geneva", 7, 260, 150, new int[]{22, 110, 330, 800, 975, 1150}),
+                new StreetField(27, "Hamburg", 7, 260, 150, new int[]{22, 110, 330, 800, 975, 1150}),
                 new UtilityField(28, "Petrol Company", UTILITY_FIELD_GROUP, 150, 4, 10),
                 new StreetField(29, "Berlin", 7, 280, 150, new int[]{24, 120, 360, 850, 1025, 1200}),
                 new ActionableField(30, FieldAction.ARRESTED),
@@ -91,7 +113,7 @@ public class GameMap {
         for (Object field : fields) {
             if (field instanceof PurchasableField) {
                 var purchasableField = (PurchasableField) field;
-                int groupId = purchasableField.getGroup();
+                int groupId = purchasableField.getGroupId();
                 if (!groups.containsKey(groupId)) {
                     ArrayList<PurchasableField> purchasableFields = new ArrayList<>();
                     purchasableFields.add(purchasableField);

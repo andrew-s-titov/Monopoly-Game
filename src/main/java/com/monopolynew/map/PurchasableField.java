@@ -6,7 +6,7 @@ public interface PurchasableField extends GameField {
 
     int getPrice();
 
-    int getGroup();
+    int getGroupId();
 
     Player getOwner();
 
