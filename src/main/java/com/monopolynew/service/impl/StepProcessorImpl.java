@@ -7,6 +7,7 @@ import com.monopolynew.map.StaticRentField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
 import com.monopolynew.websocket.GameEventSender;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class StepProcessorImpl implements StepProcessor {
             if (streetPrice <= player.getMoney()) {
                 gameHelper.sendBuyProposal(game, player, field);
             } else {
-                // TODO: auto auction or let sell or pledge something?
+                // TODO: auto auction or let sell or mortgage something?
                 auctionManager.startNewAuction(game, field);
             }
             return false;

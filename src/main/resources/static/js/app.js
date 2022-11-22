@@ -1,31 +1,39 @@
-const PLAYER_COLORS = ['cornflowerblue', 'crimson', 'mediumseagreen', 'purple', 'orange'];
-const GROUP_COLORS = ['pink', 'lightcoral', 'gold', 'darkcyan', 'firebrick',
-    'blue', 'greenyellow', 'darkturquoise', 'mediumpurple', 'slategrey'];
+import {
+    createActionButton,
+    renderActionContainer,
+    removeOldActionContainer
+} from "./buttons.js";
+
+import {
+    renderDiceGifs,
+    diceGifToValues,
+    hideDice
+} from "./dice.js"
+
+import  {
+    renderChip,
+    defineChipPosition
+} from "./chips.js"
+
+import {
+    PLAYER_COLORS,
+    GROUP_COLORS
+} from "./colors.js"
+
 const PLAYER_ID_COOKIE = 'player_id';
-const THROW_DICE_BUTTON_ID = 'throwDiceButton';
-const DICE_CONTAINER_ID = 'diceContainer';
-const PROPOSAL_CONTAINER_ID = 'proposalContainer';
 
 let thisPlayerId = null;
 let thisPlayerName = null;
 let webSocket = null;
 let gameInProgress = false;
-let playerToGo = null;
 let playersMap = new Map();
-let chips = new Map();
 
-const priceSpacePx = 13;
-const wideSidePx = 90;
-const narrowSidePx = 50;
-const stepPx = 50;
-const chipSizePx = 20;
-const mapLeftMarginPx = 300;
-const cornerStepAdjustmentPx = (wideSidePx - narrowSidePx) / 2;
-const chipWidthAdjustment = chipSizePx / 2;
+window.onload = () => {
+    document.getElementById('submitPlayerName').onclick = () => joinToRoom();
+    document.getElementById('startGameButton').onclick = () => startGame();
+    document.getElementById('disconnectPlayerButton').onclick = () => disconnectPlayer();
+    document.getElementById('playerMessageButton').onclick = () => processPlayerMessage();
 
-let playerIconWidthPx = 150;
-
-window.addEventListener('load', (event) => {
     let playerMessageInput = document.getElementById('playerNameInput');
     if (playerMessageInput) {
         playerMessageInput.addEventListener('keypress', (event) => {
@@ -43,14 +51,14 @@ window.addEventListener('load', (event) => {
             console.warn('websocket is not closed!')
         }
     }
-})
+};
 
 function joinToRoom() {
     const playerName = document.getElementById('playerNameInput').value;
 
     let httpRequester = new XMLHttpRequest();
     httpRequester.onload = () => {
-        if (httpRequester.readyState === 4) {
+        if (httpRequester.readyState === XMLHttpRequest.DONE) {
             if (httpRequester.status === 200) {
                 openWebsocket(playerName);
                 thisPlayerName = playerName;
@@ -115,7 +123,7 @@ function openWebsocket(username) {
             onDiceResult(socketMessage);
         }
         if (socketMessageCode === 304) {
-            onChipMove(socketMessage);
+            defineChipPosition(socketMessage.player_id, socketMessage.field);
         }
         if (socketMessageCode === 305) {
             onMoneyChange(socketMessage);
@@ -141,6 +149,12 @@ function openWebsocket(username) {
         if (socketMessageCode === 312) {
             onPayCommand(socketMessage);
         }
+        if (socketMessageCode === 313) {
+            onMortgageChange(socketMessage);
+        }
+        if (socketMessageCode === 314) {
+            onStreetHouseAmount(socketMessage);
+        }
     })
 }
 
@@ -165,14 +179,14 @@ function savePlayerIdToCookie(playerId) {
 
 function getPlayerIdFromCookie() {
     let playerCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith(PLAYER_ID_COOKIE + '='));
-    return playerCookie.split('=')[1];
+    return playerCookie ? playerCookie.split('=')[1] : null;
 }
 
 function startGame() {
     gameInProgress = true;
     let httpRequester = new XMLHttpRequest();
     httpRequester.onload = () => {
-        if (httpRequester.readyState === 4) {
+        if (httpRequester.readyState === XMLHttpRequest.DONE) {
             if (httpRequester.status !== 200) {
                 console.error('Unexpected server response');
                 httpError('errorMessage');
@@ -200,11 +214,14 @@ function onGameStartOrMapRefresh(socketMessage) {
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
 
+    console.log("this player id from script before cookie management: " + thisPlayerId);
     if (thisPlayerId == null) {
         thisPlayerId = getPlayerIdFromCookie();
+        console.log("this player id from cookie: " + thisPlayerId);
     } else {
         savePlayerIdToCookie(thisPlayerId);
     }
+    console.log("this player id after cookie management: " + thisPlayerId);
 
     const players = socketMessage.players;
     for (let i = 0; i < players.length; i++) {
@@ -222,7 +239,8 @@ function onGameStartOrMapRefresh(socketMessage) {
 
         let playerIcon = document.createElement('img');
         playerIcon.setAttribute('src', 'images/user.png')
-        playerIcon.setAttribute('width', '90px');
+        playerIcon.style.width = '90px';
+        playerIcon.style.height = '90px';
         let playerIconField = document.getElementById('player' + i + '-icon');
         playerIconField.appendChild(playerIcon);
         playerIconField.style.backgroundColor = playerColor;
@@ -230,28 +248,28 @@ function onGameStartOrMapRefresh(socketMessage) {
         // adding to map server player ID with array ID
         playersMap.set(player.id, [i, player.name]);
 
-        let chip = document.createElement('div');
-        chip.id = 'chip' + i;
-        chip.className = 'chip';
-        chip.style.background = PLAYER_COLORS[i];
-        chip.style.opacity = '0.8'
+        let playerId = player.id;
+        renderChip(i, playerId)
         let playerPosition = player.position;
-        document.getElementById('map').appendChild(chip);
-        chips.set(player.id, chip);
-        defineChipNewPosition(player.id, playerPosition);
+        defineChipPosition(playerId, playerPosition);
     }
 
-    playerToGo = socketMessage.current_player;
-    outlinePlayer(playerToGo);
+    outlinePlayer(socketMessage.current_player);
 
-    renderFieldViews(socketMessage.fields);
+    let fieldViews = socketMessage.fields;
+    renderFieldViews(fieldViews);
+    for (let fieldView of fieldViews) {
+        let fieldId = fieldView.id;
+        let htmlField = document.getElementById('field' + fieldId);
+        applyFieldManagementEvents(fieldId, htmlField);
+    }
 
     // auto-click 'send' button in message box if input is active
     let playerMessageInput = document.getElementById('playerMessage');
     playerMessageInput.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            document.getElementById('messageButton').click();
+            document.getElementById('playerMessageButton').click();
         }
     });
 }
@@ -320,16 +338,16 @@ function sendMessageToChat(htmlDivMessage) {
 
 function onTurnStart(socketMessage) {
     removePlayersOutline();
-    playerToGo = socketMessage.player_id;
+    let playerToGo = socketMessage.player_id;
     outlinePlayer(playerToGo);
     if (thisPlayerId === playerToGo) {
-        let throwDiceButton = renderDiceButton();
-        throwDiceButton.addEventListener('click', () => {
-            throwDiceButton.remove();
-            let httpRequester = new XMLHttpRequest();
-            httpRequester.open('GET', 'http://localhost:8080/game/dice/notify', true);
-            httpRequester.send();
-        });
+
+        let throwDiceButton = createActionButton('Roll the dice!', 'http://localhost:8080/game/dice/notify', true);
+        throwDiceButton.addEventListener('click', () => throwDiceButton.remove());
+        document.getElementById('map').appendChild(throwDiceButton);
+        throwDiceButton.style.position = 'fixed';
+        throwDiceButton.style.left = '47%';
+        throwDiceButton.style.top = '50%';
     }
 }
 
@@ -353,46 +371,6 @@ function removePlayersOutline() {
     }
 }
 
-function renderDiceButton() {
-    let throwDiceButton = document.createElement('button');
-    throwDiceButton.setAttribute('id', THROW_DICE_BUTTON_ID);
-    throwDiceButton.style.position = 'fixed';
-    throwDiceButton.style.left = '50%';
-    throwDiceButton.style.top = '50%';
-    throwDiceButton.style.display = 'block'
-    throwDiceButton.innerText = 'Roll the dice!';
-    document.getElementById('map').appendChild(throwDiceButton);
-    return throwDiceButton;
-}
-
-function renderDiceGifs() {
-    let diceContainer = document.createElement('div');
-    diceContainer.id = DICE_CONTAINER_ID;
-    diceContainer.style.position = 'fixed';
-    diceContainer.style.left = '47%';
-    diceContainer.style.top = '50%';
-
-    let diceLeft = document.createElement('img');
-    diceLeft.id = 'diceLeft';
-    diceLeft.src = 'images/dice-left.gif';
-    diceLeft.style.float = 'left';
-
-    let diceRight = document.createElement('img');
-    diceRight.id = 'diceRight';
-    diceRight.src = 'images/dice-right.gif';
-    diceRight.style.float = 'left';
-
-    diceContainer.appendChild(diceLeft);
-    diceContainer.appendChild(diceRight);
-
-    document.getElementById('map').appendChild(diceContainer);
-}
-
-function diceGifToValues(left, right) {
-    document.getElementById('diceLeft').src = 'images/dice' + left + '.png';
-    document.getElementById('diceRight').src = 'images/dice' + right + '.png';
-}
-
 function onDiceResult(socketMessage) {
     diceGifToValues(socketMessage.first_dice, socketMessage.second_dice);
     setTimeout(() => {
@@ -404,10 +382,6 @@ function onDiceResult(socketMessage) {
             httpRequester.send();
         }
     }, 2000);
-}
-
-function onChipMove(socketMessage) {
-    defineChipNewPosition(socketMessage.player_id, socketMessage.field);
 }
 
 function onMoneyChange(socketMessage) {
@@ -423,9 +397,9 @@ function onBuyProposal(socketMessage) {
     let price = socketMessage.price;
     let field = socketMessage.field_name;
     if (thisPlayerId === playerId) {
-        let acceptButton = createActionButton('Buy', 'http://localhost:8080/game/buy?action=ACCEPT');
-        let auctionButton = createActionButton('Auction', 'http://localhost:8080/game/buy?action=DECLINE');
-        createActionContainer('Do you like to buy ' + field + ' for $' + price + '?', acceptButton, auctionButton);
+        let acceptButton = createActionButton('Buy', 'http://localhost:8080/game/buy?action=ACCEPT', true);
+        let auctionButton = createActionButton('Auction', 'http://localhost:8080/game/buy?action=DECLINE', true);
+        renderActionContainer('Do you like to buy ' + field + ' for $' + price + '?', acceptButton, auctionButton);
     }
 }
 
@@ -440,24 +414,29 @@ function onPropertyNewOwner(socketMessage) {
 
 function onJailReleaseProcess(socketMessage) {
     removePlayersOutline();
-    outlinePlayer(thisPlayerId);
-    let payButton = createActionButton('Pay $ ' + socketMessage.bail, 'http://localhost:8080/game/jail?action=PAY');
-    let luckButton = createActionButton('Try luck', 'http://localhost:8080/game/jail?action=LUCK');
-    createActionContainer('Chose a way out:', payButton, luckButton);
+    let imprisonedPlayer = socketMessage.player_id;
+    outlinePlayer(imprisonedPlayer);
+    if (thisPlayerId === imprisonedPlayer) {
+        removeOldActionContainer();
+        let payButton = createActionButton('Pay $ ' + socketMessage.bail, 'http://localhost:8080/game/jail?action=PAY',
+            socketMessage.bail_available);
+        let luckButton = createActionButton('Try luck', 'http://localhost:8080/game/jail?action=LUCK', true);
+        renderActionContainer('Chose a way out:', payButton, luckButton);
+    }
 }
 
 function onAuctionBuyProposal(socketMessage) {
-    let buyButton = createActionButton('Buy', 'http://localhost:8080/game/auction/buy?action=ACCEPT');
-    let declineButton = createActionButton('Decline', 'http://localhost:8080/game/auction/buy?action=DECLINE');
-    createActionContainer(
+    let buyButton = createActionButton('Buy', 'http://localhost:8080/game/auction/buy?action=ACCEPT', true);
+    let declineButton = createActionButton('Decline', 'http://localhost:8080/game/auction/buy?action=DECLINE', true);
+    renderActionContainer(
         'Do you want to buy ' + socketMessage.field_name + ' for ' + socketMessage.proposal + ' ?',
         buyButton, declineButton);
 }
 
 function onAuctionRaiseProposal(socketMessage) {
-    let raiseButton = createActionButton('Raise', 'http://localhost:8080/game/auction/raise?action=ACCEPT');
-    let declineButton = createActionButton('Decline', 'http://localhost:8080/game/auction/raise?action=DECLINE');
-    createActionContainer(
+    let raiseButton = createActionButton('Raise', 'http://localhost:8080/game/auction/raise?action=ACCEPT', true);
+    let declineButton = createActionButton('Decline', 'http://localhost:8080/game/auction/raise?action=DECLINE', true);
+    renderActionContainer(
         'Do you want to raise ' + socketMessage.field_name + ' price to $' + socketMessage.proposal + '?',
         raiseButton, declineButton);
 }
@@ -467,24 +446,31 @@ function onFieldViewChange(socketMessage) {
 }
 
 function onPayCommand(socketMessage) {
-    let oldContainer = document.getElementById(PROPOSAL_CONTAINER_ID);
-    if (oldContainer) {
-        oldContainer.remove();
-    }
+    removeOldActionContainer();
     let sum = socketMessage.sum;
     let payable = socketMessage.payable;
     let wiseToGiveUp = socketMessage.wise_to_give_up;
-    let payButton = createActionButton('Pay', 'http://localhost:8080/game/pay');
-    payButton.disabled = !payable;
+    let payButton = createActionButton('Pay', 'http://localhost:8080/game/pay', payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
-        giveUpButton = createActionButton('Give up', 'http://localhost:8080/game/give_up');
+        giveUpButton = createActionButton('Give up', 'http://localhost:8080/game/give_up', true);
     }
-    createActionContainer('Pay $' + sum, payButton, giveUpButton);
+    renderActionContainer('Pay $' + sum, payButton, giveUpButton);
 }
 
-function hideDice() {
-    document.getElementById(DICE_CONTAINER_ID).remove();
+function onMortgageChange(socketMessage) {
+    let changes = socketMessage.changes;
+    for (let change of changes) {
+        let fieldId = change.field;
+        let turns = change.turns;
+        renderMortgagePlate(fieldId, turns);
+    }
+}
+
+function onStreetHouseAmount(socketMessage) {
+    let fieldId = socketMessage.field;
+    let amount = socketMessage.amount;
+    renderHouses(fieldId, amount);
 }
 
 function onDiceStartRolling(socketMessage) {
@@ -500,114 +486,16 @@ function diceRollActionRequest() {
     httpRequester.send();
 }
 
-function defineChipNewPosition(playerId, fieldNumber) {
-    let chip = chips.get(playerId);
-    chip.style.top = defineChipTop(fieldNumber);
-    chip.style.left = defineChipLeft(fieldNumber);
-}
-
-// returning string for 'style.top'
-function defineChipTop(fieldNumber) {
-    let startTop = priceSpacePx + wideSidePx / 2 + 8; // adding body default margin;
-    let postfix = 'px';
-    if (fieldNumber >= 0 && fieldNumber <= 10) {
-        return startTop + postfix;
-    } else if (fieldNumber >= 20 && fieldNumber <= 30) {
-        return (startTop
-                + stepPx * 10
-                + cornerStepAdjustmentPx * 2)
-            + postfix;
-    } else if (fieldNumber > 10 && fieldNumber < 20) {
-        return (startTop
-                + cornerStepAdjustmentPx
-                + stepPx * (fieldNumber - 10))
-            + postfix;
-    } else if (fieldNumber > 30 && fieldNumber < 40) {
-        return (startTop
-                + cornerStepAdjustmentPx
-                + stepPx * (40 - fieldNumber))
-            + postfix;
-    } else {
-        console.error('field number exceeds map size');
-    }
-}
-
-// returning string for 'style.left'
-function defineChipLeft(fieldNumber) {
-    let startLeft = 8 + mapLeftMarginPx + playerIconWidthPx + priceSpacePx + wideSidePx / 2;
-    let postfix = 'px';
-    if (fieldNumber === 0 || (fieldNumber >= 30 && fieldNumber < 40)) {
-        return startLeft + postfix;
-    } else if (fieldNumber >= 10 && fieldNumber <= 20) {
-        return (startLeft
-                + stepPx * 10
-                + cornerStepAdjustmentPx * 2)
-            + postfix;
-    } else if (fieldNumber > 0 && fieldNumber < 10) {
-        return (startLeft
-                + stepPx * fieldNumber
-                + cornerStepAdjustmentPx)
-            + postfix;
-    } else if (fieldNumber > 20 && fieldNumber < 30) {
-        return (startLeft
-                + stepPx * (30 - fieldNumber)
-                + cornerStepAdjustmentPx)
-            + postfix;
-    } else {
-        console.error('field number exceeds map size');
-    }
-}
-
-function createActionContainer(text, button1, button2) {
-    let proposalContainer = document.createElement('div');
-    proposalContainer.id = PROPOSAL_CONTAINER_ID;
-    proposalContainer.style.width = '20%';
-    proposalContainer.style.opacity = '0.8'
-    proposalContainer.style.position = 'fixed';
-    proposalContainer.style.left = '45%';
-    proposalContainer.style.top = '35%';
-    proposalContainer.style.backgroundColor = 'black';
-
-    let proposalPhrase = document.createElement('div');
-    proposalPhrase.innerText = text;
-    proposalPhrase.style.fontSize = '15px';
-    proposalPhrase.style.color = 'white';
-    proposalPhrase.style.textAlign = 'center';
-    proposalPhrase.style.marginTop = '20px';
-    proposalContainer.appendChild(proposalPhrase);
-    if (button1 != null) {
-        button1.addEventListener('click', () => proposalContainer.remove());
-        button1.style.marginBottom = '10px';
-        proposalContainer.appendChild(button1);
-    }
-    if (button2 != null) {
-        button2.addEventListener('click', () => proposalContainer.remove());
-        button2.style.marginBottom = '10px';
-        proposalContainer.appendChild(button2);
-    }
-    document.getElementById('map').appendChild(proposalContainer);
-}
-
-function createActionButton(text, url) {
-    let proposalButton = document.createElement('button');
-    proposalButton.innerText = text;
-    proposalButton.style.display = 'block';
-    proposalButton.style.width = '150px';
-    proposalButton.style.margin = 'auto';
-    proposalButton.style.marginTop = '20px';
-    proposalButton.addEventListener('click', () => {
-        let httpRequester = new XMLHttpRequest();
-        httpRequester.open('GET', url, true);
-        httpRequester.send();
-    });
-    return proposalButton;
-}
-
 function renderFieldViews(fieldViews) {
     for (let fieldView of fieldViews) {
         let fieldId = fieldView.id;
         let htmlField = document.getElementById('field' + fieldId);
-        htmlField.innerHTML = fieldView.name;
+        let nameField = document.getElementById('field' + fieldId + '-name');
+        if (nameField) {
+            nameField.innerHTML = fieldView.name;
+        } else {
+            htmlField.innerHTML = fieldView.name;
+        }
         if (fieldView.hasOwnProperty('owner_id')) {
             htmlField.style.backgroundColor = PLAYER_COLORS[playersMap.get(fieldView.owner_id)[0]];
         } else {
@@ -615,8 +503,162 @@ function renderFieldViews(fieldViews) {
         }
         if (fieldView.hasOwnProperty('price_tag')) {
             let priceTagField = document.getElementById('field' + fieldId + '-price');
-            priceTagField.innerHTML = fieldView.price_tag;
+            let priceTag = fieldView.price_tag;
+            priceTagField.innerHTML = priceTag;
             priceTagField.style.backgroundColor = GROUP_COLORS[fieldView.group];
+            if (fieldView.mortgage) {
+                renderMortgagePlate(fieldId, priceTag);
+            }
         }
+        if (fieldView.hasOwnProperty('houses')) {
+            let houses = fieldView.houses;
+            renderHouses(fieldId, houses);
+        }
+    }
+}
+
+function applyFieldManagementEvents(fieldId, htmlField) {
+    htmlField.addEventListener('click', (event) => {
+        if (event.target.id.startsWith('management')) {
+            return;
+        }
+        let httpRequester = new XMLHttpRequest();
+        httpRequester.open('GET', 'http://localhost:8080/game/field/' + fieldId + '/management', true);
+        httpRequester.onload = () => {
+            if (httpRequester.readyState === XMLHttpRequest.DONE && httpRequester.status === 200) {
+                let jsonResponse = JSON.parse(httpRequester.response);
+                console.log('management response: \n' + jsonResponse);
+                if (jsonResponse.length > 0) {
+                    let managementContainer = document.createElement("div");
+                    managementContainer.id = 'management_container';
+                    managementContainer.style.position = 'absolute';
+                    managementContainer.style.width = '100%';
+                    managementContainer.style.height = '100%';
+                    managementContainer.style.opacity = '0.8';
+                    managementContainer.style.background = 'black';
+                    managementContainer.style.writingMode = '';
+                    managementContainer.style.transform = '';
+                    document.addEventListener('click', (event) => {
+                        if (event.target.id !== 'management_container') {
+                            managementContainer.remove();
+                        }
+                    });
+                    for (let action of jsonResponse) {
+                        let button = document.createElement('button');
+                        button.style.width = '100%';
+                        button.style.color = 'black';
+                        button.style.fontSize = '10px';
+                        if (action === 'INFO') {
+                            // TODO: show info card atop of everything;
+                            button.innerHTML = 'Info';
+                            button.id = 'management-info';
+                            button.addEventListener('click', () => alert('info should be here'));
+                        } else if (action === 'MORTGAGE') {
+                            button.innerHTML = 'Mortgage';
+                            button.id = 'management-mortgage';
+                            button.addEventListener('click', () => {
+                                let httpRequester = new XMLHttpRequest();
+                                httpRequester.open('GET', 'http://localhost:8080/game/field/' + fieldId + '/mortgage', true);
+                                httpRequester.send();
+                            });
+                        } else if (action === 'REDEEM') {
+                            button.innerHTML = 'Redeem';
+                            button.id = 'management-redeem';
+                            button.addEventListener('click', () => {
+                                let httpRequester = new XMLHttpRequest();
+                                httpRequester.open('GET', 'http://localhost:8080/game/field/' + fieldId + '/redeem', true);
+                                httpRequester.send();
+                            });
+                        } else if (action === 'BUY_HOUSE') {
+                            button.innerHTML = 'Buy a house';
+                            button.id = 'management-buy-house';
+                            button.addEventListener('click', () => {
+                                let httpRequester = new XMLHttpRequest();
+                                httpRequester.open('GET', 'http://localhost:8080/game/field/' + fieldId + '/buy_house', true);
+                                httpRequester.send();
+                            });
+                        } else if (action === 'SELL_HOUSE') {
+                            button.innerHTML = 'Sell a house';
+                            button.id = 'management-sell-house';
+                            button.addEventListener('click', () => {
+                                let httpRequester = new XMLHttpRequest();
+                                httpRequester.open('GET', 'http://localhost:8080/game/field/' + fieldId + '/sell_house', true);
+                                httpRequester.send();
+                            });
+                        }
+                        button.addEventListener('click', () => managementContainer.remove());
+                        managementContainer.appendChild(button);
+                    }
+                    htmlField.appendChild(managementContainer);
+                }
+            } else {
+                console.log(httpRequester.response);
+            }
+        };
+        httpRequester.send();
+    });
+}
+
+function renderMortgagePlate(fieldId, turns) {
+    let mortgagePlateId = 'field' + fieldId + '-mortgage';
+    let oldMortgagePlate = document.getElementById(mortgagePlateId);
+    if (oldMortgagePlate) {
+        oldMortgagePlate.remove();
+    }
+    if (turns > 0) {
+        let fieldPriceField = document.getElementById('field' + fieldId + '-price');
+        if (fieldPriceField) {
+            fieldPriceField.innerText = turns;
+        }
+        let newMortgagePlate = document.createElement('div');
+        newMortgagePlate.id = mortgagePlateId;
+        newMortgagePlate.style.width = '100%';
+        newMortgagePlate.style.height = '100%';
+        newMortgagePlate.style.position = 'absolute';
+        newMortgagePlate.style.background = 'white';
+        newMortgagePlate.style.opacity = '0.8';
+        newMortgagePlate.innerText = 'MORTGAGE';
+        newMortgagePlate.style.color = 'red';
+        newMortgagePlate.style.fontSize = '8px';
+        newMortgagePlate.style.fontWeight = 'bold';
+        newMortgagePlate.style.textAlign = 'center';
+        document.getElementById('field' + fieldId).appendChild(newMortgagePlate);
+    }
+}
+
+function renderHouses(fieldId, amount) {
+    let field = document.getElementById('field' + fieldId);
+    let houseContainerId = 'field' + fieldId + '-houses';
+    let oldContainer = document.getElementById(houseContainerId);
+    if (oldContainer) {
+        oldContainer.remove();
+    }
+    if (amount > 0) {
+        let houseContainer = document.createElement('div');
+        houseContainer.id = houseContainerId;
+        houseContainer.style.position = 'absolute';
+        if (fieldId < 20) {
+            houseContainer.style.up = '0px';
+            houseContainer.style.right = '0px';
+        } else {
+            houseContainer.style.bottom = '0px';
+            houseContainer.style.left = '0px';
+        }
+        if (amount === 5) {
+            let hotel = document.createElement('img');
+            hotel.setAttribute('src', 'images/hotel.png')
+            hotel.style.width = '20px';
+            hotel.style.height = '20px';
+            houseContainer.appendChild(hotel);
+        } else {
+            for (let i = 0; i < amount; i++) {
+                let house = document.createElement('img');
+                house.setAttribute('src', 'images/house.png')
+                house.style.width = '10px';
+                house.style.height = '10px';
+                houseContainer.appendChild(house);
+            }
+        }
+        field.appendChild(houseContainer);
     }
 }

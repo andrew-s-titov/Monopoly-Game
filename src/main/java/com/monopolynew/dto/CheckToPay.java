@@ -1,10 +1,11 @@
 package com.monopolynew.dto;
 
 import com.monopolynew.game.Player;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 public class CheckToPay {
 
@@ -14,7 +15,8 @@ public class CheckToPay {
 
     private final int sum;
 
-    private final boolean payable;
+    @Setter
+    private boolean payable;
 
     private final boolean wiseToGiveUp;
 

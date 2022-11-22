@@ -16,5 +16,7 @@
 310 - auction buy proposal
 311 - field view change
 312 - pay command
+313 - mortgage change
+314 - street house amount
 
 500 - error with message

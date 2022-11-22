@@ -18,7 +18,7 @@ public class Player {
     @Getter
     private int position = 0;
     @Getter
-    private boolean justReleased = false;
+    private boolean amnestied = false;
     private int skipsTurns = 0;
     private int jailTurns = 0;
     private int doubletCount = 0;
@@ -82,7 +82,11 @@ public class Player {
 
     public void releaseFromJail() {
         this.jailTurns = 0;
-        this.justReleased = true;
+    }
+
+    public void amnesty() {
+        this.jailTurns = 0;
+        this.amnestied = true;
     }
 
     public void incrementDoublets() {
@@ -98,7 +102,7 @@ public class Player {
     }
 
     public void clearCriminalRecord() {
-        this.justReleased = false;
+        this.amnestied = false;
     }
 
     @Override

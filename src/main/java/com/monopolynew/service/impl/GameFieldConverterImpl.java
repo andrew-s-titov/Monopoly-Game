@@ -4,6 +4,7 @@ import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StaticRentField;
+import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.GameFieldConverter;
 import org.springframework.stereotype.Component;
@@ -20,11 +21,16 @@ public class GameFieldConverterImpl implements GameFieldConverter {
         String priceTag = null;
         String ownerId = null;
         Integer group = null;
+        Integer houses = null;
+        boolean mortgage = false;
         if (gameField instanceof PurchasableField) {
             PurchasableField purchasableField = (PurchasableField) gameField;
             group = purchasableField.getGroup();
-            if ((purchasableField).isFree()) {
+            if (purchasableField.isFree()) {
                 priceTag = "$ " + purchasableField.getPrice();
+            } else if (purchasableField.isMortgaged()) {
+                mortgage = true;
+                priceTag = Integer.toString(purchasableField.getMortgageTurnsLeft());
             } else {
                 ownerId = purchasableField.getOwner().getId();
                 if (gameField instanceof StaticRentField) {
@@ -33,13 +39,18 @@ public class GameFieldConverterImpl implements GameFieldConverter {
                     priceTag = "x" + ((UtilityField) gameField).getCurrentMultiplier();
                 }
             }
+            if (purchasableField instanceof StreetField) {
+                houses = ((StreetField) purchasableField).getHouses();
+            }
         }
         return GameFieldView.builder()
                 .id(id)
                 .name(gameField.getName())
                 .group(group)
                 .ownerId(ownerId)
+                .mortgage(mortgage)
                 .priceTag(priceTag)
+                .houses(houses)
                 .build();
     }
 

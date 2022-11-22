@@ -1,12 +1,17 @@
 package com.monopolynew.controller;
 
-import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.enums.JailAction;
+import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
@@ -43,7 +48,7 @@ public class GameController {
 
     @GetMapping("/dice/after")
     public void afterDiceAction() {
-        gameService.afterDiceAction();
+        gameService.afterDiceRollAction();
     }
 
     @GetMapping("/buy")

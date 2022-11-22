@@ -2,13 +2,15 @@ package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.dto.MoneyState;
+import com.monopolynew.dto.MortgageChange;
 import com.monopolynew.dto.StreetNewOwnerChange;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.ChipMoveEvent;
+import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.MortgageChangeEvent;
 import com.monopolynew.event.PropertyNewOwnerChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
@@ -28,8 +30,9 @@ import com.monopolynew.websocket.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -144,9 +147,9 @@ public class GameHelperImpl implements GameHelper {
             boolean increasedMultiplier =
                     fieldGroup.stream()
                             .noneMatch(PurchasableField::isFree)
-                    &&
-                    fieldGroup.stream()
-                            .allMatch(f -> player.equals(f.getOwner()));
+                            &&
+                            fieldGroup.stream()
+                                    .allMatch(f -> player.equals(f.getOwner()));
 
             if (increasedMultiplier) {
                 fieldGroup.stream()
@@ -160,7 +163,7 @@ public class GameHelperImpl implements GameHelper {
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
             }
         } else {
-            throw new IllegalStateException("");
+            throw new IllegalStateException("Unsupported field type");
         }
 
         gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(newPriceViews));
@@ -169,12 +172,13 @@ public class GameHelperImpl implements GameHelper {
     @Override
     public int computePlayerAssets(Game game, Player player) {
         int assetSum = player.getMoney();
-        List<PurchasableField> playerFields = Arrays.stream(game.getGameMap().getFields())
+        List<PurchasableField> countedFields = game.getGameMap().getFields().stream()
                 .filter(field -> field instanceof PurchasableField)
                 .map(field -> (PurchasableField) field)
                 .filter(field -> player.equals(field.getOwner()))
+                .filter(field -> !field.isMortgaged())
                 .collect(Collectors.toList());
-        for (PurchasableField field : playerFields) {
+        for (PurchasableField field : countedFields) {
             if (field instanceof StreetField) {
                 int houses = ((StreetField) field).getHouses();
                 int housePrice = ((StreetField) field).getHousePrice();
@@ -188,20 +192,30 @@ public class GameHelperImpl implements GameHelper {
 
     @Override
     public void endTurn(Game game) {
-        processMortgage(game);
-        Player currentPlayer = game.getCurrentPlayer();
-        if (currentPlayer.isJustReleased()) {
-            currentPlayer.clearCriminalRecord();
-            game.setLastDice(null);
+        if (!GameStage.ROLLED_FOR_JAIL.equals(game.getStage())) {
+            // as there was no actual turn when turn ended after rolled for jail (tried luck but hot nota a doublet)
+            processMortgage(game);
         }
-        Player nextPlayer = (game.getLastDice() != null && game.getLastDice().isDoublet() && !currentPlayer.isSkipping() && !currentPlayer.isImprisoned()) ?
-                currentPlayer : toNextPlayer(game);
-        if (nextPlayer.isImprisoned()) {
-            game.setStage(GameStage.JAIL_RELEASE);
-            String playerId = nextPlayer.getId();
-            gameEventSender.sendToPlayer(playerId,
-                    new JailReleaseProcessEvent(playerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
+        game.getGameMap().resetPurchaseHistory();
+
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer.isAmnestied()) {
+            currentPlayer.clearCriminalRecord();
+        }
+        Player nextPlayer;
+        if (game.getLastDice().isDoublet() && !currentPlayer.isSkipping()
+                && !currentPlayer.isImprisoned() && !currentPlayer.isAmnestied()) {
+            nextPlayer = currentPlayer;
         } else {
+            nextPlayer = toNextPlayer(game);
+        }
+        if (nextPlayer.isImprisoned()) {
+            game.setStage(GameStage.JAIL_RELEASE_START);
+            String playerId = nextPlayer.getId();
+            gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(
+                    playerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
+        } else {
+            game.setStage(GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(nextPlayer));
         }
     }
@@ -211,24 +225,33 @@ public class GameHelperImpl implements GameHelper {
         if (nextPlayer.isSkipping()) {
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his turn"));
             nextPlayer.skip();
-            processMortgage(game);
             nextPlayer = toNextPlayer(game);
         }
         return nextPlayer;
     }
 
     private void processMortgage(Game game) {
-        Arrays.stream(game.getGameMap().getFields())
+        List<MortgageChange> mortgageChanges = new ArrayList<>(30);
+        List<GameFieldView> fieldViews = new ArrayList<>(30);
+        game.getGameMap().getFields().stream()
                 .filter(field -> field instanceof PurchasableField)
                 .map(field -> (PurchasableField) field)
                 .filter(PurchasableField::isMortgaged)
                 .forEach(field -> {
-                    int mortgageTurns = (field).decreaseMortgageTurns();
-                    // TODO: send mortgage change event
-                    if (mortgageTurns == 0) {
-                        // TODO: send owner change event (or 'mortgage release');
+                    if (!field.isMortgagedDuringThisTurn()) {
+                        int mortgageTurns = field.decreaseMortgageTurns();
+                        mortgageChanges.add(new MortgageChange(field.getId(), field.getMortgageTurnsLeft()));
+                        if (mortgageTurns == 0) {
+                            field.newOwner(null);
+                            fieldViews.add(gameFieldConverter.toView(field));
+                        }
                     }
                 });
-        // TODO: better send in one 'batch' to have all-or-non scheme
+        if (!CollectionUtils.isEmpty(mortgageChanges)) {
+            gameEventSender.sendToAllPlayers(new MortgageChangeEvent(mortgageChanges));
+        }
+        if (!CollectionUtils.isEmpty(fieldViews)) {
+            gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(fieldViews));
+        }
     }
 }

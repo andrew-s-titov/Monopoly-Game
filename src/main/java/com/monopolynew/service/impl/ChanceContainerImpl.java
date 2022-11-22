@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,13 +37,11 @@ public class ChanceContainerImpl implements ChanceContainer {
     private final List<Consumer<Game>> chances;
 
     private final GameHelper gameHelper;
-    private final StepProcessor stepProcessor;
     private final GameEventSender gameEventSender;
 
     @Autowired
     public ChanceContainerImpl(GameHelper gameHelper, StepProcessor stepProcessor, GameEventSender gameEventSender) {
         this.gameHelper = gameHelper;
-        this.stepProcessor = stepProcessor;
         this.gameEventSender = gameEventSender;
         this.chances = createChances(gameHelper, stepProcessor, gameEventSender);
     }
@@ -118,7 +115,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     int perHouse = 40;
                     int perHotel = 115;
                     int tax = 0;
-                    List<Integer> housesOnStreets = Arrays.stream(game.getGameMap().getFields())
+                    List<Integer> housesOnStreets = game.getGameMap().getFields().stream()
                             .filter(field -> field instanceof StreetField)
                             .map(field -> (StreetField) field)
                             .filter(field -> !field.isFree())

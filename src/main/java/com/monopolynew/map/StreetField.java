@@ -32,11 +32,12 @@ public class StreetField extends BasePurchasableField implements StaticRentField
         }
     }
 
-    public void pledge() {
+    @Override
+    public void mortgage() {
         if (houses > 0) {
-            throw new IllegalStateException("Cannot pledge field with houses");
+            throw new IllegalStateException("Cannot mortgage field with houses");
         }
-        this.mortgageTurns = Rules.MORTGAGE_TURNS;
+        super.mortgage();
     }
 
     public void addHouse() {
@@ -44,6 +45,13 @@ public class StreetField extends BasePurchasableField implements StaticRentField
             throw new IllegalStateException("Cannot add new house - limit is reached");
         }
         houses++;
+    }
+
+    public void sellHouse() {
+        if (houses == 0) {
+            throw new IllegalStateException("Cannot add new house - limit is reached");
+        }
+        houses--;
     }
 
     @Override

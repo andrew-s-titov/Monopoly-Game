@@ -1,13 +1,17 @@
 package com.monopolynew.service.impl;
 
+import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
+import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
+import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Dice;
@@ -22,11 +26,14 @@ import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.ChanceExecutor;
+import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameHelper;
 import com.monopolynew.service.GameHolder;
 import com.monopolynew.service.GameMapRefresher;
 import com.monopolynew.service.GameService;
+import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
+import com.monopolynew.util.TriConsumer;
 import com.monopolynew.websocket.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,6 +42,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
 
@@ -51,6 +59,7 @@ public class GameServiceImpl implements GameService {
     private final GameEventSender gameEventSender;
     private final GameMapRefresher gameMapRefresher;
     private final PaymentProcessor paymentProcessor;
+    private final FieldManagementService fieldManagementService;
 
     @Override
     public boolean isGameStarted() {
@@ -84,32 +93,35 @@ public class GameServiceImpl implements GameService {
     @Override
     public void startRolling() {
         Game game = gameHolder.getGame();
-        gameEventSender.sendToAllPlayers(new DiceRollingStartEvent(game.getCurrentPlayer().getId()));
+        notifyAboutDiceRolling(game);
     }
 
     @Override
     public void doRollTheDice() {
         Game game = gameHolder.getGame();
-        var lastDice = dice.rollTheDice();
-        game.setLastDice(lastDice);
-        Player currentPlayer = game.getCurrentPlayer();
-        String message = String.format("%s rolled the dice and got %s : %s",
-                currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
-        if (lastDice.isDoublet()) {
-            message = message + " (doublet)";
-            if (game.getStage().equals(GameStage.TURN_START)) {
-                currentPlayer.incrementDoublets();
+        GameStage stage = game.getStage();
+        if (GameStage.ROLLED_FOR_TURN.equals(stage) || GameStage.ROLLED_FOR_JAIL.equals(stage)) {
+            var lastDice = dice.rollTheDice();
+            game.setLastDice(lastDice);
+            Player currentPlayer = game.getCurrentPlayer();
+            String message = String.format("%s rolled the dice and got %s : %s",
+                    currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
+            if (lastDice.isDoublet()) {
+                message = message + " (doublet)";
+                if (stage.equals(GameStage.ROLLED_FOR_TURN) && !currentPlayer.isAmnestied()) {
+                    currentPlayer.incrementDoublets();
+                }
+            } else {
+                currentPlayer.resetDoublets();
             }
-        } else {
-            currentPlayer.resetDoublets();
+            gameEventSender.sendToAllPlayers(
+                    new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
+            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(message));
         }
-        gameEventSender.sendToAllPlayers(
-                new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(message));
     }
 
     @Override
-    public void afterDiceAction() {
+    public void afterDiceRollAction() {
         Game game = gameHolder.getGame();
         DiceResult lastDice = game.getLastDice();
         if (lastDice == null) {
@@ -117,43 +129,49 @@ public class GameServiceImpl implements GameService {
         }
         Player currentPlayer = game.getCurrentPlayer();
         GameStage stage = game.getStage();
-        if (GameStage.TURN_START.equals(stage)) {
+        if (GameStage.ROLLED_FOR_TURN.equals(stage)) {
             if (currentPlayer.committedFraud()) {
                 currentPlayer.resetDoublets();
                 gameHelper.sendToJailAndEndTurn(game, currentPlayer, "for fraud");
             } else {
                 doRegularMove(game);
             }
-        } else if (GameStage.JAIL_RELEASE.equals(stage)) {
+        } else if (GameStage.ROLLED_FOR_JAIL.equals(stage)) {
             if (lastDice.isDoublet()) {
-                currentPlayer.releaseFromJail();
-                game.setStage(GameStage.TURN_START);
+                currentPlayer.amnesty();
+                game.setStage(GameStage.ROLLED_FOR_TURN);
                 gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                         currentPlayer.getName() + " is pardoned under amnesty"));
-                // auto move without action proposal
                 doRegularMove(game);
             } else {
                 if (currentPlayer.lastTurnInPrison()) {
                     if (currentPlayer.getMoney() >= Rules.JAIL_BAIL) {
                         currentPlayer.takeMoney(Rules.JAIL_BAIL);
                         currentPlayer.releaseFromJail();
-                        game.setStage(GameStage.TURN_START);
+                        game.setStage(GameStage.ROLLED_FOR_TURN);
                         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                                 MoneyState.fromPlayer(currentPlayer))));
                         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                                 currentPlayer.getName() + " is released on bail"));
                         doRegularMove(game);
                     } else {
-                        int allAssets = gameHelper.computePlayerAssets(game, currentPlayer);
-                        // TODO: check if property is enough: yes - event to sell some; no - auto-loose
+                        int availableAssets = gameHelper.computePlayerAssets(game, currentPlayer);
+                        if (availableAssets >= Rules.JAIL_BAIL) {
+                            String message = currentPlayer.getName() + " served time and paid a criminal fine";
+                            paymentProcessor.createPayCheck(game, currentPlayer, null, Rules.JAIL_BAIL, message);
+                        } else {
+                            // TODO: auto-bankruptcy
+                            gameHelper.endTurn(game);
+                        }
                     }
                 } else {
                     currentPlayer.doTime();
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is doing time"));
-                    game.setStage(GameStage.TURN_START);
                     gameHelper.endTurn(game);
                 }
             }
+        } else {
+            throw new IllegalStateException("Cannot process dice - wrong game stage (roll must be called first)");
         }
     }
 
@@ -193,9 +211,15 @@ public class GameServiceImpl implements GameService {
     @Override
     public void processJailAction(JailAction jailAction) {
         Game game = gameHolder.getGame();
+        if (!GameStage.JAIL_RELEASE_START.equals(game.getStage())) {
+            throw new IllegalStateException("Cannot process jail action - wrong game stage");
+        }
         Assert.notNull(jailAction, NULL_ARG_MESSAGE);
         Player currentPlayer = game.getCurrentPlayer();
         if (jailAction.equals(JailAction.PAY)) {
+            if (currentPlayer.getMoney() < Rules.JAIL_BAIL) {
+                throw new IllegalStateException("Not enough money to pay jail bail");
+            }
             currentPlayer.takeMoney(Rules.JAIL_BAIL);
             currentPlayer.releaseFromJail();
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
@@ -205,7 +229,7 @@ public class GameServiceImpl implements GameService {
             game.setStage(GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(currentPlayer));
         } else if (jailAction.equals(JailAction.LUCK)) {
-            gameEventSender.sendToAllPlayers(new DiceRollingStartEvent(game.getCurrentPlayer().getId()));
+            notifyAboutDiceRolling(game);
         }
     }
 
@@ -215,8 +239,43 @@ public class GameServiceImpl implements GameService {
         paymentProcessor.processPayment(game);
     }
 
+    @Override
+    public void giveUp() {
+        // TODO: implementation
+    }
+
+    @Override
+    public List<FieldManagementAction> availableManagementActions(int fieldId, String playerId) {
+        var game = gameHolder.getGame();
+        return fieldManagementService.availableManagementActions(game, fieldId, playerId);
+    }
+
+    @Override
+    public void mortgageField(int fieldId, String playerId) {
+        var game = gameHolder.getGame();
+        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::mortgageField);
+    }
+
+    @Override
+    public void redeemMortgagedProperty(int fieldId, String playerId) {
+        var game = gameHolder.getGame();
+        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::redeemMortgagedProperty);
+    }
+
+    @Override
+    public void buyHouse(int fieldId, String playerId) {
+        var game = gameHolder.getGame();
+        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::buyHouse);
+    }
+
+    @Override
+    public void sellHouse(int fieldId, String playerId) {
+        var game = gameHolder.getGame();
+        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::sellHouse);
+    }
+
     private void doRegularMove(Game game) {
-        if (!GameStage.TURN_START.equals(game.getStage())) {
+        if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
             throw new IllegalStateException("cannot make move - wrong game stage");
         }
         var lastDice = game.getLastDice();
@@ -289,5 +348,36 @@ public class GameServiceImpl implements GameService {
     private void prepareTaxPayment(Game game, Player player, int tax, String taxName) {
         String paymentComment = String.format("%s is paying $%s as %s", player.getName(), tax, taxName);
         paymentProcessor.createPayCheck(game, player, null, tax, paymentComment);
+    }
+
+    private void managementWithPayCheckResend(Game game, int fieldId, String playerId, TriConsumer<Game, Integer, String> managementAction) {
+        int moneyBeforeManagement = game.getCurrentPlayer().getMoney();
+        managementAction.apply(game, fieldId, playerId);
+        int moneyAfterManagement = game.getCurrentPlayer().getMoney();
+        GameStage stage = game.getStage();
+        if ((GameStage.AWAITING_PAYMENT.equals(stage) || GameStage.AWAITING_JAIL_FINE.equals(stage)) && moneyBeforeManagement < moneyAfterManagement) {
+            resendPayCommand(game, playerId, moneyAfterManagement);
+        }
+        if (GameStage.JAIL_RELEASE_START.equals(stage) && moneyAfterManagement >= Rules.JAIL_BAIL) {
+            gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, true));
+        }
+    }
+
+    private void resendPayCommand(Game game, String playerId, int currentMoney) {
+        CheckToPay checkToPay = game.getCheckToPay();
+        if (checkToPay != null && !checkToPay.isPayable() && checkToPay.getSum() <= currentMoney) {
+            checkToPay.setPayable(true);
+            gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(checkToPay));
+        }
+    }
+
+    private void notifyAboutDiceRolling(Game game) {
+        GameStage currentStage = game.getStage();
+        if (GameStage.TURN_START.equals(currentStage) || GameStage.JAIL_RELEASE_START.equals(currentStage)) {
+            game.setStage(GameStage.TURN_START.equals(currentStage) ? GameStage.ROLLED_FOR_TURN : GameStage.ROLLED_FOR_JAIL);
+        } else {
+            throw new IllegalStateException("cannot roll the dice - wrong game stage");
+        }
+        gameEventSender.sendToAllPlayers(DiceRollingStartEvent.forPlayer(game.getCurrentPlayer()));
     }
 }

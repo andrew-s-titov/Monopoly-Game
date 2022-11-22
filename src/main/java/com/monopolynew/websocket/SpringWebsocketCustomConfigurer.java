@@ -11,7 +11,8 @@ import org.springframework.util.CollectionUtils;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Component
 public class SpringWebsocketCustomConfigurer extends ServerEndpointConfig.Configurator implements ApplicationContextAware {

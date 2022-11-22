@@ -19,6 +19,7 @@ public abstract class BasePurchasableField implements PurchasableField {
 
     @Getter
     private Player owner;
+    private boolean mortgagedDuringThisTurn = false;
     protected int mortgageTurns = 0;
 
     public final boolean isFree() {
@@ -33,11 +34,27 @@ public abstract class BasePurchasableField implements PurchasableField {
         return this.mortgageTurns > 0;
     }
 
-    public void pledge() {
+    public final boolean isMortgagedDuringThisTurn() {
+        boolean result = mortgagedDuringThisTurn;
+        mortgagedDuringThisTurn = false;
+        return result;
+    }
+
+    public void mortgage() {
         this.mortgageTurns = Rules.MORTGAGE_TURNS;
+        this.mortgagedDuringThisTurn = true;
+    }
+
+    public void redeem() {
+        if (isMortgaged()) {
+            mortgagedDuringThisTurn = false;
+            this.mortgageTurns = 0;
+        }
+        throw new IllegalStateException("cannot redeem not mortgaged field");
     }
 
     public final int decreaseMortgageTurns() {
+        mortgagedDuringThisTurn = false;
         if (isMortgaged()) {
             mortgageTurns--;
             if (mortgageTurns == 0) {
@@ -45,5 +62,9 @@ public abstract class BasePurchasableField implements PurchasableField {
             }
         }
         return mortgageTurns;
+    }
+
+    public final int getMortgageTurnsLeft() {
+        return this.mortgageTurns;
     }
 }
