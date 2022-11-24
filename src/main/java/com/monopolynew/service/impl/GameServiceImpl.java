@@ -351,23 +351,27 @@ public class GameServiceImpl implements GameService {
     }
 
     private void managementWithPayCheckResend(Game game, int fieldId, String playerId, TriConsumer<Game, Integer, String> managementAction) {
-        int moneyBeforeManagement = game.getCurrentPlayer().getMoney();
+        int playerMoneyBeforeManagement = game.getCurrentPlayer().getMoney();
         managementAction.apply(game, fieldId, playerId);
-        int moneyAfterManagement = game.getCurrentPlayer().getMoney();
-        GameStage stage = game.getStage();
-        if ((GameStage.AWAITING_PAYMENT.equals(stage) || GameStage.AWAITING_JAIL_FINE.equals(stage)) && moneyBeforeManagement < moneyAfterManagement) {
-            resendPayCommand(game, playerId, moneyAfterManagement);
-        }
-        if (GameStage.JAIL_RELEASE_START.equals(stage) && moneyAfterManagement >= Rules.JAIL_BAIL) {
-            gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, true));
-        }
-    }
+        int playerMoneyAfterManagement = game.getCurrentPlayer().getMoney();
 
-    private void resendPayCommand(Game game, String playerId, int currentMoney) {
-        CheckToPay checkToPay = game.getCheckToPay();
-        if (checkToPay != null && !checkToPay.isPayable() && checkToPay.getSum() <= currentMoney) {
-            checkToPay.setPayable(true);
-            gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(checkToPay));
+        GameStage stage = game.getStage();
+        if ((GameStage.AWAITING_PAYMENT.equals(stage) || GameStage.AWAITING_JAIL_FINE.equals(stage))) {
+            CheckToPay checkToPay = game.getCheckToPay();
+            int sum = checkToPay.getSum();
+            if (checkToPay.isPayable() && playerMoneyAfterManagement < sum) {
+                checkToPay.setPayable(false);
+                gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(checkToPay));
+            } else if (!checkToPay.isPayable() && playerMoneyAfterManagement >= sum) {
+                checkToPay.setPayable(true);
+                gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(checkToPay));
+            }
+        } else if (GameStage.JAIL_RELEASE_START.equals(stage)) {
+            if (playerMoneyBeforeManagement < Rules.JAIL_BAIL && playerMoneyAfterManagement >= Rules.JAIL_BAIL) {
+                gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, true));
+            } else if (playerMoneyBeforeManagement >= Rules.JAIL_BAIL && playerMoneyAfterManagement < Rules.JAIL_BAIL) {
+                gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, false));
+            }
         }
     }
 

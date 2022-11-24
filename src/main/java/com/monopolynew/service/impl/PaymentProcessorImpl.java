@@ -85,7 +85,8 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         game.setStage(GameStage.TURN_START);
         if (GameStage.AWAITING_PAYMENT.equals(currentGameStage)) {
             gameHelper.endTurn(game);
-        } else {
+        } else if (GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
+            payer.releaseFromJail();
             gameEventSender.sendToPlayer(payer.getId(), TurnStartEvent.forPlayer(payer));
         }
     }
