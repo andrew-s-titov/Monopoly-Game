@@ -13,8 +13,8 @@ public class UtilityField extends BasePurchasableField {
     @Getter
     private int currentMultiplier;
 
-    public UtilityField(int id, String name, int group, int price, int standardMultiplier, int highMultiplier) {
-        super(id, name, group, price);
+    public UtilityField(int id, String name, int groupId, int price, int standardMultiplier, int highMultiplier) {
+        super(id, name, groupId, price);
         this.standardMultiplier = standardMultiplier;
         this.highMultiplier = highMultiplier;
         this.currentMultiplier = standardMultiplier;

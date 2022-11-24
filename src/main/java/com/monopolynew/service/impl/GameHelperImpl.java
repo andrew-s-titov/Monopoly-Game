@@ -3,7 +3,6 @@ package com.monopolynew.service.impl;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.MortgageChange;
-import com.monopolynew.dto.StreetNewOwnerChange;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.ChipMoveEvent;
@@ -11,7 +10,6 @@ import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.MortgageChangeEvent;
-import com.monopolynew.event.PropertyNewOwnerChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
@@ -98,31 +96,23 @@ public class GameHelperImpl implements GameHelper {
                 String.format("%s is buying %s for $%s", player.getName(), field.getName(), price)));
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(player))));
-        gameEventSender.sendToAllPlayers(new PropertyNewOwnerChangeEvent(
-                Collections.singletonList(new StreetNewOwnerChange(player.getId(), field.getId()))));
 
         int fieldGroupId = field.getGroupId();
         List<GameFieldView> newPriceViews;
         List<PurchasableField> fieldGroup = game.getGameMap().getGroup(fieldGroupId);
         if (field instanceof StreetField) {
-            boolean allGroupOwned = fieldGroup.stream()
-                    .noneMatch(PurchasableField::isFree);
-            if (allGroupOwned) {
-                long groupOwners = fieldGroup.stream()
-                        .filter(f -> !f.isFree())
-                        .map(PurchasableField::getOwner)
-                        .distinct().count();
-                if (groupOwners == 1) {
-                    fieldGroup.stream()
-                            .map(streetField -> (StreetField) streetField)
-                            .forEach(streetField -> streetField.setNewRent(true));
-                    newPriceViews = fieldGroup.stream()
-                            .map(gameFieldConverter::toView)
-                            .collect(Collectors.toList());
-                } else {
-                    ((StreetField) field).setNewRent(false);
-                    newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
-                }
+            boolean allGroupOwnedByTheSameOwner = fieldGroup.stream()
+                    .noneMatch(PurchasableField::isFree)
+                    && 1 == fieldGroup.stream()
+                    .map(PurchasableField::getOwner)
+                    .distinct().count();
+            if (allGroupOwnedByTheSameOwner) {
+                fieldGroup.stream()
+                        .map(streetField -> (StreetField) streetField)
+                        .forEach(streetField -> streetField.setNewRent(true));
+                newPriceViews = fieldGroup.stream()
+                        .map(gameFieldConverter::toView)
+                        .collect(Collectors.toList());
             } else {
                 ((StreetField) field).setNewRent(false);
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
@@ -144,13 +134,10 @@ public class GameHelperImpl implements GameHelper {
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
             }
         } else if (field instanceof UtilityField) {
-            boolean increasedMultiplier =
-                    fieldGroup.stream()
-                            .noneMatch(PurchasableField::isFree)
-                            &&
-                            fieldGroup.stream()
-                                    .allMatch(f -> player.equals(f.getOwner()));
-
+            boolean increasedMultiplier = fieldGroup.stream()
+                    .noneMatch(PurchasableField::isFree)
+                    && fieldGroup.stream()
+                    .allMatch(f -> player.equals(f.getOwner()));
             if (increasedMultiplier) {
                 fieldGroup.stream()
                         .map(utilityField -> (UtilityField) utilityField)
@@ -165,7 +152,6 @@ public class GameHelperImpl implements GameHelper {
         } else {
             throw new IllegalStateException("Unsupported field type");
         }
-
         gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(newPriceViews));
     }
 
@@ -231,6 +217,7 @@ public class GameHelperImpl implements GameHelper {
     }
 
     private void processMortgage(Game game) {
+        Player currentPlayer = game.getCurrentPlayer();
         List<MortgageChange> mortgageChanges = new ArrayList<>(30);
         List<GameFieldView> fieldViews = new ArrayList<>(30);
         game.getGameMap().getFields().stream()
@@ -238,7 +225,7 @@ public class GameHelperImpl implements GameHelper {
                 .map(field -> (PurchasableField) field)
                 .filter(PurchasableField::isMortgaged)
                 .forEach(field -> {
-                    if (!field.isMortgagedDuringThisTurn()) {
+                    if (!field.isMortgagedDuringThisTurn() && field.getOwner().equals(currentPlayer)) {
                         int mortgageTurns = field.decreaseMortgageTurns();
                         mortgageChanges.add(new MortgageChange(field.getId(), field.getMortgageTurnsLeft()));
                         if (mortgageTurns == 0) {

@@ -54,7 +54,6 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         }
     }
 
-
     @Override
     public void processPayment(Game game) {
         GameStage currentGameStage = game.getStage();

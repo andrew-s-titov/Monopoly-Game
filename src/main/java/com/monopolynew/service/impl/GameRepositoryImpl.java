@@ -1,13 +1,13 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.game.Game;
-import com.monopolynew.service.GameHolder;
+import com.monopolynew.service.GameRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
-public class GameHolderImpl implements GameHolder {
+public class GameRepositoryImpl implements GameRepository {
 
     private final Game game = new Game(false);
 

@@ -28,7 +28,7 @@ import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.ChanceExecutor;
 import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.service.GameHolder;
+import com.monopolynew.service.GameRepository;
 import com.monopolynew.service.GameMapRefresher;
 import com.monopolynew.service.GameService;
 import com.monopolynew.service.PaymentProcessor;
@@ -50,7 +50,7 @@ import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
 @Component
 public class GameServiceImpl implements GameService {
 
-    private final GameHolder gameHolder;
+    private final GameRepository gameRepository;
     private final Dice dice;
     private final GameHelper gameHelper;
     private final StepProcessor stepProcessor;
@@ -63,22 +63,22 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public boolean isGameStarted() {
-        return gameHolder.getGame().isInProgress();
+        return gameRepository.getGame().isInProgress();
     }
 
     @Override
     public boolean usernameTaken(String username) {
-        return gameHolder.getGame().isUsernameTaken(username);
+        return gameRepository.getGame().isUsernameTaken(username);
     }
 
     @Override
     public String getPlayerName(String playerId) {
-        return gameHolder.getGame().getPlayerById(playerId).getName();
+        return gameRepository.getGame().getPlayerById(playerId).getName();
     }
 
     @Override
     public void startGame() {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         Collection<Player> players = game.getPlayers();
         if (CollectionUtils.isEmpty(players)) {
             // TODO: conflict? not ready? what status to return?
@@ -92,13 +92,13 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void startRolling() {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         notifyAboutDiceRolling(game);
     }
 
     @Override
     public void doRollTheDice() {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         GameStage stage = game.getStage();
         if (GameStage.ROLLED_FOR_TURN.equals(stage) || GameStage.ROLLED_FOR_JAIL.equals(stage)) {
             var lastDice = dice.rollTheDice();
@@ -122,7 +122,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void afterDiceRollAction() {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         DiceResult lastDice = game.getLastDice();
         if (lastDice == null) {
             throw new IllegalStateException("throw dice must be called first");
@@ -177,7 +177,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void processBuyProposal(ProposalAction action) {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         BuyProposal buyProposal = game.getBuyProposal();
         if (!GameStage.BUY_PROPOSAL.equals(game.getStage()) || buyProposal == null) {
             throw new IllegalStateException("Cannot call buy proposal endpoint when there's no proposal");
@@ -198,19 +198,19 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void processAuctionBuyProposal(ProposalAction action) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         auctionManager.processAuctionBuyProposal(game, action);
     }
 
     @Override
     public void processAuctionRaiseProposal(ProposalAction action) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         auctionManager.processAuctionRaiseProposal(game, action);
     }
 
     @Override
     public void processJailAction(JailAction jailAction) {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         if (!GameStage.JAIL_RELEASE_START.equals(game.getStage())) {
             throw new IllegalStateException("Cannot process jail action - wrong game stage");
         }
@@ -235,7 +235,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void processPayment() {
-        Game game = gameHolder.getGame();
+        Game game = gameRepository.getGame();
         paymentProcessor.processPayment(game);
     }
 
@@ -246,31 +246,31 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public List<FieldManagementAction> availableManagementActions(int fieldId, String playerId) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         return fieldManagementService.availableManagementActions(game, fieldId, playerId);
     }
 
     @Override
     public void mortgageField(int fieldId, String playerId) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::mortgageField);
     }
 
     @Override
     public void redeemMortgagedProperty(int fieldId, String playerId) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::redeemMortgagedProperty);
     }
 
     @Override
     public void buyHouse(int fieldId, String playerId) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::buyHouse);
     }
 
     @Override
     public void sellHouse(int fieldId, String playerId) {
-        var game = gameHolder.getGame();
+        var game = gameRepository.getGame();
         managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::sellHouse);
     }
 

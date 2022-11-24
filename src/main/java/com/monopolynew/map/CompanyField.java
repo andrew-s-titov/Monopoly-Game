@@ -11,8 +11,8 @@ public class CompanyField extends BasePurchasableField implements StaticRentFiel
     @Getter
     private int currentRent;
 
-    public CompanyField(int id, String name, int group, int price, int defaultRent) {
-        super(id, name, group, price);
+    public CompanyField(int id, String name, int groupId, int price, int defaultRent) {
+        super(id, name, groupId, price);
         this.defaultRent = defaultRent;
     }
 

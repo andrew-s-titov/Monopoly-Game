@@ -15,8 +15,8 @@ public class StreetField extends BasePurchasableField implements StaticRentField
     @Getter
     private int currentRent;
 
-    public StreetField(int id, String name, int group, int price, int housePrice, int[] rents) {
-        super(id, name, group, price);
+    public StreetField(int id, String name, int groupId, int price, int housePrice, int[] rents) {
+        super(id, name, groupId, price);
         this.housePrice = housePrice;
         if (rents.length != Rules.MAX_HOUSES_ON_STREET + 1) {
             throw new IllegalArgumentException("street field must contain exactly" + Rules.MAX_HOUSES_ON_STREET + 1 + "rent rates");

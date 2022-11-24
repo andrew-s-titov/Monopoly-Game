@@ -13,7 +13,7 @@ public abstract class BasePurchasableField implements PurchasableField {
     @Getter
     protected final String name;
     @Getter
-    private final int group;
+    private final int groupId;
     @Getter
     private final int price;
 
@@ -45,12 +45,12 @@ public abstract class BasePurchasableField implements PurchasableField {
         this.mortgagedDuringThisTurn = true;
     }
 
-    public void redeem() {
-        if (isMortgaged()) {
-            mortgagedDuringThisTurn = false;
-            this.mortgageTurns = 0;
+    public final void redeem() {
+        if (!isMortgaged()) {
+            throw new IllegalStateException("cannot redeem not mortgaged field");
         }
-        throw new IllegalStateException("cannot redeem not mortgaged field");
+        mortgagedDuringThisTurn = false;
+        this.mortgageTurns = 0;
     }
 
     public final int decreaseMortgageTurns() {

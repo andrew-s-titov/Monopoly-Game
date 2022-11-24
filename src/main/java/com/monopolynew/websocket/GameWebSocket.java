@@ -11,7 +11,7 @@ import com.monopolynew.event.UserIdentificationEvent;
 import com.monopolynew.event.WebsocketEvent;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
-import com.monopolynew.service.GameHolder;
+import com.monopolynew.service.GameRepository;
 import com.monopolynew.service.GameMapRefresher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ import java.util.Map;
 public class GameWebSocket implements GameEventSender {
 
     private final ObjectMapper objectMapper;
-    private final GameHolder gameHolder;
+    private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
 
     private final Map<String, PlayerSession> activeSessions = new HashMap<>();
@@ -49,10 +49,10 @@ public class GameWebSocket implements GameEventSender {
         var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
         var sessionId = session.getId();
 
-        if (gameHolder.getGame().isInProgress()) {
-            if (gameHolder.getGame().playerExists(playerId)) {
+        if (gameRepository.getGame().isInProgress()) {
+            if (gameRepository.getGame().playerExists(playerId)) {
                 activeSessions.put(sessionId, new PlayerSession(playerId, session));
-                sendToSession(session, gameMapRefresher.getRefreshEvent(gameHolder.getGame()));
+                sendToSession(session, gameMapRefresher.getRefreshEvent(gameRepository.getGame()));
             } else {
                 String message = "Game in progress";
                 closeSessionForViolation(session, message);
@@ -68,13 +68,13 @@ public class GameWebSocket implements GameEventSender {
             }
             // sending a new player event to show other players
             activeSessions.values().stream()
-                    .map(playerSession -> gameHolder.getGame().getPlayerById(playerSession.getPlayerId()))
+                    .map(playerSession -> gameRepository.getGame().getPlayerById(playerSession.getPlayerId()))
                     .forEach(player -> sendToSession(session, PlayerConnectedEvent.fromPlayer(player)));
         }
         sendToSession(session, new UserIdentificationEvent(playerId));
         var player = Player.newPlayer(playerId, username);
         activeSessions.put(sessionId, new PlayerSession(playerId, session));
-        gameHolder.getGame().addPlayer(player);
+        gameRepository.getGame().addPlayer(player);
         sendToAllPlayers(PlayerConnectedEvent.fromPlayer(player));
     }
 
@@ -90,11 +90,11 @@ public class GameWebSocket implements GameEventSender {
         CloseReason.CloseCode closeCode = reason.getCloseCode();
         if (closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE) || closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
             var playerId = activeSessions.get(sessionId).getPlayerId();
-            var player = gameHolder.getGame().getPlayerById(playerId);
-            if (player != null && !gameHolder.getGame().isInProgress()) {
+            var player = gameRepository.getGame().getPlayerById(playerId);
+            if (player != null && !gameRepository.getGame().isInProgress()) {
                 // we don't need to send this if game is in progress
                 sendToAllPlayers(PlayerDisconnectedEvent.fromPlayer(player));
-                gameHolder.getGame().removePlayer(playerId);
+                gameRepository.getGame().removePlayer(playerId);
             }
             // if game in progress - do not remove to let reconnect
         } else if (closeCode.equals(CloseReason.CloseCodes.VIOLATED_POLICY)) {

@@ -29,7 +29,7 @@ export function hideDice() {
     document.getElementById(DICE_CONTAINER_ID).remove();
 }
 
-export function diceGifToValues(left, right) {
-    document.getElementById(DICE_LEFT_ID).src = 'images/dice' + left + '.png';
-    document.getElementById(DICE_RIGHT_ID).src = 'images/dice' + right + '.png';
+export function renderDiceResult(left, right) {
+    document.getElementById(DICE_LEFT_ID).src = `images/dice${left}.png`;
+    document.getElementById(DICE_RIGHT_ID).src = `images/dice${right}.png`;
 }

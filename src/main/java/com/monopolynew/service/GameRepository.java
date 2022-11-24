@@ -4,7 +4,7 @@ import com.monopolynew.game.Game;
 
 import java.util.UUID;
 
-public interface GameHolder {
+public interface GameRepository {
 
     Game getGame();
 

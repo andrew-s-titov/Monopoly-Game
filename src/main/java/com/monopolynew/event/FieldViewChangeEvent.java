@@ -10,7 +10,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FieldViewChangeEvent implements WebsocketEvent {
 
-    private final int code = 311;
+    private final int code = 307;
 
     private final List<GameFieldView> changes;
 }

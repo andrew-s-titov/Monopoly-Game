@@ -10,11 +10,11 @@
 304 - new player position
 305 - money change event
 306 - buy or auction proposal
-307 - property new owner change
+307 - field view change
 308 - jail release process
 309 - auction raise proposal
 310 - auction buy proposal
-311 - field view change
+311 -
 312 - pay command
 313 - mortgage change
 314 - street house amount

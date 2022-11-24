@@ -204,7 +204,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     private int getPropertyRedemptionValue(PurchasableField purchasableField) {
-        return purchasableField.getPrice() / 100 * 55;
+        return purchasableField.getPrice() * 55 / 100;
     }
 
     private void doFieldManagement(Game game, String playerId, int fieldId, BiConsumer<Game, PurchasableField> action) {
@@ -234,7 +234,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     private boolean managementNotAvailable(GameStage stage) {
         return !GameStage.TURN_START.equals(stage)
                 && !GameStage.JAIL_RELEASE_START.equals(stage)
-                && !GameStage.AWAITING_PAYMENT.equals(stage);
+                && !GameStage.AWAITING_PAYMENT.equals(stage)
+                && !GameStage.AWAITING_JAIL_FINE.equals(stage);
     }
 
     private void checkFieldExists(int fieldId) {

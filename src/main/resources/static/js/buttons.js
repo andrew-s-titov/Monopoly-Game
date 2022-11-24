@@ -1,4 +1,14 @@
-export const ACTION_BUTTONS_CONTAINER_ID = 'action_container';
+import {sendGetHttpRequest} from "./http.js";
+
+export const PROPERTY_MANAGEMENT_PREFIX = "management";
+export const PROPERTY_MANAGEMENT_BASE_URL = 'http://localhost:8080/game/field';
+
+const ACTION_BUTTONS_CONTAINER_ID = 'action_container';
+const PROPERTY_MANAGEMENT_CONTAINER_ID = ACTION_BUTTONS_CONTAINER_ID + '_container';
+
+export function addClickEvent(button, listenerFunction) {
+    button.addEventListener('click', () => listenerFunction());
+}
 
 export function createActionButton(text, url, able) {
     let actionButton = document.createElement('button');
@@ -9,11 +19,7 @@ export function createActionButton(text, url, able) {
     if (!able) {
         actionButton.disabled = true;
     }
-    actionButton.addEventListener('click', () => {
-        let httpRequester = new XMLHttpRequest();
-        httpRequester.open('GET', url, true);
-        httpRequester.send();
-    });
+    addClickEvent(actionButton, () => sendGetHttpRequest(url, true));
     return actionButton;
 }
 
@@ -42,16 +48,65 @@ export function renderActionContainer(text, button1, button2) {
     actionPhrase.style.marginTop = '20px';
     actionPhrase.style.marginBottom = '20px';
     actionContainer.appendChild(actionPhrase);
-    if (button1 != null) {
-        button1.addEventListener('click', () => actionContainer.remove());
-        button1.style.marginBottom = '10px';
-        actionContainer.appendChild(button1);
-    }
-    if (button2 != null) {
-        button2.addEventListener('click', () => actionContainer.remove());
-        button2.style.marginBottom = '10px';
-        actionContainer.appendChild(button2);
+    for (let button of [button1, button2]) {
+        if (button != null) {
+            addClickEvent(button, () => actionContainer.remove());
+            button.style.marginBottom = '10px';
+            actionContainer.appendChild(button);
+        }
     }
     document.getElementById('map').appendChild(actionContainer);
 }
 
+export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex, availableActions) {
+    let managementContainer = document.createElement("div");
+    managementContainer.id = PROPERTY_MANAGEMENT_CONTAINER_ID;
+    managementContainer.style.position = 'absolute';
+    managementContainer.style.width = '100%';
+    managementContainer.style.height = '100%';
+    managementContainer.style.opacity = '0.8';
+    managementContainer.style.background = 'black';
+    managementContainer.style.writingMode = '';
+    managementContainer.style.transform = '';
+    document.addEventListener('click', event => {
+        if (event.target.id !== PROPERTY_MANAGEMENT_CONTAINER_ID) {
+            managementContainer.remove();
+        }
+    });
+    for (let action of availableActions) {
+        let button = document.createElement('button');
+        button.style.width = '100%';
+        button.style.color = 'black';
+        button.style.fontSize = '10px';
+        if (action === 'INFO') {
+            // TODO: show info card atop of everything;
+            button.innerHTML = 'Info';
+            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-info`;
+            // TODO: actual info implementation
+            addClickEvent(button, () => alert('info should be here'));
+        } else if (action === 'MORTGAGE') {
+            button.innerHTML = 'Mortgage';
+            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-mortgage`;
+            addClickEvent(button, () =>
+                sendGetHttpRequest( `${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/mortgage`, true));
+        } else if (action === 'REDEEM') {
+            button.innerHTML = 'Redeem';
+            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-redeem`;
+            addClickEvent(button, () =>
+                sendGetHttpRequest( `${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/redeem`, true));
+        } else if (action === 'BUY_HOUSE') {
+            button.innerHTML = 'Buy a house';
+            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-buy-house`;
+            addClickEvent(button, () =>
+                sendGetHttpRequest(`${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/buy_house`, true));
+        } else if (action === 'SELL_HOUSE') {
+            button.innerHTML = 'Sell a house';
+            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-sell-house`;
+            addClickEvent(button, () =>
+                sendGetHttpRequest( `${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/sell_house`, true));
+        }
+        addClickEvent(button, () => managementContainer.remove());
+        managementContainer.appendChild(button);
+    }
+    htmlPropertyField.appendChild(managementContainer);
+}
