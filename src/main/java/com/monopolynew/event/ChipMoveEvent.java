@@ -15,4 +15,6 @@ public class ChipMoveEvent implements WebsocketEvent {
     private final String playerId;
 
     private final int field;
+
+    private final boolean needAfterMoveCall;
 }

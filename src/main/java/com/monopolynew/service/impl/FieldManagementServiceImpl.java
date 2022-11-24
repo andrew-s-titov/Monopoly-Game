@@ -35,9 +35,9 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     private final GameFieldConverter gameFieldConverter;
 
     @Override
-    public List<FieldManagementAction> availableManagementActions(Game game, int fieldId, String playerId) {
-        checkFieldExists(fieldId);
-        GameField field = game.getGameMap().getField(fieldId);
+    public List<FieldManagementAction> availableManagementActions(Game game, int fieldIndex, String playerId) {
+        checkFieldExists(fieldIndex);
+        GameField field = game.getGameMap().getField(fieldIndex);
         List<FieldManagementAction> actions = new ArrayList<>(FieldManagementAction.values().length);
         actions.add(FieldManagementAction.INFO);
         if (managementNotAvailable(game.getStage()) || field instanceof ActionableField) {
@@ -66,8 +66,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void mortgageField(Game game, int fieldId, String playerId) {
-        doFieldManagement(game, playerId, fieldId, (g, f) -> {
+    public void mortgageField(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (mortgageAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.mortgage();
@@ -83,8 +83,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void redeemMortgagedProperty(Game game, int fieldId, String playerId) {
-        doFieldManagement(game, playerId, fieldId,(g, f) -> {
+    public void redeemMortgagedProperty(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex,(g, f) -> {
             if (redemptionAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.redeem();
@@ -102,8 +102,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void buyHouse(Game game, int fieldId, String playerId) {
-        doFieldManagement(game, playerId, fieldId, (g, f) -> {
+    public void buyHouse(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (f instanceof StreetField) {
                 var streetField = (StreetField) f;
                 Player currentPlayer = g.getCurrentPlayer();
@@ -125,8 +125,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void sellHouse(Game game, int fieldId, String playerId) {
-        doFieldManagement(game, playerId, fieldId, (g, f) -> {
+    public void sellHouse(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (f instanceof StreetField) {
                 var streetField = (StreetField) f;
                 if (houseSaleAvailable(g, streetField)) {
@@ -207,12 +207,12 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         return purchasableField.getPrice() * 55 / 100;
     }
 
-    private void doFieldManagement(Game game, String playerId, int fieldId, BiConsumer<Game, PurchasableField> action) {
-        checkFieldExists(fieldId);
+    private void doFieldManagement(Game game, String playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
+        checkFieldExists(fieldIndex);
         checkFieldManagementAvailability(game, playerId);
 
         Player currentPlayer = game.getCurrentPlayer();
-        GameField field = game.getGameMap().getField(fieldId);
+        GameField field = game.getGameMap().getField(fieldIndex);
         if (field instanceof PurchasableField && currentPlayer.equals(((PurchasableField) field).getOwner())) {
             var purchasableField = (PurchasableField) field;
             action.accept(game, purchasableField);
@@ -238,9 +238,9 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 && !GameStage.AWAITING_JAIL_FINE.equals(stage);
     }
 
-    private void checkFieldExists(int fieldId) {
-        if (fieldId < 0 || fieldId > GameMap.LAST_FIELD_INDEX) {
-            throw new IllegalArgumentException(String.format("Field with index %s don't exist", fieldId));
+    private void checkFieldExists(int fieldIndex) {
+        if (fieldIndex < 0 || fieldIndex > GameMap.LAST_FIELD_INDEX) {
+            throw new IllegalArgumentException(String.format("Field with index %s don't exist", fieldIndex));
         }
     }
 }

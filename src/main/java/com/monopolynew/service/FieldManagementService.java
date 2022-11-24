@@ -10,15 +10,15 @@ import java.util.List;
 
 public interface FieldManagementService {
 
-    List<FieldManagementAction> availableManagementActions(Game game, int fieldId, String playerId);
+    List<FieldManagementAction> availableManagementActions(Game game, int fieldIndex, String playerId);
 
-    void mortgageField(Game game, int fieldId, String playerId);
+    void mortgageField(Game game, int fieldIndex, String playerId);
 
-    void redeemMortgagedProperty(Game game, int fieldId, String playerId);
+    void redeemMortgagedProperty(Game game, int fieldIndex, String playerId);
 
-    void buyHouse(Game game, int fieldId, String playerId);
+    void buyHouse(Game game, int fieldIndex, String playerId);
 
-    void sellHouse(Game game, int fieldId, String playerId);
+    void sellHouse(Game game, int fieldIndex, String playerId);
 
     boolean housePurchaseAvailable(Game game, Player player, StreetField streetField);
 

@@ -45,7 +45,7 @@ public class GameHelperImpl implements GameHelper {
     @Override
     public void movePlayer(Game game, Player player, int newPositionIndex, boolean forward) {
         int currentPosition = player.getPosition();
-        changePlayerPosition(player, newPositionIndex);
+        changePlayerPosition(player, newPositionIndex, true);
         if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
@@ -62,7 +62,7 @@ public class GameHelperImpl implements GameHelper {
         player.imprison();
         gameEventSender.sendToAllPlayers(
                 SystemMessageEvent.text(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
-        changePlayerPosition(player, GameMap.JAIL_FIELD_NUMBER);
+        changePlayerPosition(player, GameMap.JAIL_FIELD_NUMBER, false);
         endTurn(game);
     }
 
@@ -192,9 +192,9 @@ public class GameHelperImpl implements GameHelper {
         }
     }
 
-    private void changePlayerPosition(Player player, int fieldIndex) {
+    private void changePlayerPosition(Player player, int fieldIndex, boolean needAfterMoveCall) {
         player.changePosition(fieldIndex);
-        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex));
+        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex, needAfterMoveCall));
     }
 
     private Player toNextPlayer(Game game) {

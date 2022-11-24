@@ -36,13 +36,13 @@ public interface GameService {
 
     void giveUp();
 
-    List<FieldManagementAction> availableManagementActions(int fieldId, String playerId);
+    List<FieldManagementAction> availableManagementActions(int fieldIndex, String playerId);
 
-    void mortgageField(int fieldId, String playerId);
+    void mortgageField(int fieldIndex, String playerId);
 
-    void redeemMortgagedProperty(int fieldId, String playerId);
+    void redeemMortgagedProperty(int fieldIndex, String playerId);
 
-    void buyHouse(int fieldId, String playerId);
+    void buyHouse(int fieldIndex, String playerId);
 
-    void sellHouse(int fieldId, String playerId);
+    void sellHouse(int fieldIndex, String playerId);
 }

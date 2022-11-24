@@ -113,7 +113,7 @@ function openWebsocket(username) {
             onDiceResult(socketMessage);
         }
         if (socketMessageCode === 304) {
-            onNewPlayerPosition(socketMessage);
+            onPlayerChipMove(socketMessage);
         }
         if (socketMessageCode === 305) {
             onMoneyChange(socketMessage);
@@ -201,7 +201,7 @@ function httpError(errorHtmlElementId) {
     }
 }
 
-function onGameStartOrMapRefresh(socketMessage) {
+function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     document.getElementById('playersBeforeGame').style.display = 'none';
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
@@ -212,12 +212,12 @@ function onGameStartOrMapRefresh(socketMessage) {
         savePlayerIdToCookie(thisPlayerId);
     }
 
-    const players = socketMessage.players;
+    const players = gameMapRefreshEvent.players;
     addPlayers(players);
 
-    outlinePlayer(socketMessage.current_player);
+    outlinePlayer(gameMapRefreshEvent.current_player);
 
-    let fieldViews = socketMessage.fields;
+    let fieldViews = gameMapRefreshEvent.fields;
     renderFieldViews(fieldViews);
     for (let fieldView of fieldViews) {
         let fieldIndex = fieldView.id;
@@ -234,8 +234,8 @@ function onGameStartOrMapRefresh(socketMessage) {
     });
 }
 
-function onPlayerConnected(socketMessage) {
-    let playerName = socketMessage.player_name;
+function onPlayerConnected(playerConnectedEvent) {
+    let playerName = playerConnectedEvent.player_name;
     for (let i = 0; i < 5; i++) {
         let playerField = document.getElementById(`player${i}`);
         if (playerField.innerHTML.trim() === '') {
@@ -247,8 +247,8 @@ function onPlayerConnected(socketMessage) {
     }
 }
 
-function onPlayerDisconnected(socketMessage) {
-    let playerName = socketMessage.player_name;
+function onPlayerDisconnected(playerDisconnectedEvent) {
+    let playerName = playerDisconnectedEvent.player_name;
     for (let i = 0; i < 5; i++) {
         const playerField = document.getElementById(`player${i}`);
         if (playerField.innerHTML === playerName) {
@@ -259,8 +259,8 @@ function onPlayerDisconnected(socketMessage) {
     }
 }
 
-function onChatMessage(socketMessage) {
-    let playerId = socketMessage.player_id;
+function onChatMessage(chatMessageEvent) {
+    let playerId = chatMessageEvent.player_id;
 
     let messageElement = messageDiv();
 
@@ -269,15 +269,15 @@ function onChatMessage(socketMessage) {
     nameText.innerText = getPlayerName(playerId);
 
     let messageText = document.createElement('span');
-    messageText.innerText = `: ${socketMessage.message}`;
+    messageText.innerText = `: ${chatMessageEvent.message}`;
 
     messageElement.appendChild(nameText);
     messageElement.appendChild(messageText);
     sendMessageToChat(messageElement);
 }
 
-function onSystemMessage(socketMessage) {
-    let message = socketMessage.message;
+function onSystemMessage(systemMessageEvent) {
+    let message = systemMessageEvent.message;
     let messageElement = messageDiv();
     messageElement.textContent = message;
     messageElement.style.fontStyle = 'italic';
@@ -300,9 +300,9 @@ function sendMessageToChat(htmlDivMessage) {
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
-function onTurnStart(socketMessage) {
+function onTurnStart(turnStartEvent) {
     removePlayersOutline();
-    let playerToGo = socketMessage.player_id;
+    let playerToGo = turnStartEvent.player_id;
     outlinePlayer(playerToGo);
     if (thisPlayerId === playerToGo) {
 
@@ -337,36 +337,36 @@ function removePlayersOutline() {
     }
 }
 
-function onDiceResult(socketMessage) {
-    renderDiceResult(socketMessage.first_dice, socketMessage.second_dice);
+function onDiceResult(diceResultEvent) {
+    renderDiceResult(diceResultEvent.first_dice, diceResultEvent.second_dice);
     setTimeout(() => {
         hideDice();
-        if (thisPlayerId === socketMessage.player_id) {
+        if (thisPlayerId === diceResultEvent.player_id) {
             sendGetHttpRequest(`${BASE_GAME_URL}/dice/after`, true);
         }
     }, 2000);
 }
 
-function onNewPlayerPosition(socketMessage) {
-    let playerId = socketMessage.player_id;
-    movePlayerChip(playerId, socketMessage.field);
-    if (playerId === thisPlayerId) {
+function onPlayerChipMove(chipMoveEvent) {
+    let playerId = chipMoveEvent.player_id;
+    movePlayerChip(playerId, chipMoveEvent.field);
+    if (chipMoveEvent.need_after_move_call && playerId === thisPlayerId) {
         setTimeout(() => {
             sendGetHttpRequest(`${BASE_GAME_URL}/after_move`, true);
         }, 500);
     }
 }
 
-function onMoneyChange(socketMessage) {
-    for (let change of socketMessage.changes) {
+function onMoneyChange(moneyChangeEvent) {
+    for (let change of moneyChangeEvent.changes) {
         changePlayerMoney(change.player_id, change.money);
     }
 }
 
-function onBuyProposal(socketMessage) {
-    let playerId = socketMessage.player_id;
-    let price = socketMessage.price;
-    let field = socketMessage.field_name;
+function onBuyProposal(buyProposalEvent) {
+    let playerId = buyProposalEvent.player_id;
+    let price = buyProposalEvent.price;
+    let field = buyProposalEvent.field_name;
     if (thisPlayerId === playerId) {
         let acceptButton = createActionButton('Buy', `${BASE_GAME_URL}/buy?action=ACCEPT`, true);
         let auctionButton = createActionButton('Auction', `${BASE_GAME_URL}/buy?action=DECLINE`, true);
@@ -374,40 +374,40 @@ function onBuyProposal(socketMessage) {
     }
 }
 
-function onJailReleaseProcess(socketMessage) {
+function onJailReleaseProcess(jailReleaseProcessEvent) {
     removePlayersOutline();
-    let imprisonedPlayer = socketMessage.player_id;
+    let imprisonedPlayer = jailReleaseProcessEvent.player_id;
     outlinePlayer(imprisonedPlayer);
     if (thisPlayerId === imprisonedPlayer) {
         removeOldActionContainer();
-        let payButton = createActionButton(`Pay $${socketMessage.bail}`, `${BASE_GAME_URL}/jail?action=PAY`,
-            socketMessage.bail_available);
+        let payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${BASE_GAME_URL}/jail?action=PAY`,
+            jailReleaseProcessEvent.bail_available);
         let luckButton = createActionButton('Try luck', `${BASE_GAME_URL}/jail?action=LUCK`, true);
         renderActionContainer('Chose a way out:', payButton, luckButton);
     }
 }
 
-function onAuctionBuyProposal(socketMessage) {
+function onAuctionBuyProposal(auctionBuyProposalEvent) {
     let buyButton = createActionButton('Buy', `${BASE_GAME_URL}/auction/buy?action=ACCEPT`, true);
     let declineButton = createActionButton('Decline', `${BASE_GAME_URL}/auction/buy?action=DECLINE`, true);
     renderActionContainer(
-        `Do you want to buy ${socketMessage.field_name} for $${socketMessage.proposal}?`,
+        `Do you want to buy ${auctionBuyProposalEvent.field_name} for $${auctionBuyProposalEvent.proposal}?`,
         buyButton, declineButton);
 }
 
-function onAuctionRaiseProposal(socketMessage) {
+function onAuctionRaiseProposal(auctionRaiseProposalEvent) {
     let raiseButton = createActionButton('Raise', `${BASE_GAME_URL}/auction/raise?action=ACCEPT`, true);
     let declineButton = createActionButton('Decline', `${BASE_GAME_URL}/auction/raise?action=DECLINE`, true);
     renderActionContainer(
-        `Do you want to raise ${socketMessage.field_name} price to $${socketMessage.proposal}?`,
+        `Do you want to raise ${auctionRaiseProposalEvent.field_name} price to $${auctionRaiseProposalEvent.proposal}?`,
         raiseButton, declineButton);
 }
 
-function onPayCommand(socketMessage) {
+function onPayCommand(payCommandEvent) {
     removeOldActionContainer();
-    let sum = socketMessage.sum;
-    let payable = socketMessage.payable;
-    let wiseToGiveUp = socketMessage.wise_to_give_up;
+    let sum = payCommandEvent.sum;
+    let payable = payCommandEvent.payable;
+    let wiseToGiveUp = payCommandEvent.wise_to_give_up;
     let payButton = createActionButton('Pay', `${BASE_GAME_URL}/pay`, payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
@@ -416,16 +416,16 @@ function onPayCommand(socketMessage) {
     renderActionContainer(`Pay $${sum}`, payButton, giveUpButton);
 }
 
-function onMortgageChange(socketMessage) {
-    let changes = socketMessage.changes;
+function onMortgageChange(mortgageChangeEvent) {
+    let changes = mortgageChangeEvent.changes;
     for (let change of changes) {
         renderMortgagePlate(change.field, change.turns);
     }
 }
 
-function onDiceStartRolling(socketMessage) {
+function onDiceStartRolling(diceRollingStartEvent) {
     renderDiceGifs();
-    if (thisPlayerId === socketMessage.player_id) {
+    if (thisPlayerId === diceRollingStartEvent.player_id) {
         setTimeout(() => {
             sendGetHttpRequest(`${BASE_GAME_URL}/dice/roll`, true)
         }, 1500);

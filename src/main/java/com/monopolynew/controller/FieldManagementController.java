@@ -19,33 +19,33 @@ public class FieldManagementController {
 
     private final GameService gameService;
 
-    @GetMapping("/{fieldId}/management")
-    public List<FieldManagementAction> availableManagementActions(@PathVariable("fieldId") Integer fieldId,
+    @GetMapping("/{fieldIndex}/management")
+    public List<FieldManagementAction> availableManagementActions(@PathVariable("fieldIndex") Integer fieldIndex,
                                                                   @CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
-        return gameService.availableManagementActions(fieldId, playerId);
+        return gameService.availableManagementActions(fieldIndex, playerId);
     }
 
-    @GetMapping("/{fieldId}/mortgage")
-    public void mortgageProperty(@PathVariable("fieldId") Integer fieldId,
+    @GetMapping("/{fieldIndex}/mortgage")
+    public void mortgageProperty(@PathVariable("fieldIndex") Integer fieldIndex,
                                  @CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
-        gameService.mortgageField(fieldId, playerId);
+        gameService.mortgageField(fieldIndex, playerId);
     }
 
-    @GetMapping("/{fieldId}/redeem")
-    public void redeemProperty(@PathVariable("fieldId") Integer fieldId,
+    @GetMapping("/{fieldIndex}/redeem")
+    public void redeemProperty(@PathVariable("fieldIndex") Integer fieldIndex,
                                @CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
-        gameService.redeemMortgagedProperty(fieldId, playerId);
+        gameService.redeemMortgagedProperty(fieldIndex, playerId);
     }
 
-    @GetMapping("/{fieldId}/buy_house")
-    public void buyHouse(@PathVariable("fieldId") Integer fieldId,
+    @GetMapping("/{fieldIndex}/buy_house")
+    public void buyHouse(@PathVariable("fieldIndex") Integer fieldIndex,
                          @CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
-        gameService.buyHouse(fieldId, playerId);
+        gameService.buyHouse(fieldIndex, playerId);
     }
 
-    @GetMapping("/{fieldId}/sell_house")
-    public void sellHouse(@PathVariable("fieldId") Integer fieldId,
+    @GetMapping("/{fieldIndex}/sell_house")
+    public void sellHouse(@PathVariable("fieldIndex") Integer fieldIndex,
                           @CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
-        gameService.sellHouse(fieldId, playerId);
+        gameService.sellHouse(fieldIndex, playerId);
     }
 }

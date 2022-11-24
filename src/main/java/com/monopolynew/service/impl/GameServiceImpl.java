@@ -252,33 +252,33 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public List<FieldManagementAction> availableManagementActions(int fieldId, String playerId) {
+    public List<FieldManagementAction> availableManagementActions(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        return fieldManagementService.availableManagementActions(game, fieldId, playerId);
+        return fieldManagementService.availableManagementActions(game, fieldIndex, playerId);
     }
 
     @Override
-    public void mortgageField(int fieldId, String playerId) {
+    public void mortgageField(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::mortgageField);
+        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::mortgageField);
     }
 
     @Override
-    public void redeemMortgagedProperty(int fieldId, String playerId) {
+    public void redeemMortgagedProperty(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::redeemMortgagedProperty);
+        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::redeemMortgagedProperty);
     }
 
     @Override
-    public void buyHouse(int fieldId, String playerId) {
+    public void buyHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::buyHouse);
+        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::buyHouse);
     }
 
     @Override
-    public void sellHouse(int fieldId, String playerId) {
+    public void sellHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldId, playerId, fieldManagementService::sellHouse);
+        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::sellHouse);
     }
 
     private void doRegularMove(Game game) {
@@ -307,14 +307,9 @@ public class GameServiceImpl implements GameService {
         return newCircle ? result - GameMap.NUMBER_OF_FIELDS : result;
     }
 
-    private void prepareTaxPayment(Game game, Player player, int tax, String taxName) {
-        String paymentComment = String.format("%s is paying $%s as %s", player.getName(), tax, taxName);
-        paymentProcessor.createPayCheck(game, player, null, tax, paymentComment);
-    }
-
-    private void managementWithPayCheckResend(Game game, int fieldId, String playerId, TriConsumer<Game, Integer, String> managementAction) {
+    private void managementWithPayCheckResend(Game game, int fieldIndex, String playerId, TriConsumer<Game, Integer, String> managementAction) {
         int playerMoneyBeforeManagement = game.getCurrentPlayer().getMoney();
-        managementAction.apply(game, fieldId, playerId);
+        managementAction.apply(game, fieldIndex, playerId);
         int playerMoneyAfterManagement = game.getCurrentPlayer().getMoney();
 
         GameStage stage = game.getStage();
