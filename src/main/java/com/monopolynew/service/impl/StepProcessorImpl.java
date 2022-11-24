@@ -2,6 +2,9 @@ package com.monopolynew.service.impl;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
+import com.monopolynew.map.ActionableField;
+import com.monopolynew.map.FieldAction;
+import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StaticRentField;
 import com.monopolynew.map.UtilityField;
@@ -9,22 +12,45 @@ import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.GameHelper;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
-import com.monopolynew.websocket.GameEventSender;
-import lombok.RequiredArgsConstructor;
+import com.monopolynew.service.fieldactionexecutors.FieldActionExecutor;
 import org.springframework.stereotype.Component;
 
-@RequiredArgsConstructor
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Component
 public class StepProcessorImpl implements StepProcessor {
 
-    private final GameEventSender gameEventSender;
     private final GameHelper gameHelper;
     private final AuctionManager auctionManager;
     private final PaymentProcessor paymentProcessor;
+    private final Map<FieldAction, FieldActionExecutor> fieldActionExecutorMap;
+
+    public StepProcessorImpl(GameHelper gameHelper, AuctionManager auctionManager,
+                             PaymentProcessor paymentProcessor, List<FieldActionExecutor> fieldActionExecutors) {
+        this.gameHelper = gameHelper;
+        this.auctionManager = auctionManager;
+        this.paymentProcessor = paymentProcessor;
+        this.fieldActionExecutorMap = fieldActionExecutors.stream()
+                .collect(Collectors.toMap(FieldActionExecutor::getFieldAction, e -> e));
+    }
 
     @Override
-    public void processStepOnPurchasableField(Game game, Player player, PurchasableField field) {
-        boolean rentPaymentNeeded = isRentPaymentNeeded(game, player, field);
+    public void processStepOnField(Game game, GameField field) {
+        if (field instanceof PurchasableField) {
+            processStepOnPurchasableField(game, (PurchasableField) field);
+        } else if (field instanceof ActionableField) {
+            var actionableField = (ActionableField) field;
+            fieldActionExecutorMap.get(actionableField.getAction()).executeAction(game);
+        } else {
+            throw new IllegalStateException("field on new player position is of an unsupported type");
+        }
+    }
+
+    private void processStepOnPurchasableField(Game game, PurchasableField field) {
+        Player currentPlayer = game.getCurrentPlayer();
+        boolean rentPaymentNeeded = isRentPaymentNeeded(game, currentPlayer, field);
         if (rentPaymentNeeded) {
             int rent;
             if (field instanceof StaticRentField) {
@@ -34,7 +60,7 @@ public class StepProcessorImpl implements StepProcessor {
             } else {
                 throw new IllegalStateException("Failed to compute rent - unknown field type");
             }
-            processRentPayment(game, player, field, rent);
+            processRentPayment(game, currentPlayer, field, rent);
         }
     }
 

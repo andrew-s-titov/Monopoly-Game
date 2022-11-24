@@ -1,10 +1,9 @@
 package com.monopolynew.service;
 
 import com.monopolynew.game.Game;
-import com.monopolynew.game.Player;
-import com.monopolynew.map.PurchasableField;
+import com.monopolynew.map.GameField;
 
 public interface StepProcessor {
 
-    void processStepOnPurchasableField(Game game, Player player, PurchasableField field);
+    void processStepOnField(Game game, GameField field);
 }

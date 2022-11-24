@@ -113,7 +113,7 @@ function openWebsocket(username) {
             onDiceResult(socketMessage);
         }
         if (socketMessageCode === 304) {
-            movePlayerChip(socketMessage.player_id, socketMessage.field);
+            onNewPlayerPosition(socketMessage);
         }
         if (socketMessageCode === 305) {
             onMoneyChange(socketMessage);
@@ -345,6 +345,16 @@ function onDiceResult(socketMessage) {
             sendGetHttpRequest(`${BASE_GAME_URL}/dice/after`, true);
         }
     }, 2000);
+}
+
+function onNewPlayerPosition(socketMessage) {
+    let playerId = socketMessage.player_id;
+    movePlayerChip(playerId, socketMessage.field);
+    if (playerId === thisPlayerId) {
+        setTimeout(() => {
+            sendGetHttpRequest(`${BASE_GAME_URL}/after_move`, true);
+        }, 500);
+    }
 }
 
 function onMoneyChange(socketMessage) {

@@ -10,4 +10,4 @@ Most of the communication between frontend and backend happens through Websocket
 
 P.S.  
 Currently, I don't have any deep JavaScript knowledge as I haven't studied it anywhere, so I decided that practice is the best way of learning.  
-Because of that frontend might look very rough and disordered, but that will be fixed as soon as possible.
+Because of that frontend might look a bit rough, but that will be fixed as soon as possible.

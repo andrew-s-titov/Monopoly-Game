@@ -7,9 +7,7 @@ import org.springframework.lang.Nullable;
 
 public interface GameHelper {
 
-    void movePlayerForward(Game game, Player player, int newPosition);
-
-    void changePlayerPosition(Player player, int fieldId);
+    void movePlayer(Game game, Player player, int newPositionIndex, boolean forward);
 
     void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason);
 

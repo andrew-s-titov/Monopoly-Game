@@ -74,9 +74,9 @@ function renderPlayerChip(playerObject) {
     chip.style.position = 'fixed';
     chip.style.boxShadow = '1px 1px 1px 0.8px black';
     chip.style.transition = 'left 0.4s, top 0.4s, right 0.4s, down 0.4s';
-    chip.style.transitionTimingFunction = 'linear;'
+    chip.style.transitionTimingFunction = 'linear';
     chip.style.background = 'grey';
-    chip.style.opacity = '0.8'
+    chip.style.opacity = '0.8';
 
     let chipInnerCircle = document.createElement('div');
     chipInnerCircle.style.width = '20px';

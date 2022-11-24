@@ -14,7 +14,6 @@ import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.ChanceContainer;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.service.StepProcessor;
 import com.monopolynew.websocket.GameEventSender;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,13 +38,13 @@ public class ChanceContainerImpl implements ChanceContainer {
     private final GameEventSender gameEventSender;
 
     @Autowired
-    public ChanceContainerImpl(GameHelper gameHelper, StepProcessor stepProcessor, GameEventSender gameEventSender) {
+    public ChanceContainerImpl(GameHelper gameHelper, GameEventSender gameEventSender) {
         this.gameHelper = gameHelper;
         this.gameEventSender = gameEventSender;
-        this.chances = createChances(gameHelper, stepProcessor, gameEventSender);
+        this.chances = createChances(gameHelper, gameEventSender);
     }
 
-    private List<Consumer<Game>> createChances(GameHelper gameHelper, StepProcessor stepProcessor, GameEventSender gameEventSender) {
+    private List<Consumer<Game>> createChances(GameHelper gameHelper, GameEventSender gameEventSender) {
         return List.of(
                 moneyChance(50, true, "%s found $%s on the pavement"),
                 moneyChance(70, true, "%s won $%s in the lottery"),
@@ -163,8 +161,7 @@ public class ChanceContainerImpl implements ChanceContainer {
 
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName()
                             + " was urgently called on a business trip and is proceeding to the nearest airport"));
-                    gameHelper.changePlayerPosition(currentPlayer, nearestField.getId());
-                    stepProcessor.processStepOnPurchasableField(game, currentPlayer, nearestField);
+                    gameHelper.movePlayer(game, currentPlayer, nearestField.getId(), false);
                 },
 
                 game -> {
@@ -172,12 +169,8 @@ public class ChanceContainerImpl implements ChanceContainer {
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                             String.format("%s unexpectedly ended up on the %s field after a booze",
                                     currentPlayer.getName(), FieldAction.START.getName())));
-                    if (currentPlayer.getPosition() < GameMap.NUMBER_OF_FIELDS / 2) {
-                        gameHelper.changePlayerPosition(currentPlayer, 0);
-                    } else {
-                        gameHelper.movePlayerForward(game, currentPlayer, 0);
-                    }
-                    gameHelper.endTurn(game);
+                    boolean forward = currentPlayer.getPosition() > GameMap.NUMBER_OF_FIELDS / 2;
+                    gameHelper.movePlayer(game, currentPlayer, 0, forward);
                 },
 
                 game -> {
@@ -190,9 +183,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                             .collect(Collectors.toList());
                     var random = new Random().nextInt(purchasableFieldsIndexes.size());
                     Integer randomFieldIndex = purchasableFieldsIndexes.get(random);
-                    var randomField = (PurchasableField) gameMap.getField(randomFieldIndex);
-                    gameHelper.changePlayerPosition(currentPlayer, randomFieldIndex);
-                    stepProcessor.processStepOnPurchasableField(game, currentPlayer, randomField);
+                    gameHelper.movePlayer(game, currentPlayer, randomFieldIndex, false);
                 }
         );
     }

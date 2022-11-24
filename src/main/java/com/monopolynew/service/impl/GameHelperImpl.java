@@ -43,31 +43,17 @@ public class GameHelperImpl implements GameHelper {
     private final GameFieldConverter gameFieldConverter;
 
     @Override
-    public void movePlayerForward(Game game, Player player, int newPosition) {
+    public void movePlayer(Game game, Player player, int newPositionIndex, boolean forward) {
         int currentPosition = player.getPosition();
-        boolean newCircle = newPosition < currentPosition;
-        changePlayerPosition(player, newPosition);
-        if (newCircle) {
+        changePlayerPosition(player, newPositionIndex);
+        if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
-            if (newPosition == 0) {
-                player.addMoney(Rules.CIRCLE_MONEY);
-                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                        String.format("%s received $%s for hitting %s field",
-                                player.getName(), Rules.CIRCLE_MONEY * 2, FieldAction.START.getName())));
-            } else {
-                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                        String.format("%s received $%s for starting a new circle",
-                                player.getName(), Rules.CIRCLE_MONEY)));
-            }
+            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                    String.format("%s received $%s for starting a new circle",
+                            player.getName(), Rules.CIRCLE_MONEY)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(player))));
         }
-    }
-
-    @Override
-    public void changePlayerPosition(Player player, int fieldId) {
-        player.changePosition(fieldId);
-        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldId));
     }
 
     @Override
@@ -204,6 +190,11 @@ public class GameHelperImpl implements GameHelper {
             game.setStage(GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(nextPlayer));
         }
+    }
+
+    private void changePlayerPosition(Player player, int fieldIndex) {
+        player.changePosition(fieldIndex);
+        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex));
     }
 
     private Player toNextPlayer(Game game) {

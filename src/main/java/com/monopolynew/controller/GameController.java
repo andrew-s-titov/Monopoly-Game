@@ -51,6 +51,11 @@ public class GameController {
         gameService.afterDiceRollAction();
     }
 
+    @GetMapping("/after_move")
+    public void afterPlayerMoveAction() {
+        gameService.afterPlayerMoveAction();
+    }
+
     @GetMapping("/buy")
     public void processBuyProposal(@RequestParam("action") ProposalAction action) {
         gameService.processBuyProposal(action);

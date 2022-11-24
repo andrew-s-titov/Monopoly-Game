@@ -19,17 +19,14 @@ import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.BuyProposal;
-import com.monopolynew.map.ActionableField;
-import com.monopolynew.map.FieldAction;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
-import com.monopolynew.service.ChanceExecutor;
 import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.service.GameRepository;
 import com.monopolynew.service.GameMapRefresher;
+import com.monopolynew.service.GameRepository;
 import com.monopolynew.service.GameService;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
@@ -55,7 +52,6 @@ public class GameServiceImpl implements GameService {
     private final GameHelper gameHelper;
     private final StepProcessor stepProcessor;
     private final AuctionManager auctionManager;
-    private final ChanceExecutor chanceExecutor;
     private final GameEventSender gameEventSender;
     private final GameMapRefresher gameMapRefresher;
     private final PaymentProcessor paymentProcessor;
@@ -176,6 +172,17 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
+    public void afterPlayerMoveAction() {
+        Game game = gameRepository.getGame();
+        if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
+            throw new IllegalStateException("Cannot define after player move action - wrong game stage");
+        }
+        int playerPosition = game.getCurrentPlayer().getPosition();
+        GameField currentField = game.getGameMap().getField(playerPosition);
+        stepProcessor.processStepOnField(game, currentField);
+    }
+
+    @Override
     public void processBuyProposal(ProposalAction action) {
         Game game = gameRepository.getGame();
         BuyProposal buyProposal = game.getBuyProposal();
@@ -281,53 +288,8 @@ public class GameServiceImpl implements GameService {
         var lastDice = game.getLastDice();
         var currentPlayer = game.getCurrentPlayer();
         checkPlayerCanMakeMove(currentPlayer);
-        String currentPlayerName = currentPlayer.getName();
         var newPosition = computeNewPlayerPosition(currentPlayer, lastDice);
-        gameHelper.movePlayerForward(game, currentPlayer, newPosition);
-        GameField field = game.getGameMap().getField(newPosition);
-        if (field instanceof PurchasableField) {
-            stepProcessor.processStepOnPurchasableField(game, currentPlayer, (PurchasableField) field);
-        } else if (field instanceof ActionableField) {
-            var actionableField = (ActionableField) field;
-            switch (actionableField.getAction()) {
-                case JAIL: {
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                            currentPlayerName + " is visiting Jail for a tour"));
-                    gameHelper.endTurn(game);
-                    break;
-                }
-                case CHANCE: {
-                    chanceExecutor.executeChance(game);
-                    break;
-                }
-                case ARRESTED: {
-                    gameHelper.sendToJailAndEndTurn(game, currentPlayer, null);
-                    break;
-                }
-                case PARKING: {
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                            currentPlayerName + " is using free parking"));
-                    gameHelper.endTurn(game);
-                    break;
-                }
-                case INCOME_TAX: {
-                    prepareTaxPayment(game, currentPlayer, Rules.INCOME_TAX, FieldAction.INCOME_TAX.getName());
-                    break;
-                }
-                case LUXURY_TAX: {
-                    prepareTaxPayment(game, currentPlayer, Rules.LUXURY_TAX, FieldAction.LUXURY_TAX.getName());
-                    break;
-                }
-                default: {
-                    // TODO: teleport implementation
-                    // money event on START field is processed on change position
-                    gameHelper.endTurn(game);
-                    break;
-                }
-            }
-        } else {
-            throw new IllegalStateException("field on new player position is of an unsupported type");
-        }
+        gameHelper.movePlayer(game, currentPlayer, newPosition, true);
     }
 
     private void checkPlayerCanMakeMove(Player player) {

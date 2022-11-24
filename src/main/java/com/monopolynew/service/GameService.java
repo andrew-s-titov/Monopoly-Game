@@ -22,6 +22,8 @@ public interface GameService {
 
     void afterDiceRollAction();
 
+    void afterPlayerMoveAction();
+
     void processBuyProposal(ProposalAction action);
 
     void processAuctionBuyProposal(ProposalAction action);
