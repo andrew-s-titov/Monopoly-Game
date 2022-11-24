@@ -65,11 +65,27 @@ function renderPlayerPicture(playerObject) {
 
 function renderPlayerChip(playerObject) {
     let index = playerObject.index;
+
     let chip = document.createElement('div');
     chip.id = `chip${index}`;
-    chip.className = 'chip';
-    chip.style.background = playerObject.color;
+    chip.style.width = '24px';
+    chip.style.height = '24px';
+    chip.style.borderRadius = '15px';
+    chip.style.position = 'fixed';
+    chip.style.boxShadow = '1px 1px 1px 0.8px black';
+    chip.style.transition = 'left 0.4s, top 0.4s, right 0.4s, down 0.4s';
+    chip.style.transitionTimingFunction = 'linear;'
+    chip.style.background = 'grey';
     chip.style.opacity = '0.8'
+
+    let chipInnerCircle = document.createElement('div');
+    chipInnerCircle.style.width = '20px';
+    chipInnerCircle.style.height = '20px';
+    chipInnerCircle.style.borderRadius = '10px';
+    chipInnerCircle.style.margin = '2px';
+    chipInnerCircle.style.background = playerObject.color;
+
+    chip.appendChild(chipInnerCircle);
     chipsMap.set(index, chip);
     document.getElementById('map').appendChild(chip);
     moveChip(chip, playerObject.position);

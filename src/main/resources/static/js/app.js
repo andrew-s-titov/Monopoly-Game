@@ -260,13 +260,19 @@ function onPlayerDisconnected(socketMessage) {
 }
 
 function onChatMessage(socketMessage) {
-    let message = socketMessage.message;
     let playerId = socketMessage.player_id;
-    let playerName = getPlayerName(playerId);
-    let playerColor = getPlayerColor(playerId);
-    // TODO: apply color to player name;
+
     let messageElement = messageDiv();
-    messageElement.textContent = `${playerName}: ${message}`;
+
+    let nameText = document.createElement('span');
+    nameText.style.color = getPlayerColor(playerId);
+    nameText.innerText = getPlayerName(playerId);
+
+    let messageText = document.createElement('span');
+    messageText.innerText = `: ${socketMessage.message}`;
+
+    messageElement.appendChild(nameText);
+    messageElement.appendChild(messageText);
     sendMessageToChat(messageElement);
 }
 
