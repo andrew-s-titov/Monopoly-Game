@@ -18,6 +18,7 @@ public class Player {
     @Getter
     private int position = 0;
     @Getter
+    private boolean bankrupt = false;
     private boolean amnestied = false;
     private int skipsTurns = 0;
     private int jailTurns = 0;
@@ -89,6 +90,17 @@ public class Player {
         this.amnestied = true;
     }
 
+    /**
+     * Defines if player was released from prison because of doublet on dice throw
+     * @return true if player was released from prison because of doublet on dice throw, false if not.
+     * If true is returned, next invocation will return false (the flag is dropped)
+     */
+    public boolean isAmnestied() {
+        boolean result = this.amnestied;
+        if (amnestied) this.amnestied = false;
+        return result;
+    }
+
     public void incrementDoublets() {
         this.doubletCount++;
     }
@@ -101,8 +113,9 @@ public class Player {
         return this.doubletCount == Rules.MAX_DOUBLETS;
     }
 
-    public void clearCriminalRecord() {
-        this.amnestied = false;
+    public void goBankrupt() {
+        this.bankrupt = true;
+        this.money = 0;
     }
 
     @Override

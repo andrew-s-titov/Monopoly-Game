@@ -23,7 +23,7 @@ public class ParkingFieldActionExecutor implements FieldActionExecutor {
     @Override
     public void executeAction(Game game) {
         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                game.getCurrentPlayer() + " is using free parking"));
+                game.getCurrentPlayer().getName() + " is using free parking"));
         gameHelper.endTurn(game);
     }
 }

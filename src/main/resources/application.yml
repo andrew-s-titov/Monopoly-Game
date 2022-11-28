@@ -1,2 +1,4 @@
 server:
   port: 8080
+
+proxy.host: localhost:8080

@@ -1,12 +1,15 @@
 package com.monopolynew.service.impl;
 
+import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.MortgageChange;
 import com.monopolynew.enums.GameStage;
+import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.ChipMoveEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.GameOverEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.MortgageChangeEvent;
@@ -17,7 +20,6 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.CompanyField;
-import com.monopolynew.map.FieldAction;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -163,6 +166,13 @@ public class GameHelperImpl implements GameHelper {
     }
 
     @Override
+    public int computeNewPlayerPosition(Player player, DiceResult diceResult) {
+        int result = player.getPosition() + diceResult.getSum();
+        boolean newCircle = result > GameMap.LAST_FIELD_INDEX;
+        return newCircle ? result - GameMap.NUMBER_OF_FIELDS : result;
+    }
+
+    @Override
     public void endTurn(Game game) {
         if (!GameStage.ROLLED_FOR_JAIL.equals(game.getStage())) {
             // as there was no actual turn when turn ended after rolled for jail (tried luck but hot nota a doublet)
@@ -171,12 +181,10 @@ public class GameHelperImpl implements GameHelper {
         game.getGameMap().resetPurchaseHistory();
 
         Player currentPlayer = game.getCurrentPlayer();
-        if (currentPlayer.isAmnestied()) {
-            currentPlayer.clearCriminalRecord();
-        }
+
         Player nextPlayer;
-        if (game.getLastDice().isDoublet() && !currentPlayer.isSkipping()
-                && !currentPlayer.isImprisoned() && !currentPlayer.isAmnestied()) {
+        if (!currentPlayer.isAmnestied() && game.getLastDice() != null && game.getLastDice().isDoublet()
+                && !currentPlayer.isBankrupt() && !currentPlayer.isSkipping() && !currentPlayer.isImprisoned()) {
             nextPlayer = currentPlayer;
         } else {
             nextPlayer = toNextPlayer(game);
@@ -192,6 +200,83 @@ public class GameHelperImpl implements GameHelper {
         }
     }
 
+    @Override
+    public void bankruptPlayer(Game game, Player player) {
+        GameStage stage = game.getStage();
+        Player currentPlayer = game.getCurrentPlayer();
+        player.goBankrupt();
+        gameEventSender.sendToAllPlayers(BankruptcyEvent.forPlayer(player));
+        if (player.equals(currentPlayer) && GameStage.AWAITING_PAYMENT.equals(stage) && game.getCheckToPay().getBeneficiary() != null) {
+            Player beneficiary = game.getCheckToPay().getBeneficiary();
+            int playerMoneyLeft = player.getMoney();
+            if (playerMoneyLeft > 0) {
+                beneficiary.addMoney(playerMoneyLeft);
+                gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+                        Collections.singletonList(MoneyState.fromPlayer(beneficiary))));
+            }
+            List<PurchasableField> playerFields = getPlayerFields(game, player);
+            playerFields.forEach(field -> field.newOwner(beneficiary));
+            if (!CollectionUtils.isEmpty(playerFields)) {
+                gameEventSender.sendToAllPlayers(
+                        new FieldViewChangeEvent(gameFieldConverter.toListView(playerFields)));
+            }
+        } else {
+            bankruptForState(game, player);
+        }
+
+        if (!checkIfGameEnded(game) && player.equals(currentPlayer)) {
+            endTurn(game);
+        }
+    }
+
+    private List<PurchasableField> getPlayerFields(Game game, Player player) {
+        return game.getGameMap().getFields().stream()
+                .filter(field -> field instanceof PurchasableField)
+                .map(field -> (PurchasableField) field)
+                .filter(field -> !field.isFree())
+                .filter(field -> field.getOwner().equals(player))
+                .collect(Collectors.toList());
+    }
+
+    private void bankruptForState(Game game, Player player) {
+        List<PurchasableField> playerFields = getPlayerFields(game, player);
+        playerFields.forEach(field -> {
+            field.newOwner(null);
+            if (field.isMortgaged()) {
+                field.redeem();
+            }
+            if (field instanceof StreetField) {
+                var streetField = (StreetField) field;
+                if (streetField.getHouses() > 0) {
+                    streetField.sellAllHouses();
+                }
+            }
+        });
+        if (!CollectionUtils.isEmpty(playerFields)) {
+            gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(gameFieldConverter.toListView(playerFields)));
+        }
+    }
+
+    private boolean checkIfGameEnded(Game game) {
+        Collection<Player> players = game.getPlayers();
+        long nonBankruptPlayers = players.stream()
+                .filter(p -> !p.isBankrupt())
+                .distinct()
+                .count();
+        if (nonBankruptPlayers == 1) {
+            Player winner = players.stream()
+                    .filter(p -> !p.isBankrupt())
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("failed to get last non-bankrupt player"));
+            game.finishGame();
+            gameEventSender.sendToAllPlayers(GameOverEvent.withWinner(winner));
+            // TODO: close websocket connection for all players
+            // gameEventSender.closeExchangeChannel();
+            return true;
+        }
+        return false;
+    }
+
     private void changePlayerPosition(Player player, int fieldIndex, boolean needAfterMoveCall) {
         player.changePosition(fieldIndex);
         gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex, needAfterMoveCall));
@@ -199,9 +284,11 @@ public class GameHelperImpl implements GameHelper {
 
     private Player toNextPlayer(Game game) {
         Player nextPlayer = game.nextPlayer();
-        if (nextPlayer.isSkipping()) {
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his/her turn"));
-            nextPlayer.skip();
+        if (nextPlayer.isBankrupt() || nextPlayer.isSkipping()) {
+            if (nextPlayer.isSkipping()) {
+                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his/her turn"));
+                nextPlayer.skip();
+            }
             nextPlayer = toNextPlayer(game);
         }
         return nextPlayer;

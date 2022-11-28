@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,8 +24,8 @@ public class GameController {
         gameService.startGame();
     }
 
-    @GetMapping("/name/{username}")
-    public ResponseEntity<?> checkName(@PathVariable("username") String playerName) {
+    @GetMapping
+    public ResponseEntity<?> checkName(@RequestParam("name") String playerName) {
         String message = null;
         if (StringUtils.isBlank(playerName) || playerName.length() < 3) {
             message = "Player name must be at least 3 character long";

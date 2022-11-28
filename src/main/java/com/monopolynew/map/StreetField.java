@@ -26,9 +26,9 @@ public class StreetField extends BasePurchasableField implements StaticRentField
 
     public void setNewRent(boolean allGroupOwnedByTheSamePlayer) {
         if (houses == 0) {
-            currentRent = allGroupOwnedByTheSamePlayer ? rents[0] * 2 : rents[0];
+            this.currentRent = allGroupOwnedByTheSamePlayer ? this.rents[0] * 2 : this.rents[0];
         } else {
-            currentRent = rents[houses];
+            this.currentRent = this.rents[this.houses];
         }
     }
 
@@ -44,14 +44,18 @@ public class StreetField extends BasePurchasableField implements StaticRentField
         if (houses == Rules.MAX_HOUSES_ON_STREET) {
             throw new IllegalStateException("Cannot add new house - limit is reached");
         }
-        houses++;
+        this.houses++;
     }
 
     public void sellHouse() {
         if (houses == 0) {
             throw new IllegalStateException("Cannot add new house - limit is reached");
         }
-        houses--;
+        this.houses--;
+    }
+
+    public void sellAllHouses() {
+        this.houses = 0;
     }
 
     @Override

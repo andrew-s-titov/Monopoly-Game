@@ -1,3 +1,30 @@
+let HOST = null;
+let SCHEME = null;
+let BASE_GAME_URL = null;
+let WEBSOCKET_SCHEME = null;
+let WEBSOCKET_BASE_URL = null;
+
+export function setHost(host) {
+    HOST = host;
+    let localhost = HOST.includes('localhost', 0);
+    SCHEME = localhost ? 'http' : 'https';
+    WEBSOCKET_SCHEME = localhost ? 'ws' : 'wss';
+    BASE_GAME_URL = `${SCHEME}://${HOST}/game`;
+    WEBSOCKET_BASE_URL = `${WEBSOCKET_SCHEME}://${HOST}/connect`;
+}
+
+export function getHost() {
+    return HOST;
+}
+
+export function getBaseGameUrl() {
+    return BASE_GAME_URL;
+}
+
+export function getBaseWebsocketUrl() {
+    return WEBSOCKET_BASE_URL;
+}
+
 export function sendGetHttpRequest(url, async, onRequesterLoadFunction, onRequesterErrorFunction) {
     sendHttpRequest('GET', url, async, onRequesterLoadFunction, onRequesterErrorFunction);
 }
@@ -16,5 +43,6 @@ function sendHttpRequest(method, url, async, onRequesterLoadFunction, onRequeste
 function prepareHttpRequester(method, url, async) {
     let httpRequester = new XMLHttpRequest();
     httpRequester.open(method, url, async);
+    httpRequester.withCredentials = true;
     return httpRequester;
 }

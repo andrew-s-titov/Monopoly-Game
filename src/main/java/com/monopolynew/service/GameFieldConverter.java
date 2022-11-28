@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface GameFieldConverter {
 
-    GameFieldView toView(GameField gameField);
+    <T extends GameField> GameFieldView toView(T gameField);
 
-    List<GameFieldView> toListView(List<GameField> gameFieldList);
+    <T extends GameField> List<GameFieldView> toListView(List<T> gameFieldList);
 
-    List<GameFieldView> toListView(GameField[] gameFieldArray);
+    <T extends GameField> List<GameFieldView> toListView(T[] gameFieldArray);
 }

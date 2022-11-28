@@ -69,10 +69,10 @@ public class ChanceContainerImpl implements ChanceContainer {
                     var players = game.getPlayers();
                     int giftSize = 15;
                     int giftTotal = 0;
-                    for (Player player : players) {
-                        if (!player.equals(currentPlayer)) {
-                            giftTotal += player.takeMoney(giftSize);
-                            moneyStates.add(MoneyState.fromPlayer(player));
+                    for (Player otherPlayer : players) {
+                        if (!otherPlayer.equals(currentPlayer) && !otherPlayer.isBankrupt()) {
+                            giftTotal += otherPlayer.takeMoney(giftSize);
+                            moneyStates.add(MoneyState.fromPlayer(otherPlayer));
                         }
                     }
                     currentPlayer.addMoney(giftTotal);
@@ -94,7 +94,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     int reward = (playerMoney >= rewardRate * beneficiaryCount) ? rewardRate : playerMoney / beneficiaryCount;
 
                     for (Player otherPlayer : players) {
-                        if (!otherPlayer.equals(currentPlayer)) {
+                        if (!otherPlayer.equals(currentPlayer) && !otherPlayer.isBankrupt()) {
                             otherPlayer.addMoney(reward);
                             currentPlayer.takeMoney(reward);
                             moneyStates.add(MoneyState.fromPlayer(otherPlayer));
@@ -103,7 +103,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     moneyStates.add(MoneyState.fromPlayer(currentPlayer));
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                             String.format("%s is paying everyone $%s for help with election campaign",
-                                    currentPlayer.getName(), reward)));
+                                    currentPlayer.getName(), rewardRate)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
                     gameHelper.endTurn(game);
                 },

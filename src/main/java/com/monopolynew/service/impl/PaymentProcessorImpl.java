@@ -6,7 +6,6 @@ import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.SystemMessageEvent;
-import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.service.GameHelper;
@@ -27,7 +26,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
     private final GameEventSender gameEventSender;
 
     @Override
-    public void createPayCheck(Game game, Player player, Player beneficiary, int amount, String paymentComment) {
+    public void startPaymentProcess(Game game, Player player, Player beneficiary, int amount, String paymentComment) {
         var currentGameStage = game.getStage();
         verifyCheckCreationAvailable(currentGameStage);
         var newGameStage = GameStage.ROLLED_FOR_TURN.equals(currentGameStage) ?
@@ -43,20 +42,20 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 game.setStage(newGameStage);
-                var checkToPay = new CheckToPay(player, beneficiary, amount, false, amount >= assets * 0.9,
+                var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.9 < assets,
                         paymentComment);
                 game.setCheckToPay(checkToPay);
                 gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.fromCheck(checkToPay));
             } else {
-                // TODO: auto-bankruptcy
-                gameHelper.endTurn(game);
+                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(player.getName() + "went bankrupt"));
+                gameHelper.bankruptPlayer(game, player);
             }
         }
     }
 
     @Override
     public void processPayment(Game game) {
-        GameStage currentGameStage = game.getStage();
+        var currentGameStage = game.getStage();
         verifyPaymentProcessingAvailable(currentGameStage);
         var checkToPay = game.getCheckToPay();
         if (checkToPay == null) {
@@ -82,12 +81,13 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         }
         game.setCheckToPay(null);
 
-        game.setStage(GameStage.TURN_START);
         if (GameStage.AWAITING_PAYMENT.equals(currentGameStage)) {
             gameHelper.endTurn(game);
         } else if (GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
             payer.releaseFromJail();
-            gameEventSender.sendToPlayer(payer.getId(), TurnStartEvent.forPlayer(payer));
+            game.setStage(GameStage.ROLLED_FOR_TURN);
+            var newPosition = gameHelper.computeNewPlayerPosition(payer, game.getLastDice());
+            gameHelper.movePlayer(game, payer, newPosition, true);
         }
     }
 

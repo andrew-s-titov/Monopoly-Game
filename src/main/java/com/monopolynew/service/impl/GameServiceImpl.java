@@ -6,6 +6,7 @@ import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
+import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -141,25 +143,8 @@ public class GameServiceImpl implements GameService {
                 doRegularMove(game);
             } else {
                 if (currentPlayer.lastTurnInPrison()) {
-                    if (currentPlayer.getMoney() >= Rules.JAIL_BAIL) {
-                        currentPlayer.takeMoney(Rules.JAIL_BAIL);
-                        currentPlayer.releaseFromJail();
-                        game.setStage(GameStage.ROLLED_FOR_TURN);
-                        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
-                                MoneyState.fromPlayer(currentPlayer))));
-                        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
-                                currentPlayer.getName() + " is released on bail"));
-                        doRegularMove(game);
-                    } else {
-                        int availableAssets = gameHelper.computePlayerAssets(game, currentPlayer);
-                        if (availableAssets >= Rules.JAIL_BAIL) {
-                            String message = currentPlayer.getName() + " served time and paid a criminal fine";
-                            paymentProcessor.createPayCheck(game, currentPlayer, null, Rules.JAIL_BAIL, message);
-                        } else {
-                            // TODO: auto-bankruptcy
-                            gameHelper.endTurn(game);
-                        }
-                    }
+                    String message = currentPlayer.getName() + " served time and paid a criminal fine";
+                    paymentProcessor.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
                 } else {
                     currentPlayer.doTime();
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is doing time"));
@@ -247,14 +232,37 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void giveUp() {
+    public void giveUp(String playerId) {
+        // TODO: check if game is in progress
+        Game game = gameRepository.getGame();
+        Player player = game.getPlayerById(playerId);
+        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(player.getName() + " gave up"));
+        gameHelper.bankruptPlayer(game, player);
         // TODO: implementation
     }
 
     @Override
-    public List<FieldManagementAction> availableManagementActions(int fieldIndex, String playerId) {
+    public List<FieldManagementAction> availableFieldManagementActions(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
         return fieldManagementService.availableManagementActions(game, fieldIndex, playerId);
+    }
+
+    @Override
+    public List<PlayerManagementAction> availablePlayerManagementActions(String requestingPlayerId, String subjectPlayerId) {
+        var game = gameRepository.getGame();
+        List<PlayerManagementAction> actions = new ArrayList<>(3);
+
+        if (requestingPlayerId.equals(subjectPlayerId)) {
+            actions.add(PlayerManagementAction.GIVE_UP);
+        } else {
+            var currentPlayer = game.getCurrentPlayer();
+            var gameStage = game.getStage();
+            if (currentPlayer.getId().equals(requestingPlayerId) &&
+                    (GameStage.TURN_START.equals(gameStage) || GameStage.JAIL_RELEASE_START.equals(gameStage))) {
+                actions.add(PlayerManagementAction.CONTRACT);
+            }
+        }
+        return actions;
     }
 
     @Override
@@ -288,7 +296,7 @@ public class GameServiceImpl implements GameService {
         var lastDice = game.getLastDice();
         var currentPlayer = game.getCurrentPlayer();
         checkPlayerCanMakeMove(currentPlayer);
-        var newPosition = computeNewPlayerPosition(currentPlayer, lastDice);
+        var newPosition = gameHelper.computeNewPlayerPosition(currentPlayer, lastDice);
         gameHelper.movePlayer(game, currentPlayer, newPosition, true);
     }
 
@@ -299,12 +307,6 @@ public class GameServiceImpl implements GameService {
         if (player.isImprisoned()) {
             throw new IllegalStateException("imprisoned player cannot do regular turn");
         }
-    }
-
-    private int computeNewPlayerPosition(Player player, DiceResult diceResult) {
-        int result = player.getPosition() + diceResult.getSum();
-        boolean newCircle = result > GameMap.LAST_FIELD_INDEX;
-        return newCircle ? result - GameMap.NUMBER_OF_FIELDS : result;
     }
 
     private void managementWithPayCheckResend(Game game, int fieldIndex, String playerId, TriConsumer<Game, Integer, String> managementAction) {

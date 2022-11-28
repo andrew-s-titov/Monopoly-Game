@@ -1,0 +1,19 @@
+.image-row td {
+    border-left: 2px solid #dddddd;
+    border-right: 2px solid #dddddd;
+    border-top: 2px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+.name-row td {
+    border-left: 2px solid #dddddd;
+    border-right: 2px solid #dddddd;
+    border-bottom: 2px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+#playerNameInput {
+    text-align: center;
+}

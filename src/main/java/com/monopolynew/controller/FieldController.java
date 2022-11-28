@@ -15,14 +15,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/game/field")
-public class FieldManagementController {
+public class FieldController {
 
     private final GameService gameService;
 
     @GetMapping("/{fieldIndex}/management")
     public List<FieldManagementAction> availableManagementActions(@PathVariable("fieldIndex") Integer fieldIndex,
                                                                   @CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
-        return gameService.availableManagementActions(fieldIndex, playerId);
+        return gameService.availableFieldManagementActions(fieldIndex, playerId);
     }
 
     @GetMapping("/{fieldIndex}/mortgage")

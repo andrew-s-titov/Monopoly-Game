@@ -31,6 +31,7 @@ public class Auction {
         Player auctionInitiator = game.getCurrentPlayer();
         this.participants = game.getPlayers().stream()
                 .filter(player -> !player.equals(auctionInitiator))
+                .filter(player -> !player.isBankrupt())
                 .filter(player -> player.getMoney() >= auctionPrice)
                 .collect(Collectors.toList());
         this.playerIterator = participants.iterator();
@@ -46,6 +47,10 @@ public class Auction {
             auctionCircle++;
         }
         currentParticipant = playerIterator.next();
+        if (currentParticipant.isBankrupt()) {
+            playerIterator.remove();
+            currentParticipant = getNextPlayer();
+        }
         return currentParticipant;
     }
 

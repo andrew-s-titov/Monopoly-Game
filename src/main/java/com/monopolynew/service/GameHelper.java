@@ -1,5 +1,6 @@
 package com.monopolynew.service;
 
+import com.monopolynew.dto.DiceResult;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
@@ -17,5 +18,9 @@ public interface GameHelper {
 
     int computePlayerAssets(Game game, Player player);
 
+    int computeNewPlayerPosition(Player player, DiceResult diceResult);
+
     void endTurn(Game game);
+
+    void bankruptPlayer(Game game, Player player);
 }

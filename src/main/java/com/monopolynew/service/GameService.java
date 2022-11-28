@@ -2,6 +2,7 @@ package com.monopolynew.service;
 
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.JailAction;
+import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
 
 import java.util.List;
@@ -34,9 +35,11 @@ public interface GameService {
 
     void processPayment();
 
-    void giveUp();
+    void giveUp(String playerId);
 
-    List<FieldManagementAction> availableManagementActions(int fieldIndex, String playerId);
+    List<FieldManagementAction> availableFieldManagementActions(int fieldIndex, String playerId);
+
+    List<PlayerManagementAction> availablePlayerManagementActions(String requestingPlayerId, String subjectPlayerId);
 
     void mortgageField(int fieldIndex, String playerId);
 

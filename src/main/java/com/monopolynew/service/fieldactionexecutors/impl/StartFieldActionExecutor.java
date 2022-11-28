@@ -29,6 +29,7 @@ public class StartFieldActionExecutor implements FieldActionExecutor {
     @Override
     public void executeAction(Game game) {
         Player currentPlayer = game.getCurrentPlayer();
+        currentPlayer.addMoney(Rules.CIRCLE_MONEY);
         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                 String.format("%s received $%s for hitting the %s field",
                         currentPlayer.getName(), Rules.CIRCLE_MONEY, FieldAction.START.getName())));

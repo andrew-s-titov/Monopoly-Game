@@ -86,11 +86,15 @@ public class Game {
     }
 
     public void finishGame() {
+        this.inProgress = false;
         this.players.clear();
         this.gameMap = null;
         this.whoseTurn = null;
         this.playerIterator = null;
-        this.inProgress = false;
+        this.auction = null;
+        this.buyProposal = null;
+        this.lastDice = null;
+        this.checkToPay = null;
     }
 
     public Player getCurrentPlayer() {

@@ -7,7 +7,7 @@ import org.springframework.lang.Nullable;
 
 public interface PaymentProcessor {
 
-    void createPayCheck(Game game, @NonNull Player player, @Nullable Player beneficiary, int amount, String paymentComment);
+    void startPaymentProcess(Game game, @NonNull Player player, @Nullable Player beneficiary, int amount, String paymentComment);
 
     void processPayment(Game game);
 }

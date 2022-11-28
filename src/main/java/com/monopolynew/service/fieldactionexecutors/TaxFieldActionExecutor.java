@@ -15,6 +15,6 @@ public abstract class TaxFieldActionExecutor implements FieldActionExecutor {
     protected void prepareTaxPayment(Game game, int tax, String taxName) {
         Player currentPlayer = game.getCurrentPlayer();
         String paymentComment = String.format("%s is paying $%s as %s", currentPlayer.getName(), tax, taxName);
-        paymentProcessor.createPayCheck(game, currentPlayer, null, tax, paymentComment);
+        paymentProcessor.startPaymentProcess(game, currentPlayer, null, tax, paymentComment);
     }
 }

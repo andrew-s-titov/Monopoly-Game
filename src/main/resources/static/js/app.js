@@ -4,34 +4,48 @@ import {
     renderActionContainer,
     removeOldActionContainer,
     renderPropertyManagementContainer,
-    PROPERTY_MANAGEMENT_BASE_URL
 } from './buttons.js';
 import {renderDiceGifs, renderDiceResult, hideDice} from './dice.js'
-import {sendGetHttpRequest, sendPostHttpRequest} from './http.js'
+import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js'
 import {renderMortgagePlate, renderHouses, renderFieldViews} from './field-view.js';
-import {addPlayers, changePlayerMoney, getPlayerColor, getPlayerIndex, getPlayerName, movePlayerChip} from "./players.js";
+import {
+    addPlayers,
+    bankruptPlayer,
+    changePlayerMoney,
+    getPlayerColor,
+    getPlayerIndex,
+    getPlayerName,
+    movePlayerChip
+} from "./players.js";
 
 const PLAYER_ID_COOKIE = 'player_id';
-const HOST_AND_PORT = 'localhost:8080';
-const BASE_GAME_URL = `http://${HOST_AND_PORT}/game`
 
 let thisPlayerId = null;
-let thisPlayerName = null;
 let webSocket = null;
 let gameInProgress = false;
 
 window.onload = () => {
-    addClickEvent(document.getElementById('submitPlayerName'), () => joinToRoom());
-    addClickEvent(document.getElementById('startGameButton'), () => startGame());
-    addClickEvent(document.getElementById('disconnectPlayerButton'), () => disconnectPlayer());
-    addClickEvent(document.getElementById('playerMessageButton'), () => processPlayerMessage());
+    let host = document.getElementById('proxy-host').innerText;
+    setHost(host);
+
+    let submitPlayerNameButton = document.getElementById('submitPlayerName');
+    if (submitPlayerNameButton) addClickEvent(submitPlayerNameButton, () => joinToRoom());
+
+    let startGameButton = document.getElementById('startGameButton');
+    if (startGameButton) addClickEvent(startGameButton, () => startGame());
+
+    let disconnectPlayerButton = document.getElementById('disconnectPlayerButton');
+    if (disconnectPlayerButton) addClickEvent(disconnectPlayerButton, () => disconnectPlayer());
+
+    let playerMessageButton = document.getElementById('playerMessageButton');
+    if (playerMessageButton) addClickEvent(playerMessageButton, () => processPlayerMessage());
 
     let playerMessageInput = document.getElementById('playerNameInput');
     if (playerMessageInput) {
         playerMessageInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                document.getElementById('submitPlayerName').click();
+                submitPlayerNameButton.click();
             }
         });
     }
@@ -47,12 +61,11 @@ window.onload = () => {
 
 function joinToRoom() {
     const playerName = document.getElementById('playerNameInput').value;
-    sendGetHttpRequest(`${BASE_GAME_URL}/name/${playerName}`, true,
+    sendGetHttpRequest(`${getBaseGameUrl()}?name=${playerName}`, true,
         function (requester) {
             if (requester.readyState === XMLHttpRequest.DONE) {
                 if (requester.status === 200) {
                     openWebsocket(playerName);
-                    thisPlayerName = playerName;
                 } else {
                     let errorPopUp = document.getElementById('errorMessage');
                     errorPopUp.style.display = 'block';
@@ -74,7 +87,7 @@ function openWebsocket(username) {
     document.getElementById('startPage').style.display = 'none';
     document.getElementById('playersBeforeGame').style.display = 'block';
 
-    webSocket = new WebSocket(`ws://${HOST_AND_PORT}/connect/${username}`);
+    webSocket = new WebSocket(`${getBaseWebsocketUrl()}/${username}`);
     webSocket.onclose = (event) => {
         console.log('websocket connection is closed');
         location.reload();
@@ -134,7 +147,7 @@ function openWebsocket(username) {
             onAuctionBuyProposal(socketMessage);
         }
         if (socketMessageCode === 311) {
-
+            bankruptPlayer(socketMessage.player_id);
         }
         if (socketMessageCode === 312) {
             onPayCommand(socketMessage);
@@ -144,6 +157,9 @@ function openWebsocket(username) {
         }
         if (socketMessageCode === 314) {
             renderHouses(socketMessage.field, socketMessage.amount);
+        }
+        if (socketMessageCode === 315) {
+            onGameOver(socketMessage);
         }
     };
 }
@@ -162,7 +178,7 @@ function savePlayerIdToCookie(playerId) {
     if (cookieValue == null || cookieValue !== playerId) {
         const expirationTime = new Date();
         expirationTime.setTime(expirationTime.getTime() + (24 * 60 * 60 * 1000)); // setting expiration in 1 day
-        document.cookie = `${PLAYER_ID_COOKIE}=${playerId};expires=${expirationTime.toUTCString()};path = /`;
+        document.cookie = `${PLAYER_ID_COOKIE}=${playerId};expires=${expirationTime.toUTCString()};path=/`;
     }
 }
 
@@ -173,7 +189,7 @@ function getPlayerIdFromCookie() {
 
 function startGame() {
     gameInProgress = true;
-    sendPostHttpRequest(BASE_GAME_URL, true,
+    sendPostHttpRequest(getBaseGameUrl(), true,
         function (requester) {
             if (requester.readyState === XMLHttpRequest.DONE) {
                 if (requester.status !== 200) {
@@ -286,11 +302,7 @@ function onSystemMessage(systemMessageEvent) {
 
 function messageDiv() {
     let messageElement = document.createElement('div');
-    messageElement.style.textAlign = 'left';
-    messageElement.style.color = 'white';
-    messageElement.style.fontSize = '15px';
-    messageElement.style.padding = '5px';
-    messageElement.style.paddingLeft = '10px';
+    messageElement.className = 'message-body';
     return messageElement;
 }
 
@@ -306,12 +318,12 @@ function onTurnStart(turnStartEvent) {
     outlinePlayer(playerToGo);
     if (thisPlayerId === playerToGo) {
 
-        let throwDiceButton = createActionButton('Roll the dice!', `${BASE_GAME_URL}/dice/notify`, true);
+        let throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, true);
         addClickEvent(throwDiceButton, () => throwDiceButton.remove());
         document.getElementById('map').appendChild(throwDiceButton);
         throwDiceButton.style.position = 'fixed';
         throwDiceButton.style.left = '47%';
-        throwDiceButton.style.top = '50%';
+        throwDiceButton.style.top = '45%';
     }
 }
 
@@ -328,12 +340,25 @@ function processPlayerMessage() {
 
 function outlinePlayer(playerId) {
     let playerIndex = getPlayerIndex(playerId);
-    document.getElementById(`player${playerIndex}-group`).style.outline = '5px solid white';
+    document.getElementById(`player${playerIndex}-group`).style.boxShadow =
+        '15px 0 6px -5px white inset, -15px 0 6px -5px white inset';
 }
 
 function removePlayersOutline() {
     for (let group of document.getElementsByClassName('player-group')) {
-        group.style.outline = 'none';
+        if (group.style.boxShadow !== 'none') {
+            group.style.boxShadow = 'none';
+            return;
+        }
+    }
+}
+
+function onDiceStartRolling(diceRollingStartEvent) {
+    renderDiceGifs();
+    if (thisPlayerId === diceRollingStartEvent.player_id) {
+        setTimeout(() => {
+            sendGetHttpRequest(`${getBaseGameUrl()}/dice/roll`, true)
+        }, 1500);
     }
 }
 
@@ -342,7 +367,7 @@ function onDiceResult(diceResultEvent) {
     setTimeout(() => {
         hideDice();
         if (thisPlayerId === diceResultEvent.player_id) {
-            sendGetHttpRequest(`${BASE_GAME_URL}/dice/after`, true);
+            sendGetHttpRequest(`${getBaseGameUrl()}/dice/after`, true);
         }
     }, 2000);
 }
@@ -352,7 +377,7 @@ function onPlayerChipMove(chipMoveEvent) {
     movePlayerChip(playerId, chipMoveEvent.field);
     if (chipMoveEvent.need_after_move_call && playerId === thisPlayerId) {
         setTimeout(() => {
-            sendGetHttpRequest(`${BASE_GAME_URL}/after_move`, true);
+            sendGetHttpRequest(`${getBaseGameUrl()}/after_move`, true);
         }, 500);
     }
 }
@@ -368,8 +393,8 @@ function onBuyProposal(buyProposalEvent) {
     let price = buyProposalEvent.price;
     let field = buyProposalEvent.field_name;
     if (thisPlayerId === playerId) {
-        let acceptButton = createActionButton('Buy', `${BASE_GAME_URL}/buy?action=ACCEPT`, true);
-        let auctionButton = createActionButton('Auction', `${BASE_GAME_URL}/buy?action=DECLINE`, true);
+        let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, true);
+        let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, true);
         renderActionContainer(`Do you like to buy ${field} for $${price}?`, acceptButton, auctionButton);
     }
 }
@@ -380,24 +405,24 @@ function onJailReleaseProcess(jailReleaseProcessEvent) {
     outlinePlayer(imprisonedPlayer);
     if (thisPlayerId === imprisonedPlayer) {
         removeOldActionContainer();
-        let payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${BASE_GAME_URL}/jail?action=PAY`,
+        let payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${getBaseGameUrl()}/jail?action=PAY`,
             jailReleaseProcessEvent.bail_available);
-        let luckButton = createActionButton('Try luck', `${BASE_GAME_URL}/jail?action=LUCK`, true);
+        let luckButton = createActionButton('Try luck', `${getBaseGameUrl()}/jail?action=LUCK`, true);
         renderActionContainer('Chose a way out:', payButton, luckButton);
     }
 }
 
 function onAuctionBuyProposal(auctionBuyProposalEvent) {
-    let buyButton = createActionButton('Buy', `${BASE_GAME_URL}/auction/buy?action=ACCEPT`, true);
-    let declineButton = createActionButton('Decline', `${BASE_GAME_URL}/auction/buy?action=DECLINE`, true);
+    let buyButton = createActionButton('Buy', `${getBaseGameUrl()}/auction/buy?action=ACCEPT`, true);
+    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/buy?action=DECLINE`, true);
     renderActionContainer(
         `Do you want to buy ${auctionBuyProposalEvent.field_name} for $${auctionBuyProposalEvent.proposal}?`,
         buyButton, declineButton);
 }
 
 function onAuctionRaiseProposal(auctionRaiseProposalEvent) {
-    let raiseButton = createActionButton('Raise', `${BASE_GAME_URL}/auction/raise?action=ACCEPT`, true);
-    let declineButton = createActionButton('Decline', `${BASE_GAME_URL}/auction/raise?action=DECLINE`, true);
+    let raiseButton = createActionButton('Raise', `${getBaseGameUrl()}/auction/raise?action=ACCEPT`, true);
+    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/raise?action=DECLINE`, true);
     renderActionContainer(
         `Do you want to raise ${auctionRaiseProposalEvent.field_name} price to $${auctionRaiseProposalEvent.proposal}?`,
         raiseButton, declineButton);
@@ -408,10 +433,10 @@ function onPayCommand(payCommandEvent) {
     let sum = payCommandEvent.sum;
     let payable = payCommandEvent.payable;
     let wiseToGiveUp = payCommandEvent.wise_to_give_up;
-    let payButton = createActionButton('Pay', `${BASE_GAME_URL}/pay`, payable);
+    let payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
-        giveUpButton = createActionButton('Give up', `${BASE_GAME_URL}/give_up`, true);
+        giveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, true);
     }
     renderActionContainer(`Pay $${sum}`, payButton, giveUpButton);
 }
@@ -423,13 +448,28 @@ function onMortgageChange(mortgageChangeEvent) {
     }
 }
 
-function onDiceStartRolling(diceRollingStartEvent) {
-    renderDiceGifs();
-    if (thisPlayerId === diceRollingStartEvent.player_id) {
-        setTimeout(() => {
-            sendGetHttpRequest(`${BASE_GAME_URL}/dice/roll`, true)
-        }, 1500);
-    }
+function onGameOver(gameOverEvent) {
+    let winnerName = gameOverEvent.player_name;
+
+    let winnerInfoContainer = document.createElement('div');
+    winnerInfoContainer.className = 'fullscreen-shadow-container';
+
+    let winnerInfo = document.createElement('div');
+    winnerInfo.className = 'center-screen-container';
+    winnerInfo.innerText = `${winnerName} is the winner!`;
+
+    winnerInfoContainer.appendChild(winnerInfo);
+    document.body.appendChild(winnerInfoContainer);
+
+    setTimeout(() => {
+        winnerInfoContainer.remove();
+        if (webSocket != null && webSocket.readyState !== WebSocket.OPEN) {
+            webSocket.close();
+            webSocket = null;
+        }
+        document.getElementById('startPage').style.display = 'block';
+        location.reload();
+    }, 5000);
 }
 
 function applyFieldManagementEvents(fieldIndex) {
@@ -442,7 +482,7 @@ function applyFieldManagementEvents(fieldIndex) {
         if (event.target.id.startsWith('management')) {
             return;
         }
-        sendGetHttpRequest(`${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/management`, true,
+        sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/management`, true,
             function (requester) {
                 if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
                     let managementActions = JSON.parse(requester.response);

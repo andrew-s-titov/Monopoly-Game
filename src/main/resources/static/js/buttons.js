@@ -1,7 +1,6 @@
-import {sendGetHttpRequest} from "./http.js";
+import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
 
 export const PROPERTY_MANAGEMENT_PREFIX = "management";
-export const PROPERTY_MANAGEMENT_BASE_URL = 'http://localhost:8080/game/field';
 
 const ACTION_BUTTONS_CONTAINER_ID = 'action_container';
 const PROPERTY_MANAGEMENT_CONTAINER_ID = ACTION_BUTTONS_CONTAINER_ID + '_container';
@@ -13,9 +12,7 @@ export function addClickEvent(button, listenerFunction) {
 export function createActionButton(text, url, able) {
     let actionButton = document.createElement('button');
     actionButton.innerText = text;
-    actionButton.style.display = 'block';
-    actionButton.style.width = '150px';
-    actionButton.style.margin = 'auto';
+    actionButton.className = 'action-button';
     if (!able) {
         actionButton.disabled = true;
     }
@@ -33,25 +30,15 @@ export function removeOldActionContainer() {
 export function renderActionContainer(text, button1, button2) {
     let actionContainer = document.createElement('div');
     actionContainer.id = ACTION_BUTTONS_CONTAINER_ID;
-    actionContainer.style.width = '20%';
-    actionContainer.style.opacity = '0.9'
-    actionContainer.style.position = 'fixed';
-    actionContainer.style.left = '45%';
-    actionContainer.style.top = '35%';
-    actionContainer.style.backgroundColor = 'black';
+    actionContainer.className = 'action-container';
 
     let actionPhrase = document.createElement('div');
+    actionPhrase.className = 'action-phrase';
     actionPhrase.innerText = text;
-    actionPhrase.style.fontSize = '15px';
-    actionPhrase.style.color = 'white';
-    actionPhrase.style.textAlign = 'center';
-    actionPhrase.style.marginTop = '20px';
-    actionPhrase.style.marginBottom = '20px';
     actionContainer.appendChild(actionPhrase);
     for (let button of [button1, button2]) {
         if (button != null) {
             addClickEvent(button, () => actionContainer.remove());
-            button.style.marginBottom = '10px';
             actionContainer.appendChild(button);
         }
     }
@@ -61,13 +48,8 @@ export function renderActionContainer(text, button1, button2) {
 export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex, availableActions) {
     let managementContainer = document.createElement("div");
     managementContainer.id = PROPERTY_MANAGEMENT_CONTAINER_ID;
-    managementContainer.style.position = 'absolute';
-    managementContainer.style.width = '100%';
-    managementContainer.style.height = '100%';
-    managementContainer.style.opacity = '0.8';
-    managementContainer.style.background = 'black';
-    managementContainer.style.writingMode = '';
-    managementContainer.style.transform = '';
+    managementContainer.className = 'management-container';
+
     document.addEventListener('click', event => {
         if (event.target.id !== PROPERTY_MANAGEMENT_CONTAINER_ID) {
             managementContainer.remove();
@@ -75,9 +57,7 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
     });
     for (let action of availableActions) {
         let button = document.createElement('button');
-        button.style.width = '100%';
-        button.style.color = 'black';
-        button.style.fontSize = '10px';
+        button.className = 'manage-field-button';
         if (action === 'INFO') {
             // TODO: show info card atop of everything;
             button.innerHTML = 'Info';
@@ -88,22 +68,26 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
             button.innerHTML = 'Mortgage';
             button.id = `${PROPERTY_MANAGEMENT_PREFIX}-mortgage`;
             addClickEvent(button, () =>
-                sendGetHttpRequest( `${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/mortgage`, true));
+                sendGetHttpRequest( `${getBaseGameUrl()}/field/${fieldIndex}/mortgage`, true));
         } else if (action === 'REDEEM') {
             button.innerHTML = 'Redeem';
             button.id = `${PROPERTY_MANAGEMENT_PREFIX}-redeem`;
             addClickEvent(button, () =>
-                sendGetHttpRequest( `${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/redeem`, true));
+                sendGetHttpRequest( `${getBaseGameUrl()}/field/${fieldIndex}/redeem`, true));
         } else if (action === 'BUY_HOUSE') {
             button.innerHTML = 'Buy a house';
             button.id = `${PROPERTY_MANAGEMENT_PREFIX}-buy-house`;
             addClickEvent(button, () =>
-                sendGetHttpRequest(`${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/buy_house`, true));
+                sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/buy_house`, true));
         } else if (action === 'SELL_HOUSE') {
             button.innerHTML = 'Sell a house';
             button.id = `${PROPERTY_MANAGEMENT_PREFIX}-sell-house`;
             addClickEvent(button, () =>
-                sendGetHttpRequest( `${PROPERTY_MANAGEMENT_BASE_URL}/${fieldIndex}/sell_house`, true));
+                sendGetHttpRequest( `${getBaseGameUrl()}/field/${fieldIndex}/sell_house`, true));
+        } else {
+            managementContainer.remove();
+            console.error('unknown action type');
+            return;
         }
         addClickEvent(button, () => managementContainer.remove());
         managementContainer.appendChild(button);

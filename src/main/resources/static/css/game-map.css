@@ -1,0 +1,157 @@
+.corner-field {
+    width: 90px;
+    height: 90px;
+}
+
+.vertical-field {
+    position: relative;
+    width: 50px;
+    height: 90px;
+}
+
+.vertical-field-name {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(270deg);
+    color: black;
+    text-align: center;
+}
+
+.horizontal-field {
+    position: relative;
+    width: 90px;
+    height: 50px;
+}
+
+.horizontal-field-name {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: black;
+    text-align: center;
+}
+
+.price-vertical-field {
+    width: 13px;
+    height: 50px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+.price-horizontal-field {
+    width: 50px;
+    height: 13px;
+}
+
+.price-corner-square-field {
+    height: 13px;
+    width: 13px;
+}
+
+.price-corner-vertical-field {
+    height: 90px;
+    width: 13px;
+}
+
+.price-corner-horizontal-field {
+    height: 13px;
+    width: 90px;
+}
+
+.corner-field, .horizontal-field, .vertical-field {
+    background-color: white;
+    font-size: 13px;
+}
+
+.price-vertical-field, .price-horizontal-field {
+    font-size: 13px;
+    color: white;
+    font-weight: bold;
+}
+
+.player-icon {
+    height: 90px;
+    width: 150px;
+}
+
+.player-name {
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.player-money {
+    font-size: 13px;
+}
+
+.player-icon, .player-name, .player-money {
+    margin: 0;
+}
+
+.player-group {
+    position: relative;
+    background-color: darkslategray;
+    color: white;
+    margin: 0;
+}
+
+.message-body {
+    text-align: left;
+    color: white;
+    font-size: 15px;
+    padding: 5px 5px 5px 10px;
+}
+
+#playerMessage {
+    border: none;
+    display: block;
+    background-color: darkslategray;
+    color: white;
+    padding-left: 10px;
+    font-size: 15px;
+    width: 350px;
+    height: 30px
+}
+
+#playerMessage:focus {
+    outline: none;
+    border-bottom: rgba(5, 29, 29, 0.63) solid 2px;
+}
+
+#playerMessageButton {
+    background-color: rgba(5, 29, 29, 0.63);
+    border: none;
+    display: block;
+    font-size: 15px;
+    width: 100px;
+    height: 30px;
+    color: white;
+    font-weight: normal;
+}
+
+#messageContainer {
+    background-color: darkslategray;
+    width: 450px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+div::-webkit-scrollbar {
+    width: 7px;
+}
+
+div::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+div::-webkit-scrollbar-thumb {
+    background: rgba(5, 29, 29, 0.63);
+    border-radius: 10px;
+}
+
+div::-webkit-scrollbar-thumb:hover {
+    cursor: pointer;
+}

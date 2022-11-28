@@ -4,201 +4,21 @@
 <header>
     <script type="module" th:src="@{/js/app.js}" src="/js/app.js"></script>
     <link rel="icon" type="image/ico" th:href="@{/favicon.ico}" href="/favicon.ico"/>
+    <link rel="stylesheet" href="/css/general.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/game-map.css">
+    <link rel="stylesheet" href="/css/game-room.css">
 </header>
 <title>Monopoly Game</title>
 
-<style>
-    .image-row td {
-        border-left: 2px solid #dddddd;
-        border-right: 2px solid #dddddd;
-        border-top: 2px solid #dddddd;
-        text-align: left;
-        padding: 8px;
-    }
-
-    .name-row td {
-        border-left: 2px solid #dddddd;
-        border-right: 2px solid #dddddd;
-        border-bottom: 2px solid #dddddd;
-        text-align: left;
-        padding: 8px;
-    }
-
-    table, tr, td {
-        text-align: center;
-        padding: 0;
-        border-collapse: collapse;
-    }
-
-    body, button, input {
-        font-family: Arial, serif;
-        font-size: 20px;
-    }
-
-    button:hover {
-        cursor: pointer;
-    }
-
-    #playerNameInput {
-        text-align: center;
-    }
-
-    .corner-field {
-        width: 90px;
-        height: 90px;
-    }
-
-    .vertical-field {
-        position: relative;
-        width: 50px;
-        height: 90px;
-    }
-
-    .vertical-field-name {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(270deg);
-        color: black;
-        text-align: center;
-    }
-
-    .horizontal-field {
-        position: relative;
-        width: 90px;
-        height: 50px;
-    }
-
-    .horizontal-field-name {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: black;
-        text-align: center;
-    }
-
-    .price-vertical-field {
-        width: 13px;
-        height: 50px;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-    }
-
-    .price-horizontal-field {
-        width: 50px;
-        height: 13px;
-    }
-
-    .price-corner-square-field {
-        height: 13px;
-        width: 13px;
-    }
-
-    .price-corner-vertical-field {
-        height: 90px;
-        width: 13px;
-    }
-
-    .price-corner-horizontal-field {
-        height: 13px;
-        width: 90px;
-    }
-
-    .corner-field, .horizontal-field, .vertical-field {
-        background-color: white;
-        font-size: 13px;
-    }
-
-    .price-vertical-field, .price-horizontal-field {
-        font-size: 13px;
-        color: white;
-        font-weight: bold;
-    }
-
-    .player-icon {
-        height: 90px;
-        width: 150px;
-        margin: 0;
-    }
-
-    .player-name {
-        font-weight: bold;
-        font-size: 17px;
-        margin: 0;
-    }
-
-    .player-money {
-        font-size: 13px;
-        margin: 0;
-    }
-
-    .player-icon, .player-name, .player-money {
-        background-color: darkslategray;
-        color: white;
-    }
-
-    #playerMessage {
-        border: none;
-        display: block;
-        background-color: darkslategray;
-        color: white;
-        padding-left: 10px;
-        font-size: 15px;
-        width: 350px;
-        height: 30px
-    }
-
-    #playerMessage:focus {
-        outline: none;
-        border-bottom: rgba(5, 29, 29, 0.63) solid 2px;
-    }
-
-    #playerMessageButton {
-        background-color: rgba(5, 29, 29, 0.63);
-        border: none;
-        display: block;
-        font-size: 15px;
-        width: 100px;
-        height: 30px;
-        color: white;
-        font-weight: normal;
-    }
-
-    #messageContainer {
-        background-color: darkslategray;
-        width: 450px;
-        height: 400px;
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-    }
-
-    div::-webkit-scrollbar {
-        width: 7px;
-    }
-
-    div::-webkit-scrollbar-track {
-        border-radius: 10px;
-    }
-
-    div::-webkit-scrollbar-thumb {
-        background: rgba(5, 29, 29, 0.63);
-        border-radius: 10px;
-    }
-
-    div::-webkit-scrollbar-thumb:hover {
-        cursor: pointer;
-    }
-</style>
-
 <body>
+<div style="display: none" id="proxy-host" th:text="${proxyHost}"></div>
 <div id="startPage">
     <div id="welcome" style="text-align:center">Welcome to the Monopoly game!</div>
     <br>
     <div th:if="${gameStarted}" style="text-align:center">
         <div th:if="${needToReconnect != null}">
-            <div id="reconnect" th:text="${needToReconnect}" style="display: none"></div>
+            <div id="reconnect" th:text="${needToReconnect}" style="display: block"></div>
         </div>
         <div th:if="${needToReconnect == null}">Sorry, but the game already started. Please, try to join later.</div>
     </div>

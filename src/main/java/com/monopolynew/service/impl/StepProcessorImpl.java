@@ -60,7 +60,7 @@ public class StepProcessorImpl implements StepProcessor {
             } else {
                 throw new IllegalStateException("Failed to compute rent - unknown field type");
             }
-            processRentPayment(game, currentPlayer, field, rent);
+            initiateRentPayment(game, currentPlayer, field, rent);
         }
     }
 
@@ -82,10 +82,10 @@ public class StepProcessorImpl implements StepProcessor {
         }
     }
 
-    private void processRentPayment(Game game, Player player, PurchasableField field, int rent) {
+    private void initiateRentPayment(Game game, Player player, PurchasableField field, int rent) {
         Player owner = field.getOwner();
         String paymentComment = String.format("%s is paying %s $%s rent for %s",
                 player.getName(), owner.getName(), rent, field.getName());
-        paymentProcessor.createPayCheck(game, player, owner, rent, paymentComment);
+        paymentProcessor.startPaymentProcess(game, player, owner, rent, paymentComment);
     }
 }

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Component
 public class GameFieldConverterImpl implements GameFieldConverter {
 
-    public GameFieldView toView(GameField gameField) {
+    public <T extends GameField> GameFieldView toView(T gameField) {
         int id = gameField.getId();
         String priceTag = null;
         String ownerId = null;
@@ -54,13 +54,13 @@ public class GameFieldConverterImpl implements GameFieldConverter {
                 .build();
     }
 
-    public List<GameFieldView> toListView(List<GameField> gameFieldList) {
+    public <T extends GameField> List<GameFieldView> toListView(List<T> gameFieldList) {
         return gameFieldList.stream()
                 .map(this::toView)
                 .collect(Collectors.toList());
     }
 
-    public List<GameFieldView> toListView(GameField[] gameFieldArray) {
+    public <T extends GameField> List<GameFieldView> toListView(T[] gameFieldArray) {
         return Arrays.stream(gameFieldArray)
                 .map(this::toView)
                 .collect(Collectors.toList());
