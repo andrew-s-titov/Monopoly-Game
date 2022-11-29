@@ -78,9 +78,9 @@ public class GameServiceImpl implements GameService {
     public void startGame() {
         Game game = gameRepository.getGame();
         Collection<Player> players = game.getPlayers();
-        if (CollectionUtils.isEmpty(players)) {
+        if (players.size() < 2) {
             // TODO: conflict? not ready? what status to return?
-            throw new IllegalStateException("No players registered - cannot start a game");
+            throw new IllegalStateException("Cannot start a game without at least 2 players");
         }
         game.startGame();
         gameEventSender.sendToAllPlayers(gameMapRefresher.getRefreshEvent(game));

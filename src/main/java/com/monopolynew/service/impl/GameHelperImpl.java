@@ -107,15 +107,16 @@ public class GameHelperImpl implements GameHelper {
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
             }
         } else if (field instanceof CompanyField) {
-            int ownedByTheSamePlayer = (int) fieldGroup.stream()
+            List<CompanyField> playerCompanyFields = fieldGroup.stream()
                     .filter(f -> !f.isFree())
                     .filter(f -> f.getOwner().equals(field.getOwner()))
-                    .count();
+                    .map(f -> (CompanyField) f)
+                    .collect(Collectors.toList());
+            int ownedByTheSamePlayer = playerCompanyFields.size();
             if (ownedByTheSamePlayer > 1) {
-                fieldGroup.stream()
-                        .map(companyField -> (CompanyField) companyField)
+                playerCompanyFields
                         .forEach(companyField -> companyField.setNewRent(ownedByTheSamePlayer));
-                newPriceViews = fieldGroup.stream()
+                newPriceViews = playerCompanyFields.stream()
                         .map(gameFieldConverter::toView)
                         .collect(Collectors.toList());
             } else {
@@ -211,8 +212,9 @@ public class GameHelperImpl implements GameHelper {
             int playerMoneyLeft = player.getMoney();
             if (playerMoneyLeft > 0) {
                 beneficiary.addMoney(playerMoneyLeft);
+                player.takeMoney(playerMoneyLeft);
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                        Collections.singletonList(MoneyState.fromPlayer(beneficiary))));
+                        List.of(MoneyState.fromPlayer(beneficiary), MoneyState.fromPlayer(player))));
             }
             List<PurchasableField> playerFields = getPlayerFields(game, player);
             playerFields.forEach(field -> field.newOwner(beneficiary));
@@ -239,6 +241,12 @@ public class GameHelperImpl implements GameHelper {
     }
 
     private void bankruptForState(Game game, Player player) {
+        int playerMoneyLeft = player.getMoney();
+        if (playerMoneyLeft > 0) {
+            player.takeMoney(playerMoneyLeft);
+            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+                    Collections.singletonList(MoneyState.fromPlayer(player))));
+        }
         List<PurchasableField> playerFields = getPlayerFields(game, player);
         playerFields.forEach(field -> {
             field.newOwner(null);

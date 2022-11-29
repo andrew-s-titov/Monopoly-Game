@@ -16,8 +16,6 @@ public class Auction {
     @Getter
     private final List<Player> participants;
     @Getter
-    private final Game game;
-    @Getter
     private int auctionPrice;
     private Player currentParticipant;
 
@@ -25,7 +23,6 @@ public class Auction {
     private int auctionCircle = 1;
 
     public Auction(Game game, PurchasableField field) {
-        this.game = game;
         this.field = field;
         this.auctionPrice = field.getPrice();
         Player auctionInitiator = game.getCurrentPlayer();

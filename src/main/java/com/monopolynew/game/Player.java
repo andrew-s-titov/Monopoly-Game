@@ -115,7 +115,6 @@ public class Player {
 
     public void goBankrupt() {
         this.bankrupt = true;
-        this.money = 0;
     }
 
     @Override

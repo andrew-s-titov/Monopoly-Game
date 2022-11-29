@@ -42,7 +42,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 game.setStage(newGameStage);
-                var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.9 < assets,
+                var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.9 < amount,
                         paymentComment);
                 game.setCheckToPay(checkToPay);
                 gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.fromCheck(checkToPay));
