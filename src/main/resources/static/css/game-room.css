@@ -17,3 +17,16 @@
 #playerNameInput {
     text-align: center;
 }
+
+.error-box {
+    position: fixed;
+    bottom: 100px;
+    display: none;
+    width: 70%;
+    left: 15%;
+    right: 15%;
+    background-color: rgba(255,154,72,0.77);
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px
+}

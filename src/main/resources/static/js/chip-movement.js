@@ -1,10 +1,13 @@
-const priceSpacePx = 13;
-const wideSidePx = 90;
-const narrowSidePx = 50;
+const priceNarrowSidePx = 14;
+const fieldWideSidePx = 90;
+const fieldNarrowSidePx = 50;
 const stepPx = 50;
 const mapLeftMarginPx = 300;
-const cornerStepAdjustmentPx = (wideSidePx - narrowSidePx) / 2;
-let playerIconWidthPx = 150;
+const playerBoxRightMargin = 10;
+const cornerStepAdjustmentPx = (fieldWideSidePx - fieldNarrowSidePx) / 2;
+const chipWidth = 24;
+const chipWidthAdjustment = chipWidth / 2;
+const playerIconWidthPx = 150;
 
 export function moveChip(chip, fieldIndex) {
     chip.style.top = defineChipTop(fieldIndex);
@@ -13,7 +16,7 @@ export function moveChip(chip, fieldIndex) {
 
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let startTop = priceSpacePx + wideSidePx / 2 + 8; // adding body default margin;
+    let startTop = priceNarrowSidePx + fieldWideSidePx / 2 + 8 - chipWidthAdjustment; // adding body default margin;
     let postfix = 'px';
     if (fieldIndex >= 0 && fieldIndex <= 10) {
         return startTop + postfix;
@@ -39,7 +42,8 @@ function defineChipTop(fieldIndex) {
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let startLeft = 8 + mapLeftMarginPx + playerIconWidthPx + priceSpacePx + wideSidePx / 2;
+    let startLeft = mapLeftMarginPx + playerIconWidthPx + playerBoxRightMargin
+        + priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment + 8;
     let postfix = 'px';
     if (fieldIndex === 0 || (fieldIndex >= 30 && fieldIndex < 40)) {
         return startLeft + postfix;

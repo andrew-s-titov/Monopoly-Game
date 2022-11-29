@@ -30,8 +30,7 @@
         <button id="submitPlayerName" style="margin-top: 50px">Join the game</button>
     </div>
 
-    <div id="errorMessage" style="position: fixed; bottom: 100px; display: none; width: 70%; left: 15%; right: 15%;
-        background-color: rgba(255,154,72,0.77); text-align: center; padding: 10px; border-radius: 10px"></div>
+    <div id="errorMessage" class="error-box"></div>
 </div>
 <div id="playersBeforeGame" style="display: none; text-align:center">
     <p>Registered players:</p>
@@ -77,7 +76,7 @@
     <table style="margin-left: 300px">
         <tr>
             <td>
-                <table id="playersTable" style="border-collapse: collapse; border: 2px darkslategray solid">
+                <table id="playersTable" style="border-collapse: collapse; margin-right: 10px">
                     <tr>
                         <td>
                             <div id="player0-group" class="player-group">

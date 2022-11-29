@@ -1,12 +1,18 @@
+:root {
+    --price-narrow-side: 14px;
+    --field-wide-side: 90px;
+    --field-narrow-side: 50px
+}
+
 .corner-field {
-    width: 90px;
-    height: 90px;
+    width: var(--field-wide-side);
+    height: var(--field-wide-side);
 }
 
 .vertical-field {
     position: relative;
-    width: 50px;
-    height: 90px;
+    width: var(--field-narrow-side);
+    height: var(--field-wide-side);
 }
 
 .vertical-field-name {
@@ -20,8 +26,8 @@
 
 .horizontal-field {
     position: relative;
-    width: 90px;
-    height: 50px;
+    width: var(--field-wide-side);
+    height: var(--field-narrow-side);
 }
 
 .horizontal-field-name {
@@ -34,30 +40,30 @@
 }
 
 .price-vertical-field {
-    width: 13px;
-    height: 50px;
+    width: var(--price-narrow-side);
+    height: var(--field-narrow-side);
     writing-mode: vertical-rl;
     transform: rotate(180deg);
 }
 
 .price-horizontal-field {
-    width: 50px;
-    height: 13px;
+    width: var(--field-narrow-side);
+    height: var(--price-narrow-side);
 }
 
 .price-corner-square-field {
-    height: 13px;
-    width: 13px;
+    height: var(--price-narrow-side);
+    width: var(--price-narrow-side);
 }
 
 .price-corner-vertical-field {
-    height: 90px;
-    width: 13px;
+    height: var(--field-wide-side);
+    width: var(--price-narrow-side);
 }
 
 .price-corner-horizontal-field {
-    height: 13px;
-    width: 90px;
+    height: var(--price-narrow-side);
+    width: var(--field-wide-side);
 }
 
 .corner-field, .horizontal-field, .vertical-field {
@@ -66,7 +72,7 @@
 }
 
 .price-vertical-field, .price-horizontal-field {
-    font-size: 13px;
+    font-size: 12px;
     color: white;
     font-weight: bold;
 }
@@ -108,9 +114,9 @@
     display: block;
     background-color: darkslategray;
     color: white;
-    padding-left: 10px;
+    padding: 0 0 0 10px;
     font-size: 15px;
-    width: 350px;
+    width: 340px;
     height: 30px
 }
 
