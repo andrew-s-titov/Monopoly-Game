@@ -9,14 +9,16 @@ export function addClickEvent(button, listenerFunction) {
     button.addEventListener('click', () => listenerFunction());
 }
 
-export function createActionButton(text, url, able) {
+export function createActionButton(text, url, disabled) {
     let actionButton = document.createElement('button');
     actionButton.innerText = text;
     actionButton.className = 'action-button';
-    if (!able) {
+    if (url != null) {
+        addClickEvent(actionButton, () => sendGetHttpRequest(url, true));
+    }
+    if (disabled != null && disabled) {
         actionButton.disabled = true;
     }
-    addClickEvent(actionButton, () => sendGetHttpRequest(url, true));
     return actionButton;
 }
 

@@ -318,7 +318,7 @@ function onTurnStart(turnStartEvent) {
     outlinePlayer(playerToGo);
     if (thisPlayerId === playerToGo) {
 
-        let throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, true);
+        let throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, false);
         addClickEvent(throwDiceButton, () => throwDiceButton.remove());
         document.getElementById('map').appendChild(throwDiceButton);
         throwDiceButton.style.position = 'fixed';
@@ -393,8 +393,8 @@ function onBuyProposal(buyProposalEvent) {
     let price = buyProposalEvent.price;
     let field = buyProposalEvent.field_name;
     if (thisPlayerId === playerId) {
-        let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, true);
-        let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, true);
+        let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, false);
+        let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, false);
         renderActionContainer(`Do you like to buy ${field} for $${price}?`, acceptButton, auctionButton);
     }
 }
@@ -406,23 +406,23 @@ function onJailReleaseProcess(jailReleaseProcessEvent) {
     if (thisPlayerId === imprisonedPlayer) {
         removeOldActionContainer();
         let payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${getBaseGameUrl()}/jail?action=PAY`,
-            jailReleaseProcessEvent.bail_available);
-        let luckButton = createActionButton('Try luck', `${getBaseGameUrl()}/jail?action=LUCK`, true);
+            !jailReleaseProcessEvent.bail_available);
+        let luckButton = createActionButton('Try luck', `${getBaseGameUrl()}/jail?action=LUCK`, false);
         renderActionContainer('Chose a way out:', payButton, luckButton);
     }
 }
 
 function onAuctionBuyProposal(auctionBuyProposalEvent) {
-    let buyButton = createActionButton('Buy', `${getBaseGameUrl()}/auction/buy?action=ACCEPT`, true);
-    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/buy?action=DECLINE`, true);
+    let buyButton = createActionButton('Buy', `${getBaseGameUrl()}/auction/buy?action=ACCEPT`, false);
+    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/buy?action=DECLINE`, false);
     renderActionContainer(
         `Do you want to buy ${auctionBuyProposalEvent.field_name} for $${auctionBuyProposalEvent.proposal}?`,
         buyButton, declineButton);
 }
 
 function onAuctionRaiseProposal(auctionRaiseProposalEvent) {
-    let raiseButton = createActionButton('Raise', `${getBaseGameUrl()}/auction/raise?action=ACCEPT`, true);
-    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/raise?action=DECLINE`, true);
+    let raiseButton = createActionButton('Raise', `${getBaseGameUrl()}/auction/raise?action=ACCEPT`, false);
+    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/raise?action=DECLINE`, false);
     renderActionContainer(
         `Do you want to raise ${auctionRaiseProposalEvent.field_name} price to $${auctionRaiseProposalEvent.proposal}?`,
         raiseButton, declineButton);
@@ -433,10 +433,10 @@ function onPayCommand(payCommandEvent) {
     let sum = payCommandEvent.sum;
     let payable = payCommandEvent.payable;
     let wiseToGiveUp = payCommandEvent.wise_to_give_up;
-    let payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, payable);
+    let payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, !payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
-        giveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, true);
+        giveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
     }
     renderActionContainer(`Pay $${sum}`, payButton, giveUpButton);
 }
