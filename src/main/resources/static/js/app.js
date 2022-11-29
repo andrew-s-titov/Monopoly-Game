@@ -1,21 +1,13 @@
 import {
-    addClickEvent,
-    createActionButton,
-    renderActionContainer,
-    removeOldActionContainer,
-    renderPropertyManagementContainer,
+    addClickEvent, createActionButton, renderActionContainer, removeOldActionContainer,
+    renderPropertyManagementContainer, renderGiveUpConfirmation, PROPERTY_MANAGEMENT_PREFIX
 } from './buttons.js';
-import {renderDiceGifs, renderDiceResult, hideDice} from './dice.js'
+import {renderDiceGifs, renderDiceResult, hideDice, preloadDice} from './dice.js'
 import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js'
 import {renderMortgagePlate, renderHouses, renderFieldViews} from './field-view.js';
 import {
-    addPlayers,
-    bankruptPlayer,
-    changePlayerMoney,
-    getPlayerColor,
-    getPlayerIndex,
-    getPlayerName,
-    movePlayerChip
+    addPlayers, changePlayerMoney, getPlayerColor, getPlayerIndex, getPlayerName,
+    movePlayerChip, bankruptPlayer
 } from "./players.js";
 
 const PLAYER_ID_COOKIE = 'player_id';
@@ -29,7 +21,7 @@ window.onload = () => {
     setHost(host);
 
     let submitPlayerNameButton = document.getElementById('submitPlayerName');
-    if (submitPlayerNameButton) addClickEvent(submitPlayerNameButton, () => joinToRoom());
+    if (submitPlayerNameButton) addClickEvent(submitPlayerNameButton, () => joinGameRoom());
 
     let startGameButton = document.getElementById('startGameButton');
     if (startGameButton) addClickEvent(startGameButton, () => startGame());
@@ -59,7 +51,7 @@ window.onload = () => {
     }
 };
 
-function joinToRoom() {
+function joinGameRoom() {
     const playerName = document.getElementById('playerNameInput').value;
     sendGetHttpRequest(`${getBaseGameUrl()}?name=${playerName}`, true,
         function (requester) {
@@ -248,6 +240,8 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
             document.getElementById('playerMessageButton').click();
         }
     });
+
+    preloadDice();
 }
 
 function onPlayerConnected(playerConnectedEvent) {
@@ -436,7 +430,8 @@ function onPayCommand(payCommandEvent) {
     let payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, !payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
-        giveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
+        giveUpButton = createActionButton('Give up');
+        addClickEvent(giveUpButton, () => renderGiveUpConfirmation());
     }
     renderActionContainer(`Pay $${sum}`, payButton, giveUpButton);
 }
@@ -479,7 +474,7 @@ function applyFieldManagementEvents(fieldIndex) {
         return;
     }
     htmlField.addEventListener('click', (event) => {
-        if (event.target.id.startsWith('management')) {
+        if (event.target.id.startsWith(PROPERTY_MANAGEMENT_PREFIX)) {
             return;
         }
         sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/management`, true,

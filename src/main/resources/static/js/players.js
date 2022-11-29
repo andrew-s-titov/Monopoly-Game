@@ -1,6 +1,6 @@
 import {PLAYER_COLORS} from './colors.js'
 import {moveChip} from "./chip-movement.js";
-import {addClickEvent, createActionButton} from "./buttons.js";
+import {addClickEvent, renderGiveUpConfirmation} from "./buttons.js";
 import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
 
 const PLAYER_MAP = new Map();
@@ -27,15 +27,17 @@ export function addPlayers(jsonPlayerArray) {
 }
 
 export function bankruptPlayer(playerId) {
-    let playerObject = PLAYER_MAP.get(playerId);
+    let playerIndex = PLAYER_MAP.get(playerId).index;
 
-    let playerMoneyField = document.getElementById(`player${playerObject.index}-group`);
+    document.getElementById(`player${playerIndex}-group`).style.backgroundColor = 'transparent';
+
+    let playerMoneyField = document.getElementById(`player${playerIndex}-money`);
     playerMoneyField.style.color = 'grey';
 
-    let playerNameField = document.getElementById(`player${playerObject.index}-name`);
+    let playerNameField = document.getElementById(`player${playerIndex}-name`);
     playerNameField.style.color = 'grey';
 
-    CHIP_MAP.get(playerObject.index).remove();
+    CHIP_MAP.get(playerIndex).remove();
 }
 
 export function changePlayerMoney(playerId, money) {
@@ -134,27 +136,7 @@ export function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex
         if (action === 'GIVE_UP') {
             // TODO: show info card atop of everything;
             button.innerHTML = 'Give up';
-            addClickEvent(button, () => {
-                let confirmationShadow = document.createElement('div');
-                confirmationShadow.className = 'fullscreen-shadow-container';
-                document.body.appendChild(confirmationShadow);
-
-                let confirmContent = document.createElement('div');
-                confirmContent.className = 'center-screen-container';
-                confirmationShadow.appendChild(confirmContent);
-                let confirmTextElement = document.createElement('p');
-                confirmTextElement.innerText = 'Do you really want to give up?';
-                confirmContent.appendChild(confirmTextElement);
-
-                let confirmGiveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
-                confirmGiveUpButton.style.backgroundColor = 'red';
-                confirmGiveUpButton.style.color = 'white';
-                let cancelGiveUpButton = createActionButton('Cancel');
-                for (let button of [confirmGiveUpButton, cancelGiveUpButton]) {
-                    confirmContent.appendChild(button);
-                    addClickEvent(button, () => confirmationShadow.remove());
-                }
-            });
+            addClickEvent(button, () => renderGiveUpConfirmation());
         } else if (action === 'CONTRACT') {
             button.innerHTML = 'Offer a contract';
             addClickEvent(button, () => alert('sorry, not implemented yet'));

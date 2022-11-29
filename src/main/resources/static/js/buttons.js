@@ -3,7 +3,7 @@ import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
 export const PROPERTY_MANAGEMENT_PREFIX = "management";
 
 const ACTION_BUTTONS_CONTAINER_ID = 'action_container';
-const PROPERTY_MANAGEMENT_CONTAINER_ID = ACTION_BUTTONS_CONTAINER_ID + '_container';
+const PROPERTY_MANAGEMENT_CONTAINER_ID = `${PROPERTY_MANAGEMENT_PREFIX}_${ACTION_BUTTONS_CONTAINER_ID}`;
 
 export function addClickEvent(button, listenerFunction) {
     button.addEventListener('click', () => listenerFunction());
@@ -95,4 +95,25 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
         managementContainer.appendChild(button);
     }
     htmlPropertyField.appendChild(managementContainer);
+}
+
+export function renderGiveUpConfirmation() {
+    let confirmationShadow = document.createElement('div');
+    confirmationShadow.className = 'fullscreen-shadow-container';
+    document.body.appendChild(confirmationShadow);
+    let confirmContent = document.createElement('div');
+    confirmContent.className = 'center-screen-container';
+    confirmationShadow.appendChild(confirmContent);
+    let confirmTextElement = document.createElement('p');
+    confirmTextElement.innerText = 'Do you really want to give up?';
+    confirmContent.appendChild(confirmTextElement);
+
+    let confirmGiveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
+    confirmGiveUpButton.style.backgroundColor = 'red';
+    confirmGiveUpButton.style.color = 'white';
+    let cancelGiveUpButton = createActionButton('Cancel');
+    for (let button of [confirmGiveUpButton, cancelGiveUpButton]) {
+        confirmContent.appendChild(button);
+        addClickEvent(button, () => confirmationShadow.remove());
+    }
 }

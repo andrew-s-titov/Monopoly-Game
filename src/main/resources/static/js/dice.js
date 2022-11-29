@@ -21,6 +21,17 @@ export function renderDiceResult(left, right) {
     }
 }
 
+export function preloadDice() {
+    let diceLeftGif = document.createElement('img');
+    diceLeftGif.src = 'images/dice-left.gif';
+    let diceRightGif = document.createElement('img');
+    diceRightGif.src = 'images/dice-right.gif';
+    for (let i = 1; i <= 6; i++) {
+        let dice = document.createElement('img');
+        dice.src = `images/dice${i}.png`;
+    }
+}
+
 function renderDiceView(leftDiceImage, rightDiceImage) {
     let diceContainer = document.createElement('div');
     diceContainer.id = DICE_CONTAINER_ID;
