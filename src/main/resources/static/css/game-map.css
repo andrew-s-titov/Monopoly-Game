@@ -1,7 +1,13 @@
 :root {
     --price-narrow-side: 14px;
     --field-wide-side: 90px;
-    --field-narrow-side: 50px
+    --field-narrow-side: 50px;
+}
+
+.map-table {
+    margin-right: auto;
+    margin-left: auto;
+    position: relative;
 }
 
 .corner-field {
@@ -166,15 +172,17 @@ div::-webkit-scrollbar-thumb:hover {
     width: 24px;
     height: 24px;
     border-radius: 15px;
-    position: fixed;
+    position: absolute;
     box-shadow: 1px 1px 1px 0.8px black;
     background: grey;
     opacity: 0.8;
     transition: left 0.4s, top 0.4s, right 0.4s, down 0.4s;
     transition-timing-function: linear;
+    z-index: 2;
 }
 
 .chip-inner {
+    position: absolute;
     width: 20px;
     height: 20px;
     border-radius: 10px;

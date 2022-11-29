@@ -16,7 +16,7 @@ export function moveChip(chip, fieldIndex) {
 
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let startTop = priceNarrowSidePx + fieldWideSidePx / 2 + 8 - chipWidthAdjustment; // adding body default margin;
+    let startTop = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment; // adding body default margin;
     let postfix = 'px';
     if (fieldIndex >= 0 && fieldIndex <= 10) {
         return startTop + postfix;
@@ -42,8 +42,7 @@ function defineChipTop(fieldIndex) {
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let startLeft = mapLeftMarginPx + playerIconWidthPx + playerBoxRightMargin
-        + priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment + 8;
+    let startLeft = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment;
     let postfix = 'px';
     if (fieldIndex === 0 || (fieldIndex >= 30 && fieldIndex < 40)) {
         return startLeft + postfix;

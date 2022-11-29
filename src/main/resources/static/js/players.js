@@ -91,7 +91,7 @@ function renderPlayerChip(index, color, position) {
 
     chip.appendChild(chipInnerCircle);
     CHIP_MAP.set(index, chip);
-    document.getElementById('map').appendChild(chip);
+    document.getElementById('mapTable').appendChild(chip);
     moveChip(chip, position);
 }
 
