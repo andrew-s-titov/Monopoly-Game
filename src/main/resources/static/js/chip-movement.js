@@ -1,13 +1,10 @@
 const priceNarrowSidePx = 14;
-const fieldWideSidePx = 90;
-const fieldNarrowSidePx = 50;
-const stepPx = 50;
-const mapLeftMarginPx = 300;
-const playerBoxRightMargin = 10;
+const fieldWideSidePx = 81;
+const fieldNarrowSidePx = 52;
+const stepPx = fieldNarrowSidePx;
 const cornerStepAdjustmentPx = (fieldWideSidePx - fieldNarrowSidePx) / 2;
 const chipWidth = 24;
 const chipWidthAdjustment = chipWidth / 2;
-const playerIconWidthPx = 150;
 
 export function moveChip(chip, fieldIndex) {
     chip.style.top = defineChipTop(fieldIndex);

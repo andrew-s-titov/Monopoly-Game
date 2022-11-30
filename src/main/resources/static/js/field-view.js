@@ -1,29 +1,25 @@
-import {GROUP_COLORS} from "./colors.js";
-
 import {getPlayerColor} from "./players.js";
+
+const OWNER_COVER_POSTFIX = '-owner-cover';
+const MORTGAGE_COVER_POSTFIX = '-mortgage-cover';
 
 export function renderFieldViews(fieldViews) {
     for (let fieldView of fieldViews) {
         let fieldIndex = fieldView.id;
-        let htmlField = document.getElementById(`field${fieldIndex}`);
         let nameField = document.getElementById(`field${fieldIndex}-name`);
         if (nameField) {
             nameField.innerHTML = fieldView.name;
-        } else {
-            htmlField.innerHTML = fieldView.name;
         }
-        if (fieldView.hasOwnProperty('owner_id')) {
-            htmlField.style.backgroundColor = getPlayerColor(fieldView.owner_id);
+        if (fieldView.hasOwnProperty('owner_id') && fieldView.owner_id != null) {
+            addOwnerCover(fieldIndex, fieldView.owner_id);
         } else {
-            htmlField.style.backgroundColor = 'white';
+            removeOwnerCover(fieldIndex);
         }
         if (fieldView.hasOwnProperty('price_tag')) {
             let priceTagField = document.getElementById(`field${fieldIndex}-price`);
-            let priceTag = fieldView.price_tag;
-            priceTagField.innerHTML = priceTag;
-            priceTagField.style.backgroundColor = GROUP_COLORS[fieldView.group];
-            if (fieldView.mortgage) {
-                renderMortgagePlate(fieldIndex, priceTag);
+            priceTagField.innerHTML = fieldView.price_tag;
+            if (fieldView.hasOwnProperty('mortgage') && fieldView.mortgage) {
+                renderMortgageCover(fieldIndex);
             }
         }
         if (fieldView.hasOwnProperty('houses')) {
@@ -33,36 +29,37 @@ export function renderFieldViews(fieldViews) {
     }
 }
 
-export function renderMortgagePlate(fieldIndex, turns) {
-    let propertyField = document.getElementById(`field${fieldIndex}`);
-    if (!propertyField) {
+export function renderMortgageState(fieldIndex, turns) {
+    if (fieldIndex < 0 || fieldIndex > 39) {
         console.error(`no field with id ${fieldIndex} found on map`);
         return;
     }
-
-    let mortgagePlateId = `field${fieldIndex}-mortgage`;
-    let oldMortgagePlate = document.getElementById(mortgagePlateId);
-    if (oldMortgagePlate) {
-        oldMortgagePlate.remove();
-    }
+    removeOldMortgageCover(fieldIndex);
     if (turns > 0) {
         let fieldPriceField = document.getElementById(`field${fieldIndex}-price`);
         if (fieldPriceField) {
             fieldPriceField.innerText = turns;
         }
-        let newMortgagePlate = document.createElement('div');
-        newMortgagePlate.id = mortgagePlateId;
-        newMortgagePlate.style.width = '100%';
-        newMortgagePlate.style.height = '100%';
-        newMortgagePlate.style.position = 'absolute';
-        newMortgagePlate.style.background = 'white';
-        newMortgagePlate.style.opacity = '0.8';
-        newMortgagePlate.innerText = 'MORTGAGE';
-        newMortgagePlate.style.color = 'red';
-        newMortgagePlate.style.fontSize = '8px';
-        newMortgagePlate.style.fontWeight = 'bold';
-        newMortgagePlate.style.textAlign = 'center';
-        propertyField.appendChild(newMortgagePlate);
+        renderMortgageCover(fieldIndex);
+    }
+}
+
+function renderMortgageCover(fieldIndex) {
+    let propertyField = document.getElementById(`field${fieldIndex}`);
+    let newMortgageCover = document.createElement('div');
+    newMortgageCover.id = `field${fieldIndex}${MORTGAGE_COVER_POSTFIX}`;
+    newMortgageCover.className = defineCoverClassName(fieldIndex, 'mortgage-cover');
+    newMortgageCover.innerText = 'MORTGAGE';
+    if (fieldIndex < 10 || (fieldIndex > 20 && fieldIndex < 30)) {
+        newMortgageCover.style.writingMode = 'vertical-rl';
+    }
+    propertyField.appendChild(newMortgageCover);
+}
+
+function removeOldMortgageCover(fieldIndex) {
+    let mortgageCover = document.getElementById(`field${fieldIndex}${MORTGAGE_COVER_POSTFIX}`);
+    if (mortgageCover) {
+        mortgageCover.remove();
     }
 }
 
@@ -105,4 +102,35 @@ export function renderHouses(fieldIndex, amount) {
         }
         field.appendChild(houseContainer);
     }
+}
+
+function addOwnerCover(fieldIndex, ownerId) {
+    removeOwnerCover(fieldIndex);
+    let propertyField = document.getElementById(`field${fieldIndex}`);
+    let ownerCover = document.createElement('div');
+    ownerCover.id = `field${fieldIndex}${OWNER_COVER_POSTFIX}`;
+    ownerCover.className = defineCoverClassName(fieldIndex, 'owner-cover');
+    ownerCover.style.backgroundColor = getPlayerColor(ownerId);
+    propertyField.appendChild(ownerCover);
+}
+
+function removeOwnerCover(fieldIndex) {
+    let ownerCover = document.getElementById(`field${fieldIndex}${OWNER_COVER_POSTFIX}`);
+    if (ownerCover) {
+        ownerCover.remove();
+    }
+}
+
+function defineCoverClassName(fieldIndex, baseCoverClassName) {
+    let className;
+    if (fieldIndex < 10) {
+        className = `${baseCoverClassName} vertical-cover stick-top`;
+    } else if (fieldIndex < 20) {
+        className = `${baseCoverClassName} horizontal-cover stick-right`;
+    } else if (fieldIndex < 30) {
+        className = `${baseCoverClassName} vertical-cover stick-bottom`;
+    } else {
+        className = `${baseCoverClassName} horizontal-cover stick-left`;
+    }
+    return className;
 }

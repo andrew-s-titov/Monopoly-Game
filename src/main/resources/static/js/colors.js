@@ -5,15 +5,3 @@ export const PLAYER_COLORS = [
     'purple',
     'orange'
 ];
-export const GROUP_COLORS = [
-    'pink',
-    'lightcoral',
-    'gold',
-    'darkcyan',
-    'firebrick',
-    'blue',
-    'greenyellow',
-    'darkturquoise',
-    'mediumpurple',
-    'slategrey'
-];

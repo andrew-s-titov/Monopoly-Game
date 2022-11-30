@@ -4,7 +4,7 @@ import {
 } from './buttons.js';
 import {renderDiceGifs, renderDiceResult, hideDice, preloadDice} from './dice.js'
 import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js'
-import {renderMortgagePlate, renderHouses, renderFieldViews} from './field-view.js';
+import {renderMortgageState, renderHouses, renderFieldViews} from './field-view.js';
 import {
     addPlayers, changePlayerMoney, getPlayerColor, getPlayerIndex, getPlayerName,
     movePlayerChip, bankruptPlayer
@@ -213,6 +213,10 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     document.getElementById('playersBeforeGame').style.display = 'none';
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
+
+    // TODO: resize image and make grid fit it
+    document.getElementById('mapTable').style.backgroundImage = "url('/images/map-back.png')";
+    document.getElementById('mapTable').style.backgroundSize = '658px';
 
     if (thisPlayerId == null) {
         thisPlayerId = getPlayerIdFromCookie();
@@ -439,7 +443,7 @@ function onPayCommand(payCommandEvent) {
 function onMortgageChange(mortgageChangeEvent) {
     let changes = mortgageChangeEvent.changes;
     for (let change of changes) {
-        renderMortgagePlate(change.field, change.turns);
+        renderMortgageState(change.field, change.turns);
     }
 }
 
