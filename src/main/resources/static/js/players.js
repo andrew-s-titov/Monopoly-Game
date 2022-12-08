@@ -134,7 +134,6 @@ export function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex
         let button = document.createElement('button');
         button.className = 'manage-player-button';
         if (action === 'GIVE_UP') {
-            // TODO: show info card atop of everything;
             button.innerHTML = 'Give up';
             addClickEvent(button, () => renderGiveUpConfirmation());
         } else if (action === 'CONTRACT') {

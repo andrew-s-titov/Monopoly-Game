@@ -280,6 +280,7 @@ function onChatMessage(chatMessageEvent) {
 
     let nameText = document.createElement('span');
     nameText.style.color = getPlayerColor(playerId);
+    nameText.style.fontWeight = 'bold';
     nameText.innerText = getPlayerName(playerId);
 
     let messageText = document.createElement('span');

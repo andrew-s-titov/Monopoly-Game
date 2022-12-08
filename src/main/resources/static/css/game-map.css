@@ -72,12 +72,12 @@
 }
 
 .player-name {
-    font-weight: bold;
     font-size: 17px;
 }
 
 .player-money {
     font-size: 13px;
+    font-weight: bold;
 }
 
 .player-icon, .player-name, .player-money, .player-group {
@@ -93,7 +93,7 @@
 .message-body {
     text-align: left;
     color: white;
-    font-size: 15px;
+    font-size: 14px;
     padding: 5px 5px 5px 10px;
 }
 
@@ -171,13 +171,12 @@ div::-webkit-scrollbar-thumb:hover {
     margin: 2px;
 }
 
-.mortgage-cover {
+.mortgage-tag {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.3);
-    color: rgb(200, 0, 0);
-    font-size: 10px;
-    font-weight: bold;
-    text-align: center;
+    width: var(--field-narrow-side);
+    height: var(--field-narrow-side);
+    background-image: url('/images/mortgage-tag.png');
+    background-size: var(--field-narrow-side);
 }
 
 .owner-cover {

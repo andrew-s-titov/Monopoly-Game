@@ -1,7 +1,7 @@
 import {getPlayerColor} from "./players.js";
 
 const OWNER_COVER_POSTFIX = '-owner-cover';
-const MORTGAGE_COVER_POSTFIX = '-mortgage-cover';
+const MORTGAGE_TAG_POSTFIX = '-mortgage-cover';
 
 export function renderFieldViews(fieldViews) {
     for (let fieldView of fieldViews) {
@@ -18,9 +18,11 @@ export function renderFieldViews(fieldViews) {
         if (fieldView.hasOwnProperty('price_tag')) {
             let priceTagField = document.getElementById(`field${fieldIndex}-price`);
             priceTagField.innerHTML = fieldView.price_tag;
-            if (fieldView.hasOwnProperty('mortgage') && fieldView.mortgage) {
-                renderMortgageCover(fieldIndex);
-            }
+        }
+        if (fieldView.hasOwnProperty('mortgage') && fieldView.mortgage) {
+            renderMortgageTag(fieldIndex);
+        } else {
+            removeOldMortgageCover(fieldIndex);
         }
         if (fieldView.hasOwnProperty('houses')) {
             let houses = fieldView.houses;
@@ -40,24 +42,20 @@ export function renderMortgageState(fieldIndex, turns) {
         if (fieldPriceField) {
             fieldPriceField.innerText = turns;
         }
-        renderMortgageCover(fieldIndex);
+        renderMortgageTag(fieldIndex);
     }
 }
 
-function renderMortgageCover(fieldIndex) {
+function renderMortgageTag(fieldIndex) {
     let propertyField = document.getElementById(`field${fieldIndex}`);
-    let newMortgageCover = document.createElement('div');
-    newMortgageCover.id = `field${fieldIndex}${MORTGAGE_COVER_POSTFIX}`;
-    newMortgageCover.className = defineCoverClassName(fieldIndex, 'mortgage-cover');
-    newMortgageCover.innerText = 'MORTGAGE';
-    if (fieldIndex < 10 || (fieldIndex > 20 && fieldIndex < 30)) {
-        newMortgageCover.style.writingMode = 'vertical-rl';
-    }
-    propertyField.appendChild(newMortgageCover);
+    let newMortgageTag = document.createElement('div');
+    newMortgageTag.id = `field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`;
+    newMortgageTag.className = defineFieldChildStick(fieldIndex, 'mortgage-tag');
+    propertyField.appendChild(newMortgageTag);
 }
 
 function removeOldMortgageCover(fieldIndex) {
-    let mortgageCover = document.getElementById(`field${fieldIndex}${MORTGAGE_COVER_POSTFIX}`);
+    let mortgageCover = document.getElementById(`field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`);
     if (mortgageCover) {
         mortgageCover.remove();
     }
@@ -109,7 +107,7 @@ function addOwnerCover(fieldIndex, ownerId) {
     let propertyField = document.getElementById(`field${fieldIndex}`);
     let ownerCover = document.createElement('div');
     ownerCover.id = `field${fieldIndex}${OWNER_COVER_POSTFIX}`;
-    ownerCover.className = defineCoverClassName(fieldIndex, 'owner-cover');
+    ownerCover.className = defineFieldChildStick(fieldIndex, defineCoverParams(fieldIndex, 'owner-cover'));
     ownerCover.style.backgroundColor = getPlayerColor(ownerId);
     propertyField.appendChild(ownerCover);
 }
@@ -121,16 +119,26 @@ function removeOwnerCover(fieldIndex) {
     }
 }
 
-function defineCoverClassName(fieldIndex, baseCoverClassName) {
+function defineFieldChildStick(fieldIndex, baseCoverClassName) {
     let className;
     if (fieldIndex < 10) {
-        className = `${baseCoverClassName} vertical-cover stick-top`;
+        className = `${baseCoverClassName} stick-top`;
     } else if (fieldIndex < 20) {
-        className = `${baseCoverClassName} horizontal-cover stick-right`;
+        className = `${baseCoverClassName} stick-right`;
     } else if (fieldIndex < 30) {
-        className = `${baseCoverClassName} vertical-cover stick-bottom`;
+        className = `${baseCoverClassName} stick-bottom`;
     } else {
-        className = `${baseCoverClassName} horizontal-cover stick-left`;
+        className = `${baseCoverClassName} stick-left`;
+    }
+    return className;
+}
+
+function defineCoverParams(fieldIndex, coverClassName) {
+    let className;
+    if (fieldIndex < 10 || (fieldIndex > 20 && fieldIndex < 30)) {
+        className = `${coverClassName} vertical-cover`;
+    } else {
+        className = `${coverClassName} horizontal-cover`;
     }
     return className;
 }

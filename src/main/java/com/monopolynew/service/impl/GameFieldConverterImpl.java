@@ -28,12 +28,12 @@ public class GameFieldConverterImpl implements GameFieldConverter {
             group = purchasableField.getGroupId();
             if (purchasableField.isFree()) {
                 priceTag = "$ " + purchasableField.getPrice();
-            } else if (purchasableField.isMortgaged()) {
-                mortgage = true;
-                priceTag = Integer.toString(purchasableField.getMortgageTurnsLeft());
             } else {
                 ownerId = purchasableField.getOwner().getId();
-                if (gameField instanceof StaticRentField) {
+                if (purchasableField.isMortgaged()) {
+                    mortgage = true;
+                    priceTag = Integer.toString(purchasableField.getMortgageTurnsLeft());
+                } else if (gameField instanceof StaticRentField) {
                     priceTag = "$ " + ((StaticRentField) gameField).getCurrentRent();
                 } else if (gameField instanceof UtilityField) {
                     priceTag = "x" + ((UtilityField) gameField).getCurrentMultiplier();

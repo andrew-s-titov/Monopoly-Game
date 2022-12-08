@@ -164,8 +164,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     return streetGroup.stream()
                             .filter(f -> !f.equals(streetField))
                             .map(f -> (StreetField) f)
-                            .map(StreetField::getHouses)
-                            .allMatch(houses -> houses >= currentNumberOfHouses);
+                            .allMatch(f -> !f.isMortgaged() && f.getHouses() >= currentNumberOfHouses);
                 }
             }
         }
