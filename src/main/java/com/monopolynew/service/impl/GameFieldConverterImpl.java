@@ -1,5 +1,6 @@
 package com.monopolynew.service.impl;
 
+import com.monopolynew.dto.GameFieldOfferView;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
@@ -60,9 +61,9 @@ public class GameFieldConverterImpl implements GameFieldConverter {
                 .collect(Collectors.toList());
     }
 
-    public <T extends GameField> List<GameFieldView> toListView(T[] gameFieldArray) {
-        return Arrays.stream(gameFieldArray)
-                .map(this::toView)
+    public <T extends GameField> List<GameFieldOfferView> toListOfferView(List<T> gameFieldList) {
+        return gameFieldList.stream()
+                .map(field -> new GameFieldOfferView(field.getId(), field.getName()))
                 .collect(Collectors.toList());
     }
 }

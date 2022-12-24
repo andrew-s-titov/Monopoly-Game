@@ -8,5 +8,6 @@ public enum GameStage {
     AWAITING_PAYMENT,
     AWAITING_JAIL_FINE,
     BUY_PROPOSAL,
-    AUCTION
+    AUCTION,
+    DEAL_OFFER
 }

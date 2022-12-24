@@ -6,9 +6,9 @@
 300 - game map refresh
 301 - turn starts
 302 - dice rolling start
-303 - dice result event
+303 - dice result
 304 - new player position
-305 - money change event
+305 - money change
 306 - buy or auction proposal
 307 - field view change
 308 - jail release process
@@ -18,6 +18,8 @@
 312 - pay command
 313 - mortgage change
 314 - street house amount
-315 - game over event
+315 - game over
+316 - offer sent
+317 - offer processed
 
 500 - error with message

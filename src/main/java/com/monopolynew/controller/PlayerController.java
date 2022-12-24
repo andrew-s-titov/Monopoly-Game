@@ -19,9 +19,9 @@ public class PlayerController {
 
     private final GameService gameService;
 
-    @GetMapping("/{playerId}/management")
+    @GetMapping("/{subjectPlayerId}/management")
     public List<PlayerManagementAction> availablePlayerManagementActions(
-            @PathVariable("playerId") String subjectPlayerId,
+            @PathVariable("subjectPlayerId") String subjectPlayerId,
             @CookieValue(GlobalConfig.PLAYER_ID_KEY) String requestingPlayerId) {
         return gameService.availablePlayerManagementActions(requestingPlayerId, subjectPlayerId);
     }
@@ -29,11 +29,5 @@ public class PlayerController {
     @GetMapping("/give_up")
     public void giveUp(@CookieValue(GlobalConfig.PLAYER_ID_KEY) String playerId) {
         gameService.giveUp(playerId);
-    }
-
-    @GetMapping("/{playerId}/offer")
-    public void contractOffer(@CookieValue(GlobalConfig.PLAYER_ID_KEY) String initiatorId,
-                              @PathVariable("playerId") String counterpartyId) {
-        // TODO: implement
     }
 }

@@ -1,8 +1,10 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.CheckToPay;
+import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
+import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
@@ -21,9 +23,9 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.GameField;
-import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
+import com.monopolynew.service.DealManager;
 import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameHelper;
 import com.monopolynew.service.GameMapRefresher;
@@ -36,7 +38,6 @@ import com.monopolynew.websocket.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +59,7 @@ public class GameServiceImpl implements GameService {
     private final GameMapRefresher gameMapRefresher;
     private final PaymentProcessor paymentProcessor;
     private final FieldManagementService fieldManagementService;
+    private final DealManager dealManager;
 
     @Override
     public boolean isGameStarted() {
@@ -259,7 +261,7 @@ public class GameServiceImpl implements GameService {
             var gameStage = game.getStage();
             if (currentPlayer.getId().equals(requestingPlayerId) &&
                     (GameStage.TURN_START.equals(gameStage) || GameStage.JAIL_RELEASE_START.equals(gameStage))) {
-                actions.add(PlayerManagementAction.CONTRACT);
+                actions.add(PlayerManagementAction.OFFER);
             }
         }
         return actions;
@@ -287,6 +289,24 @@ public class GameServiceImpl implements GameService {
     public void sellHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
         managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::sellHouse);
+    }
+
+    @Override
+    public PreDealInfo getPreDealInfo(String offerInitiatorId, String offerAddresseeId) {
+        var game = gameRepository.getGame();
+        return dealManager.getPreDealInfo(game, offerInitiatorId, offerAddresseeId);
+    }
+
+    @Override
+    public void createOffer(String offerInitiatorId, String offerAddresseeId, DealOffer offer) {
+        var game = gameRepository.getGame();
+        dealManager.createOffer(game, offerInitiatorId, offerAddresseeId, offer);
+    }
+
+    @Override
+    public void processOfferAnswer(String callerId, ProposalAction proposalAction) {
+        var game = gameRepository.getGame();
+        dealManager.processOfferAnswer(game, callerId, proposalAction);
     }
 
     private void doRegularMove(Game game) {

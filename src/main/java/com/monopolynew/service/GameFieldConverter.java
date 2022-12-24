@@ -1,5 +1,6 @@
 package com.monopolynew.service;
 
+import com.monopolynew.dto.GameFieldOfferView;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.map.GameField;
 
@@ -11,5 +12,5 @@ public interface GameFieldConverter {
 
     <T extends GameField> List<GameFieldView> toListView(List<T> gameFieldList);
 
-    <T extends GameField> List<GameFieldView> toListView(T[] gameFieldArray);
+    <T extends GameField> List<GameFieldOfferView> toListOfferView(List<T> gameFieldList);
 }

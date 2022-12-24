@@ -148,6 +148,9 @@ public class FieldManagementServiceImpl implements FieldManagementService {
 
     @Override
     public boolean housePurchaseAvailable(Game game, Player player, StreetField streetField) {
+        if (streetField.isMortgaged()) {
+            return false;
+        }
         int currentNumberOfHouses = streetField.getHouses();
         if (currentNumberOfHouses < Rules.MAX_HOUSES_ON_STREET && player.getMoney() >= streetField.getHousePrice()) {
             int streetGroupId = streetField.getGroupId();

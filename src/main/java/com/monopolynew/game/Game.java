@@ -5,6 +5,7 @@ import com.monopolynew.dto.DiceResult;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.game.state.Auction;
 import com.monopolynew.game.state.BuyProposal;
+import com.monopolynew.game.state.Offer;
 import com.monopolynew.map.GameMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,9 @@ public class Game {
     @Getter
     @Setter
     private CheckToPay checkToPay;
+    @Getter
+    @Setter
+    private Offer offer;
     private Iterator<Player> playerIterator;
     @Getter
     private GameMap gameMap;
@@ -95,6 +99,7 @@ public class Game {
         this.buyProposal = null;
         this.lastDice = null;
         this.checkToPay = null;
+        this.offer = null;
     }
 
     public Player getCurrentPlayer() {

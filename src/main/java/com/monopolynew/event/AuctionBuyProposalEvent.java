@@ -11,9 +11,6 @@ public class AuctionBuyProposalEvent implements WebsocketEvent {
 
     private final int code = 310;
 
-    @JsonProperty("player_id")
-    private final String playerId;
-
     @JsonProperty("field_name")
     private final String fieldName;
 
@@ -21,7 +18,6 @@ public class AuctionBuyProposalEvent implements WebsocketEvent {
 
     public static AuctionBuyProposalEvent fromAuction(Auction auction) {
         return new AuctionBuyProposalEvent(
-                auction.getCurrentParticipant().getId(),
                 auction.getField().getName(),
                 auction.getAuctionPrice()
         );

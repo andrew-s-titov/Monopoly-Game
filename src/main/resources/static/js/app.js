@@ -166,12 +166,9 @@ function disconnectPlayer() {
 }
 
 function savePlayerIdToCookie(playerId) {
-    let cookieValue = getPlayerIdFromCookie();
-    if (cookieValue == null || cookieValue !== playerId) {
-        const expirationTime = new Date();
-        expirationTime.setTime(expirationTime.getTime() + (24 * 60 * 60 * 1000)); // setting expiration in 1 day
-        document.cookie = `${PLAYER_ID_COOKIE}=${playerId};expires=${expirationTime.toUTCString()};path=/`;
-    }
+    const expirationTime = new Date();
+    expirationTime.setTime(expirationTime.getTime() + (24 * 60 * 60 * 1000)); // setting expiration in 1 day
+    document.cookie = `${PLAYER_ID_COOKIE}=${playerId};expires=${expirationTime.toUTCString()};path=/`;
 }
 
 function getPlayerIdFromCookie() {

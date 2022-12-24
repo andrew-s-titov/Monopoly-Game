@@ -89,7 +89,7 @@ public class GameMap {
                 new StreetField(21, "Lisbon", 6, 220, 150, new int[]{18, 90, 250, 700, 875, 1050}),
                 new ActionableField(22, FieldAction.CHANCE),
                 new StreetField(23, "Madrid", 6, 220, 150, new int[]{18, 90, 250, 700, 875, 1050}),
-                new StreetField(24, "Athens", 6, 240, 150, new int[]{20, 100, 300, 750, 925, 1000}),
+                new StreetField(24, "Athens", 6, 240, 150, new int[]{20, 100, 300, 750, 925, 1100}),
                 new CompanyField(25, "Lufthansa", COMPANY_FIELD_GROUP, 200, 25),
                 new StreetField(26, "Geneva", 7, 260, 150, new int[]{22, 110, 330, 800, 975, 1150}),
                 new StreetField(27, "Hamburg", 7, 260, 150, new int[]{22, 110, 330, 800, 975, 1150}),
