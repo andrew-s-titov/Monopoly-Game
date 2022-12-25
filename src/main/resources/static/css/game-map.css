@@ -97,40 +97,49 @@
     padding: 5px 5px 5px 10px;
 }
 
-#playerMessage {
+#player-message-container {
+    display: flex;
+    align-items: center;
     border: none;
-    display: block;
     background-color: darkslategray;
-    color: white;
+    width: 457px;
+    height: 45px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+
+#player-message-input {
     padding: 0 0 0 10px;
+    width: 349px;
+    border: none;
+    background-color: inherit;
+    color: white;
     font-size: 15px;
-    width: 340px;
-    height: 30px
+    float: left;
 }
 
-#playerMessage:focus {
+#player-message-input:focus {
     outline: none;
-    border-bottom: rgba(5, 29, 29, 0.63) solid 2px;
 }
 
-#playerMessageButton {
+#player-message-button {
     background-color: rgba(5, 29, 29, 0.63);
     border: none;
-    display: block;
     font-size: 15px;
-    width: 100px;
+    width: 98px;
     height: 30px;
     color: white;
-    font-weight: normal;
+    padding: 0;
 }
 
-#messageContainer {
+#message-container {
     background-color: darkslategray;
-    width: 450px;
-    height: 400px;
+    width: 457px;
+    height: 410px;
     display: flex;
     flex-direction: column;
     overflow: auto;
+    margin: 5px 5px 0 5px;
 }
 
 div::-webkit-scrollbar {
@@ -243,4 +252,35 @@ div::-webkit-scrollbar-thumb:hover {
 .price-straight {
     width: 100%;
     height: 19px;
+}
+
+.offer-info-box {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    z-index: 3;
+    background-color: white;
+    font-size: 15px;
+}
+
+.offer-side-name {
+    font-weight: bold;
+}
+
+.offer-side-info-container {
+    display: block;
+    width: 50%;
+}
+
+.offer-box-description {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.offer-button {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 15px;
 }

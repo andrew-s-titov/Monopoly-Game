@@ -29,15 +29,20 @@ export function sendGetHttpRequest(url, async, onRequesterLoadFunction, onReques
     sendHttpRequest('GET', url, async, onRequesterLoadFunction, onRequesterErrorFunction);
 }
 
-export function sendPostHttpRequest(url, async, onRequesterLoadFunction, onRequesterErrorFunction) {
-    sendHttpRequest('POST', url, async, onRequesterLoadFunction, onRequesterErrorFunction);
+export function sendPostHttpRequest(url, async, onRequesterLoadFunction, onRequesterErrorFunction, body) {
+    sendHttpRequest('POST', url, async, onRequesterLoadFunction, onRequesterErrorFunction, body);
 }
 
-function sendHttpRequest(method, url, async, onRequesterLoadFunction, onRequesterErrorFunction) {
+function sendHttpRequest(method, url, async, onRequesterLoadFunction, onRequesterErrorFunction, body) {
     let requester = prepareHttpRequester(method, url, async);
     if (onRequesterLoadFunction != null) requester.onload = () => onRequesterLoadFunction(requester);
     if (onRequesterErrorFunction != null) requester.onerror = () => onRequesterErrorFunction(requester);
-    requester.send();
+    if (body) {
+        requester.setRequestHeader("Content-Type", "application/json");
+        requester.send(JSON.stringify(body));
+    } else {
+        requester.send();
+    }
 }
 
 function prepareHttpRequester(method, url, async) {

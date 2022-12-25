@@ -2,13 +2,14 @@ import {
     addClickEvent, createActionButton, renderActionContainer, removeOldActionContainer,
     renderPropertyManagementContainer, renderGiveUpConfirmation, PROPERTY_MANAGEMENT_PREFIX
 } from './buttons.js';
-import {renderDiceGifs, renderDiceResult, hideDice, preloadDice} from './dice.js'
-import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js'
+import {renderDiceGifs, renderDiceResult, hideDice, preloadDice} from './dice.js';
+import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js';
 import {renderMortgageState, renderHouses, renderFieldViews} from './field-view.js';
 import {
     addPlayers, changePlayerMoney, getPlayerColor, getPlayerIndex, getPlayerName,
     movePlayerChip, bankruptPlayer
-} from "./players.js";
+} from './players.js';
+import {renderOfferProposal} from './offer.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
 
@@ -29,7 +30,7 @@ window.onload = () => {
     let disconnectPlayerButton = document.getElementById('disconnectPlayerButton');
     if (disconnectPlayerButton) addClickEvent(disconnectPlayerButton, () => disconnectPlayer());
 
-    let playerMessageButton = document.getElementById('playerMessageButton');
+    let playerMessageButton = document.getElementById('player-message-button');
     if (playerMessageButton) addClickEvent(playerMessageButton, () => processPlayerMessage());
 
     let playerMessageInput = document.getElementById('playerNameInput');
@@ -92,66 +93,50 @@ function openWebsocket(username) {
             let playerId = socketMessage.player_id;
             console.log(`received current user identification event, id: ${playerId}`);
             thisPlayerId = playerId;
-        }
-        if (socketMessageCode === 101) {
+        } else if (socketMessageCode === 101) {
             onPlayerConnected(socketMessage);
-        }
-        if (socketMessageCode === 102) {
+        } else if (socketMessageCode === 102) {
             onPlayerDisconnected(socketMessage);
-        }
-        if (socketMessageCode === 200) {
+        } else if (socketMessageCode === 200) {
             onChatMessage(socketMessage);
-        }
-        if (socketMessageCode === 201) {
+        } else if (socketMessageCode === 201) {
             onSystemMessage(socketMessage);
-        }
-        if (socketMessageCode === 300) {
+        } else if (socketMessageCode === 300) {
             onGameStartOrMapRefresh(socketMessage);
-        }
-        if (socketMessageCode === 301) {
+        } else if (socketMessageCode === 301) {
             onTurnStart(socketMessage);
-        }
-        if (socketMessageCode === 302) {
+        } else if (socketMessageCode === 302) {
             onDiceStartRolling(socketMessage);
-        }
-        if (socketMessageCode === 303) {
+        } else if (socketMessageCode === 303) {
             onDiceResult(socketMessage);
-        }
-        if (socketMessageCode === 304) {
+        } else if (socketMessageCode === 304) {
             onPlayerChipMove(socketMessage);
-        }
-        if (socketMessageCode === 305) {
+        } else if (socketMessageCode === 305) {
             onMoneyChange(socketMessage);
-        }
-        if (socketMessageCode === 306) {
+        } else if (socketMessageCode === 306) {
             onBuyProposal(socketMessage);
-        }
-        if (socketMessageCode === 307) {
+        } else if (socketMessageCode === 307) {
             renderFieldViews(socketMessage.changes);
-        }
-        if (socketMessageCode === 308) {
+        } else if (socketMessageCode === 308) {
             onJailReleaseProcess(socketMessage);
-        }
-        if (socketMessageCode === 309) {
+        } else if (socketMessageCode === 309) {
             onAuctionRaiseProposal(socketMessage);
-        }
-        if (socketMessageCode === 310) {
+        } else if (socketMessageCode === 310) {
             onAuctionBuyProposal(socketMessage);
-        }
-        if (socketMessageCode === 311) {
+        } else if (socketMessageCode === 311) {
             bankruptPlayer(socketMessage.player_id);
-        }
-        if (socketMessageCode === 312) {
+        } else if (socketMessageCode === 312) {
             onPayCommand(socketMessage);
-        }
-        if (socketMessageCode === 313) {
+        } else if (socketMessageCode === 313) {
             onMortgageChange(socketMessage);
-        }
-        if (socketMessageCode === 314) {
+        } else if (socketMessageCode === 314) {
             renderHouses(socketMessage.field, socketMessage.amount);
-        }
-        if (socketMessageCode === 315) {
+        } else if (socketMessageCode === 315) {
             onGameOver(socketMessage);
+        } else if (socketMessageCode === 316) {
+            onDealOffer(socketMessage);
+        } else if (socketMessageCode === 317) {
+            onOfferProcessed();
         }
     };
 }
@@ -234,11 +219,11 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     }
 
     // auto-click 'send' button in message box if input is active
-    let playerMessageInput = document.getElementById('playerMessage');
+    let playerMessageInput = document.getElementById('player-message-input');
     playerMessageInput.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            document.getElementById('playerMessageButton').click();
+            document.getElementById('player-message-button').click();
         }
     });
 
@@ -303,7 +288,7 @@ function messageDiv() {
 }
 
 function sendMessageToChat(htmlDivMessage) {
-    let messageContainer = document.getElementById('messageContainer');
+    let messageContainer = document.getElementById('message-container');
     messageContainer.appendChild(htmlDivMessage);
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
@@ -324,7 +309,7 @@ function onTurnStart(turnStartEvent) {
 }
 
 function processPlayerMessage() {
-    const playerMessageInput = document.getElementById('playerMessage');
+    const playerMessageInput = document.getElementById('player-message-input');
     if (playerMessageInput) {
         let text = playerMessageInput.value;
         if (text.trim() !== '' && webSocket != null) {
@@ -492,4 +477,8 @@ function applyFieldManagementEvents(fieldIndex) {
                 }
             });
     });
+}
+
+function onDealOffer(offerProposal) {
+    renderOfferProposal(offerProposal);
 }

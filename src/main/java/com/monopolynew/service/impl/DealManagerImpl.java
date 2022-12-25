@@ -54,6 +54,7 @@ public class DealManagerImpl implements DealManager {
         checkDealSides(game, offerInitiatorId, offerAddresseeId);
         var currentPlayer = game.getCurrentPlayer();
         var offerAddressee = getOfferAddressee(game, offerAddresseeId);
+        checkOfferNotEmpty(offer);
         var moneyToGive = offer.getMoneyToGive();
         var moneyToReceive = offer.getMoneyToReceive();
         checkPlayerSolvency(currentPlayer, moneyToGive);
@@ -68,8 +69,8 @@ public class DealManagerImpl implements DealManager {
         var newOffer = Offer.builder()
                 .initiator(currentPlayer)
                 .addressee(offerAddressee)
-                .fieldsToSell(fieldsToBuy)
-                .fieldsToBuy(fieldsToSell)
+                .fieldsToSell(fieldsToSell)
+                .fieldsToBuy(fieldsToBuy)
                 .moneyToGive(moneyToGive)
                 .moneyToReceive(moneyToReceive)
                 .stageToReturnTo(currentGameStage)
@@ -104,8 +105,8 @@ public class DealManagerImpl implements DealManager {
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text(offerAddressee.getName() + " declined the offer"));
         } else {
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text(offerAddressee.getName() + " accepted the offer"));
-            processOfferPayment(offer.getMoneyToGive(), offerAddressee);
-            processOfferPayment(offer.getMoneyToReceive(), offerInitiator);
+            processOfferPayment(offer.getMoneyToGive(), offerInitiator, offerAddressee);
+            processOfferPayment(offer.getMoneyToReceive(), offerAddressee, offerInitiator);
             processOfferFieldExchange(offer.getFieldsToBuy(), offerInitiator);
             processOfferFieldExchange(offer.getFieldsToSell(), offerAddressee);
         }
@@ -151,9 +152,13 @@ public class DealManagerImpl implements DealManager {
 
     private List<PurchasableField> getFieldsByIndexes(Game game, List<Integer> indexes) {
         var gameMap = game.getGameMap();
-        return indexes.stream()
-                .map(index -> safeGetFieldByIndex(gameMap, index))
-                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(indexes)) {
+            return Collections.emptyList();
+        } else {
+            return indexes.stream()
+                    .map(index -> safeGetFieldByIndex(gameMap, index))
+                    .collect(Collectors.toList());
+        }
     }
 
     private PurchasableField safeGetFieldByIndex(GameMap gameMap, Integer index) {
@@ -168,7 +173,7 @@ public class DealManagerImpl implements DealManager {
     }
 
     private void checkPlayerSolvency(Player player, Integer money) {
-        if (player.getMoney() < money) {
+        if (money != null && player.getMoney() < money) {
             throw new IllegalArgumentException(String.format("player %s cannot afford this deal", player.getName()));
         }
     }
@@ -182,11 +187,12 @@ public class DealManagerImpl implements DealManager {
         }
     }
 
-    private void processOfferPayment(Integer moneyAmount, Player recipient) {
+    private void processOfferPayment(Integer moneyAmount, Player payer, Player recipient) {
         if (moneyAmount != null && moneyAmount > 0) {
+            payer.takeMoney(moneyAmount);
             recipient.addMoney(moneyAmount);
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                    Collections.singletonList(MoneyState.fromPlayer(recipient))));
+                    List.of(MoneyState.fromPlayer(payer), MoneyState.fromPlayer(recipient))));
         }
     }
 
@@ -196,6 +202,17 @@ public class DealManagerImpl implements DealManager {
                 field.newOwner(newOwner);
             }
             gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(gameFieldConverter.toListView(fields)));
+        }
+    }
+
+    private void checkOfferNotEmpty(DealOffer offer) {
+        Integer moneyToGive = offer.getMoneyToGive();
+        Integer moneyToReceive = offer.getMoneyToReceive();
+        if ((moneyToGive == null || moneyToGive == 0)
+        && (moneyToReceive == null || moneyToReceive == 0)
+        && CollectionUtils.isEmpty(offer.getFieldsToBuy())
+        && CollectionUtils.isEmpty(offer.getFieldsToSell())) {
+            throw new IllegalArgumentException("Cannot send an empty offer");
         }
     }
 }
