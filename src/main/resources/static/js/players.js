@@ -1,8 +1,8 @@
 import {PLAYER_COLORS} from './colors.js'
 import {moveChip} from "./chip-movement.js";
 import {addClickEvent, renderGiveUpConfirmation} from "./buttons.js";
-import {getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest} from "./http.js";
-import {createOffer} from "./offer.js";
+import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
+import {startOfferProcess} from "./offer.js";
 
 const PLAYER_MAP = new Map();
 const CHIP_MAP = new Map();
@@ -139,144 +139,7 @@ export function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex
             addClickEvent(button, () => renderGiveUpConfirmation());
         } else if (action === 'OFFER') {
             button.innerHTML = 'Offer a contract';
-            button.addEventListener('click', () => {
-                sendGetHttpRequest(`${getBaseGameUrl()}/offer/${getPlayerIdByIndex(playerIndex)}/info`, true,
-                    function (requester) {
-                        if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                            let preDealInfo = JSON.parse(requester.response);
-                            let offerInfoBox = document.createElement('div');
-                            offerInfoBox.className = 'offer-info-box';
-
-                            let text = document.createElement('span');
-                            text.innerText = 'Choose fields to buy or sell and enter money to exchange';
-                            text.className = 'offer-box-description';
-                            offerInfoBox.appendChild(text);
-
-                            let initiatorInfoContainer = document.createElement('div');
-                            initiatorInfoContainer.className = 'offer-side-info-container';
-                            initiatorInfoContainer.style.float = 'left';
-
-                            let initiatorFieldText = document.createElement('p');
-                            initiatorFieldText.innerText = 'You:';
-                            initiatorFieldText.className = 'offer-side-name';
-                            initiatorInfoContainer.appendChild(initiatorFieldText);
-
-                            let moneyToGiveInput = document.createElement('input');
-                            moneyToGiveInput.id = 'money-to-give-input';
-                            moneyToGiveInput.placeholder = 'sum of money...';
-                            moneyToGiveInput.style.fontSize = '15px';
-                            moneyToGiveInput.oninput = () => {
-                                moneyToGiveInput.value = moneyToGiveInput.value
-                                    .replace(/\D/g, '')
-                                    .replace(/^0[^.]/, '0');
-                                if (moneyToGiveInput.value !== '' && moneyToGiveInput.value !== '0') {
-                                    document.getElementById('money-to-receive-input').value = '';
-                                }
-                            }
-                            initiatorInfoContainer.appendChild(moneyToGiveInput);
-
-                            let initiatorFieldList = document.createElement('div');
-                            let initiatorCheckboxName = 'initiator-checkboxes';
-                            for (let field of preDealInfo.offer_initiator_fields) {
-                                let fieldInfoCheckbox = document.createElement('input');
-                                fieldInfoCheckbox.type = 'checkbox';
-                                fieldInfoCheckbox.name = initiatorCheckboxName;
-                                fieldInfoCheckbox.value = field.id;
-                                fieldInfoCheckbox.id = `${field.id}-checkbox`;
-
-                                let checkboxLabel = document.createElement('label');
-                                checkboxLabel.for = fieldInfoCheckbox.id;
-                                checkboxLabel.innerText = field.name;
-
-                                initiatorFieldList.appendChild(fieldInfoCheckbox);
-                                initiatorFieldList.appendChild(checkboxLabel);
-                                initiatorFieldList.appendChild(document.createElement('br'));
-                            }
-                            initiatorInfoContainer.appendChild(initiatorFieldList);
-
-                            offerInfoBox.appendChild(initiatorInfoContainer);
-
-                            let addresseeInfoContainer = document.createElement('div');
-                            addresseeInfoContainer.className = 'offer-side-info-container';
-                            addresseeInfoContainer.style.float = 'right';
-
-                            let addresseeFieldText = document.createElement('span');
-                            addresseeFieldText.innerText = 'Contractor:';
-                            addresseeFieldText.className = 'offer-side-name';
-                            addresseeInfoContainer.appendChild(addresseeFieldText);
-
-                            let moneyToReceiveInput = document.createElement('input');
-                            moneyToReceiveInput.id = 'money-to-receive-input';
-                            moneyToReceiveInput.style.fontSize = '15px';
-                            moneyToReceiveInput.placeholder = 'sum of money...';
-                            moneyToReceiveInput.oninput = () => {
-                                moneyToReceiveInput.value = moneyToReceiveInput.value
-                                    .replace(/\D/g, '')
-                                    .replace(/^0[^.]/, '0');
-                                if (moneyToReceiveInput.value !== '' && moneyToReceiveInput.value !== '0') {
-                                    document.getElementById('money-to-give-input').value = '';
-                                }
-                            }
-                            addresseeInfoContainer.appendChild(moneyToReceiveInput);
-
-                            let addresseeFieldList = document.createElement('div');
-                            let addresseeCheckboxName = 'addressee-checkboxes';
-                            for (let field of preDealInfo.offer_addressee_fields) {
-                                let fieldInfoCheckbox = document.createElement('input');
-                                fieldInfoCheckbox.type = 'checkbox';
-                                fieldInfoCheckbox.name = addresseeCheckboxName;
-                                fieldInfoCheckbox.value = field.id;
-                                fieldInfoCheckbox.id = `${field.id}-checkbox`;
-
-                                let checkboxLabel = document.createElement('label');
-                                checkboxLabel.for = fieldInfoCheckbox.id;
-                                checkboxLabel.innerText = field.name;
-
-                                addresseeFieldList.appendChild(fieldInfoCheckbox);
-                                addresseeFieldList.appendChild(checkboxLabel);
-                                addresseeFieldList.appendChild(document.createElement('br'));
-                            }
-                            addresseeInfoContainer.appendChild(addresseeFieldList);
-
-                            offerInfoBox.appendChild(addresseeInfoContainer);
-
-                            let sendButton = document.createElement('button');
-                            sendButton.className = 'offer-button';
-                            sendButton.style.left = '20%';
-                            sendButton.innerText = 'Send an offer';
-                            addClickEvent(sendButton, () => {
-                                sendPostHttpRequest(
-                                    `${getBaseGameUrl()}/offer/${getPlayerIdByIndex(playerIndex)}/send`, true,
-                                    function (requester) {
-                                        if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                                            // TODO: show some waiting screen to forbid clicking another buttons
-                                            offerInfoBox.remove()
-                                        }
-                                    },
-                                    function (requester) {
-                                        console.error(requester.response)
-                                        // TODO: show info from server error if user mistake
-                                    },
-                                    createOffer()
-                                )
-                            })
-                            offerInfoBox.appendChild(sendButton);
-
-                            let cancelButton = document.createElement('button');
-                            cancelButton.className = 'offer-button';
-                            cancelButton.style.right = '20%';
-                            cancelButton.innerText = 'Cancel';
-                            addClickEvent(cancelButton, () => offerInfoBox.remove());
-                            offerInfoBox.appendChild(cancelButton);
-
-                            document.getElementById('message-container').appendChild(offerInfoBox);
-                        } else {
-                            console.error('failed to load available management actions');
-                            console.log(requester.response);
-                        }
-                    }
-                );
-            })
+            button.addEventListener('click', () => startOfferProcess(getPlayerIdByIndex(playerIndex)));
         } else {
             managementContainer.remove();
             console.error('unknown action type');

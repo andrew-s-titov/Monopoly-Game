@@ -9,7 +9,7 @@ import {
     addPlayers, changePlayerMoney, getPlayerColor, getPlayerIndex, getPlayerName,
     movePlayerChip, bankruptPlayer
 } from './players.js';
-import {renderOfferProposal} from './offer.js';
+import {removeReplyWaitingScreen, renderOfferProposal} from './offer.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
 
@@ -481,4 +481,8 @@ function applyFieldManagementEvents(fieldIndex) {
 
 function onDealOffer(offerProposal) {
     renderOfferProposal(offerProposal);
+}
+
+function onOfferProcessed() {
+    removeReplyWaitingScreen();
 }
