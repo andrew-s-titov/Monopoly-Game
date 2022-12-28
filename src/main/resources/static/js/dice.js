@@ -35,10 +35,8 @@ export function preloadDice() {
 function renderDiceView(leftDiceImage, rightDiceImage) {
     let diceContainer = document.createElement('div');
     diceContainer.id = DICE_CONTAINER_ID;
-    diceContainer.style.position = 'fixed';
-    diceContainer.style.left = '47%';
-    diceContainer.style.top = '45%';
-    document.body.appendChild(diceContainer);
+    diceContainer.className = 'dice-container';
+    document.getElementById('message-container').appendChild(diceContainer);
 
     let diceLeft = document.createElement('img');
     diceLeft.id = DICE_LEFT_ID;
@@ -46,7 +44,7 @@ function renderDiceView(leftDiceImage, rightDiceImage) {
 
     let diceRight = document.createElement('img');
     diceRight.id = DICE_RIGHT_ID;
-    diceRight.style.float = 'left';
+    diceRight.style.float = 'right';
 
     diceContainer.appendChild(diceLeft);
     diceContainer.appendChild(diceRight);

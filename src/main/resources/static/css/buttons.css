@@ -1,3 +1,8 @@
+:root {
+    --action-button-width: 150px;
+    --roll-the-dice-button-height: 45px;
+}
+
 .management-container {
     position: absolute;
     width: 100%;
@@ -26,17 +31,26 @@
 
 .action-button {
     display: block;
-    width: 150px;
+    width: var(--action-button-width);
     margin: auto auto 10px;
 }
 
+.roll-the-dice-button {
+    background-color: white;
+    border: none;
+    position: absolute;
+    height: var(--roll-the-dice-button-height);
+    margin-top: calc((var(--message-container-height) - var(--roll-the-dice-button-height))/2);
+    margin-left: calc((var(--message-container-width) - var(--action-button-width))/2);
+}
+
 .action-container {
-    width: 20%;
-    opacity: 0.9;
-    position: fixed;
-    left: 45%;
-    top: 35%;
-    background-color: black;
+    width: calc((var(--message-container-width) * 0.8));
+    height: calc((var(--message-container-height) * 0.6));
+    position: absolute;
+    margin-left: calc((var(--message-container-width) * 0.1));
+    margin-top: calc((var(--message-container-height) * 0.2));
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 .action-phrase {
@@ -66,4 +80,22 @@
     margin: 15% auto 15% auto;
     padding: 30px;
     z-index: 3;
+}
+
+.flushing {
+    animation: flush 2s;
+    -webkit-animation: flush 2s;
+    animation-iteration-count: infinite;
+    -webkit-animation-iteration-count: infinite;
+}
+
+@keyframes flush  {
+    0%   {color: black; background: white}
+    50%  {color: white; background: black}
+    100% {color: black; background: white}
+}
+@-webkit-keyframes flush {
+    0%   {color: black; background: white}
+    50%  {color: white; background: black}
+    100% {color: black; background: white}
 }

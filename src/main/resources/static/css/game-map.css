@@ -2,6 +2,9 @@
     --price-narrow-side: 14px;
     --field-wide-side: 81px;
     --field-narrow-side: 52px;
+    --message-container-width: 457px;
+    --message-container-height: 410px;
+    --dice-image-width: 126px;
 }
 
 .map-table {
@@ -90,6 +93,10 @@
     color: white;
 }
 
+.player-outline {
+    box-shadow: 15px 0 6px -5px white inset, -15px 0 6px -5px white inset;
+}
+
 .message-body {
     text-align: left;
     color: white;
@@ -134,8 +141,8 @@
 
 #message-container {
     background-color: darkslategray;
-    width: 457px;
-    height: 410px;
+    width: var(--message-container-width);
+    height: var(--message-container-height);
     display: flex;
     flex-direction: column;
     overflow: auto;
@@ -157,6 +164,13 @@ div::-webkit-scrollbar-thumb {
 
 div::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
+}
+
+.dice-container {
+    width: calc(var(--dice-image-width) * 2);
+    position: absolute;
+    margin-top: calc((var(--message-container-height) - var(--dice-image-width)) / 2);
+    margin-left: calc((var(--message-container-width) - var(--dice-image-width) * 2) / 2);
 }
 
 .chip-outer {

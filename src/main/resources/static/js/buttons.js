@@ -2,8 +2,8 @@ import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
 
 export const PROPERTY_MANAGEMENT_PREFIX = "management";
 
-const ACTION_BUTTONS_CONTAINER_ID = 'action_container';
-const PROPERTY_MANAGEMENT_CONTAINER_ID = `${PROPERTY_MANAGEMENT_PREFIX}_${ACTION_BUTTONS_CONTAINER_ID}`;
+const ACTION_CONTAINER_ID = 'action_container';
+const PROPERTY_MANAGEMENT_CONTAINER_ID = `${PROPERTY_MANAGEMENT_PREFIX}_${ACTION_CONTAINER_ID}`;
 
 export function addClickEvent(button, listenerFunction) {
     button.addEventListener('click', () => listenerFunction());
@@ -23,7 +23,7 @@ export function createActionButton(text, url, disabled) {
 }
 
 export function removeOldActionContainer() {
-    let oldContainer = document.getElementById(ACTION_BUTTONS_CONTAINER_ID);
+    let oldContainer = document.getElementById(ACTION_CONTAINER_ID);
     if (oldContainer) {
         oldContainer.remove();
     }
@@ -31,7 +31,7 @@ export function removeOldActionContainer() {
 
 export function renderActionContainer(text, button1, button2) {
     let actionContainer = document.createElement('div');
-    actionContainer.id = ACTION_BUTTONS_CONTAINER_ID;
+    actionContainer.id = ACTION_CONTAINER_ID;
     actionContainer.className = 'action-container';
 
     let actionPhrase = document.createElement('div');
@@ -44,7 +44,7 @@ export function renderActionContainer(text, button1, button2) {
             actionContainer.appendChild(button);
         }
     }
-    document.getElementById('map').appendChild(actionContainer);
+    document.getElementById('message-container').appendChild(actionContainer);
 }
 
 export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex, availableActions) {

@@ -12,6 +12,7 @@ import {
 import {removeReplyWaitingScreen, renderOfferProposal} from './offer.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
+const PLAYER_OUTLINE_CLASSNAME = 'player-outline';
 
 let thisPlayerId = null;
 let webSocket = null;
@@ -301,10 +302,8 @@ function onTurnStart(turnStartEvent) {
 
         let throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, false);
         addClickEvent(throwDiceButton, () => throwDiceButton.remove());
-        document.getElementById('map').appendChild(throwDiceButton);
-        throwDiceButton.style.position = 'fixed';
-        throwDiceButton.style.left = '47%';
-        throwDiceButton.style.top = '45%';
+        throwDiceButton.classList.add('roll-the-dice-button', 'flushing');
+        document.getElementById('message-container').appendChild(throwDiceButton);
     }
 }
 
@@ -321,14 +320,14 @@ function processPlayerMessage() {
 
 function outlinePlayer(playerId) {
     let playerIndex = getPlayerIndex(playerId);
-    document.getElementById(`player${playerIndex}-group`).style.boxShadow =
-        '15px 0 6px -5px white inset, -15px 0 6px -5px white inset';
+    document.getElementById(`player${playerIndex}-group`).classList.add(PLAYER_OUTLINE_CLASSNAME);
 }
 
 function removePlayersOutline() {
     for (let group of document.getElementsByClassName('player-group')) {
-        if (group.style.boxShadow !== 'none') {
-            group.style.boxShadow = 'none';
+        let groupClassList = group.classList;
+        if (groupClassList.contains(PLAYER_OUTLINE_CLASSNAME)) {
+            groupClassList.remove(PLAYER_OUTLINE_CLASSNAME);
             return;
         }
     }

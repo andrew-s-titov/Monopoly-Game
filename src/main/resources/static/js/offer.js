@@ -19,7 +19,7 @@ export function startOfferProcess(addresseeId) {
 
                 let initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You:');
                 renderMoneyInput(initiatorInfoContainer, MONEY_TO_GIVE_INPUT_ID, MONEY_TO_RECEIVE_INPUT_ID);
-                renderSideFieldCheckboxes(addresseeInfoContainer,
+                renderSideFieldCheckboxes(initiatorInfoContainer,
                     preDealInfo.offer_initiator_fields, OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
 
                 let addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', 'Contractor:');
