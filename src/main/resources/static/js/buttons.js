@@ -48,53 +48,53 @@ export function renderActionContainer(text, button1, button2) {
 }
 
 export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex, availableActions) {
+    if (availableActions.length <= 0) {
+        return;
+    }
     let managementContainer = document.createElement("div");
     managementContainer.id = PROPERTY_MANAGEMENT_CONTAINER_ID;
     managementContainer.className = 'management-container';
+    htmlPropertyField.appendChild(managementContainer);
 
-    document.addEventListener('click', event => {
+    let closeOnClickedOutsideListener = function (event) {
         if (event.target.id !== PROPERTY_MANAGEMENT_CONTAINER_ID) {
             managementContainer.remove();
         }
-    });
+    };
+    document.addEventListener('click', (event) => closeOnClickedOutsideListener(event));
     for (let action of availableActions) {
-        let button = document.createElement('button');
-        button.className = 'manage-field-button';
+        let buttonText;
+        let buttonOnClickFunction;
+        let idPostfix;
         if (action === 'INFO') {
-            // TODO: show info card atop of everything;
-            button.innerHTML = 'Info';
-            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-info`;
-            // TODO: actual info implementation
-            addClickEvent(button, () => alert('info should be here'));
+            buttonText = 'Info';
+            idPostfix = buttonText;
+            // TODO: show info card atop of everything - actual implementation;
+            buttonOnClickFunction = () => alert('info should be here');
         } else if (action === 'MORTGAGE') {
-            button.innerHTML = 'Mortgage';
-            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-mortgage`;
-            addClickEvent(button, () =>
-                sendGetHttpRequest( `${getBaseGameUrl()}/field/${fieldIndex}/mortgage`, true));
+            buttonText = 'Mortgage';
+            idPostfix = buttonText;
+            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/mortgage`, true);
         } else if (action === 'REDEEM') {
-            button.innerHTML = 'Redeem';
-            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-redeem`;
-            addClickEvent(button, () =>
-                sendGetHttpRequest( `${getBaseGameUrl()}/field/${fieldIndex}/redeem`, true));
+            buttonText = 'Redeem';
+            idPostfix = buttonText;
+            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/redeem`, true);
         } else if (action === 'BUY_HOUSE') {
-            button.innerHTML = 'Buy a house';
-            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-buy-house`;
-            addClickEvent(button, () =>
-                sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/buy_house`, true));
+            buttonText = 'Buy a house';
+            idPostfix = 'buy';
+            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/buy_house`, true);
         } else if (action === 'SELL_HOUSE') {
-            button.innerHTML = 'Sell a house';
-            button.id = `${PROPERTY_MANAGEMENT_PREFIX}-sell-house`;
-            addClickEvent(button, () =>
-                sendGetHttpRequest( `${getBaseGameUrl()}/field/${fieldIndex}/sell_house`, true));
+            buttonText = 'Sell a house';
+            idPostfix = 'sell';
+            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/sell_house`, true);
         } else {
             managementContainer.remove();
             console.error('unknown action type');
             return;
         }
-        addClickEvent(button, () => managementContainer.remove());
-        managementContainer.appendChild(button);
+        let button = createManagementButton(managementContainer, buttonText, idPostfix, buttonOnClickFunction);
+        addClickEvent(button, () => document.removeEventListener('click', closeOnClickedOutsideListener));
     }
-    htmlPropertyField.appendChild(managementContainer);
 }
 
 export function renderGiveUpConfirmation() {
@@ -116,4 +116,15 @@ export function renderGiveUpConfirmation() {
         confirmContent.appendChild(button);
         addClickEvent(button, () => confirmationShadow.remove());
     }
+}
+
+function createManagementButton(managementContainer, buttonText, idPostfix, onclickFunction) {
+    let button = document.createElement('button');
+    button.className = 'manage-field-button';
+    button.innerHTML = buttonText;
+    button.id = `${PROPERTY_MANAGEMENT_PREFIX}-${idPostfix}`;
+    managementContainer.appendChild(button);
+    addClickEvent(button, () => managementContainer.remove());
+    addClickEvent(button, () => onclickFunction());
+    return button;
 }

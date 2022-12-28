@@ -50,7 +50,8 @@ function renderMortgageTag(fieldIndex) {
     let propertyField = document.getElementById(`field${fieldIndex}`);
     let newMortgageTag = document.createElement('div');
     newMortgageTag.id = `field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`;
-    newMortgageTag.className = defineFieldChildStick(fieldIndex, 'mortgage-tag');
+    newMortgageTag.className = 'mortgage-tag';
+    addTextStickingClassName(fieldIndex, newMortgageTag);
     propertyField.appendChild(newMortgageTag);
 }
 
@@ -107,7 +108,9 @@ function addOwnerCover(fieldIndex, ownerId) {
     let propertyField = document.getElementById(`field${fieldIndex}`);
     let ownerCover = document.createElement('div');
     ownerCover.id = `field${fieldIndex}${OWNER_COVER_POSTFIX}`;
-    ownerCover.className = defineFieldChildStick(fieldIndex, defineCoverParams(fieldIndex, 'owner-cover'));
+    ownerCover.className = 'owner-cover';
+    addTextStickingClassName(fieldIndex, ownerCover);
+    setOwnerCoverOrientation(fieldIndex, ownerCover);
     ownerCover.style.backgroundColor = getPlayerColor(ownerId);
     propertyField.appendChild(ownerCover);
 }
@@ -119,26 +122,26 @@ function removeOwnerCover(fieldIndex) {
     }
 }
 
-function defineFieldChildStick(fieldIndex, baseCoverClassName) {
+function addTextStickingClassName(fieldIndex, htmlElement) {
     let className;
     if (fieldIndex < 10) {
-        className = `${baseCoverClassName} stick-top`;
+        className = 'stick-top';
     } else if (fieldIndex < 20) {
-        className = `${baseCoverClassName} stick-right`;
+        className = 'stick-right';
     } else if (fieldIndex < 30) {
-        className = `${baseCoverClassName} stick-bottom`;
+        className = 'stick-bottom';
     } else {
-        className = `${baseCoverClassName} stick-left`;
+        className = 'stick-left';
     }
-    return className;
+    htmlElement.classList.add(className);
 }
 
-function defineCoverParams(fieldIndex, coverClassName) {
+function setOwnerCoverOrientation(fieldIndex, ownerCoverHtmlElement) {
     let className;
     if (fieldIndex < 10 || (fieldIndex > 20 && fieldIndex < 30)) {
-        className = `${coverClassName} vertical-cover`;
+        className = 'vertical-cover';
     } else {
-        className = `${coverClassName} horizontal-cover`;
+        className = 'horizontal-cover';
     }
-    return className;
+    ownerCoverHtmlElement.classList.add(className);
 }

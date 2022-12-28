@@ -29,21 +29,14 @@ export function addPlayers(jsonPlayerArray) {
 
 export function bankruptPlayer(playerId) {
     let playerIndex = PLAYER_MAP.get(playerId).index;
-
     document.getElementById(`player${playerIndex}-group`).style.backgroundColor = 'transparent';
-
-    let playerMoneyField = document.getElementById(`player${playerIndex}-money`);
-    playerMoneyField.style.color = 'grey';
-
-    let playerNameField = document.getElementById(`player${playerIndex}-name`);
-    playerNameField.style.color = 'grey';
-
+    document.getElementById(`player${playerIndex}-money`).style.color = 'grey';
+    document.getElementById(`player${playerIndex}-name`).style.color = 'grey';
     CHIP_MAP.get(playerIndex).remove();
 }
 
 export function changePlayerMoney(playerId, money) {
     let playerObject = PLAYER_MAP.get(playerId);
-    playerObject.money = money;
     document.getElementById(`player${playerObject.index}-money`).innerHTML = `$ ${money}`;
 }
 
@@ -103,7 +96,7 @@ function applyPlayerManagementEvents(playerIndex) {
         return;
     }
     playerIconField.addEventListener('click', (event) => {
-        if (event.target.id === `player${playerIndex}-action-container`) {
+        if (event.target.id.startsWith(`player${playerIndex}`)) {
             return;
         }
         sendGetHttpRequest(`${getBaseGameUrl()}/player/${getPlayerIdByIndex(playerIndex)}/management`, true,
@@ -122,17 +115,19 @@ function applyPlayerManagementEvents(playerIndex) {
 }
 
 export function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex, availableActions) {
-    let managementContainer = document.createElement("div");
     let containerId = `player${playerIndex}-action-container`;
+    let managementContainer = document.createElement("div");
     managementContainer.className = 'management-container';
 
-    document.addEventListener('click', event => {
+    let hideOnClickOutsideListener = function(event) {
         if (event.target.id !== containerId) {
             managementContainer.remove();
         }
-    });
+    }
+    document.addEventListener('click', event => hideOnClickOutsideListener(event));
     for (let action of availableActions) {
         let button = document.createElement('button');
+        button.id = `player${playerIndex}-action-button`;
         button.className = 'manage-player-button';
         if (action === 'GIVE_UP') {
             button.innerHTML = 'Give up';
@@ -146,6 +141,7 @@ export function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex
             return;
         }
         addClickEvent(button, () => managementContainer.remove());
+        addClickEvent(button, () => document.removeEventListener('click', hideOnClickOutsideListener));
         managementContainer.appendChild(button);
     }
     htmlPlayerIconField.appendChild(managementContainer);

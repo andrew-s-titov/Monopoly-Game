@@ -40,9 +40,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         GameField field = game.getGameMap().getField(fieldIndex);
         List<FieldManagementAction> actions = new ArrayList<>(FieldManagementAction.values().length);
         actions.add(FieldManagementAction.INFO);
-        if (managementNotAvailable(game.getStage()) || field instanceof ActionableField) {
-            return Collections.emptyList();
-        } else {
+        if (field instanceof PurchasableField && !managementNotAvailable(game.getStage())) {
             var purchasableField = (PurchasableField) field;
             Player currentPlayer = game.getCurrentPlayer();
             if (currentPlayer.getId().equals(playerId) && !purchasableField.isFree() && currentPlayer.equals(purchasableField.getOwner())) {
@@ -61,8 +59,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     }
                 }
             }
-            return actions;
         }
+        return actions;
     }
 
     @Override

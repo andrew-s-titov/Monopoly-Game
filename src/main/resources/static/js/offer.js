@@ -105,7 +105,13 @@ function renderReplyWaitingScreen() {
 }
 
 function renderOfferInfoBox() {
+    let offerInfoBoxId = 'offer-info-box';
+    let oldOfferBox = document.getElementById(offerInfoBoxId);
+    if (oldOfferBox) {
+        oldOfferBox.remove();
+    }
     let offerInfoBox = document.createElement('div');
+    offerInfoBox.id = offerInfoBoxId;
     offerInfoBox.className = 'offer-info-box';
     document.getElementById('message-container').appendChild(offerInfoBox);
     return offerInfoBox;

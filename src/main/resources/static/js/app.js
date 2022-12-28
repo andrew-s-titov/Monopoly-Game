@@ -466,10 +466,7 @@ function applyFieldManagementEvents(fieldIndex) {
         sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/management`, true,
             function (requester) {
                 if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                    let managementActions = JSON.parse(requester.response);
-                    if (managementActions.length > 0) {
-                        renderPropertyManagementContainer(htmlField, fieldIndex, managementActions);
-                    }
+                    renderPropertyManagementContainer(htmlField, fieldIndex, JSON.parse(requester.response));
                 } else {
                     console.error('failed to load available management actions');
                     console.log(requester.response);
