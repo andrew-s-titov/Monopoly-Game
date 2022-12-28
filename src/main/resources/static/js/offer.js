@@ -2,6 +2,10 @@ import {addClickEvent} from "./buttons.js";
 import {getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest} from "./http.js";
 
 const REPLY_WAITING_SCREEN_ID = 'reply-waiting-screen';
+const MONEY_TO_GIVE_INPUT_ID = 'money-to-give-input';
+const MONEY_TO_RECEIVE_INPUT_ID = 'money-to-receive-input';
+const OFFER_INITIATOR_CHECKBOX_GROUP_NAME = 'initiator-checkboxes';
+const OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME = 'addressee-checkboxes';
 
 export function startOfferProcess(addresseeId) {
     sendGetHttpRequest(`${getBaseGameUrl()}/offer/${addresseeId}/info`, true,
@@ -12,75 +16,16 @@ export function startOfferProcess(addresseeId) {
                 let offerInfoBox = renderOfferInfoBox();
                 renderOfferInfoBoxDescription(offerInfoBox,
                     'Choose fields to buy or sell and enter money to exchange');
+
                 let initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You:');
-
-                let moneyToGiveInput = document.createElement('input');
-                moneyToGiveInput.id = 'money-to-give-input';
-                moneyToGiveInput.placeholder = 'sum of money...';
-                moneyToGiveInput.style.fontSize = '15px';
-                moneyToGiveInput.oninput = () => {
-                    moneyToGiveInput.value = moneyToGiveInput.value
-                        .replace(/\D/g, '')
-                        .replace(/^0[^.]/, '0');
-                    if (moneyToGiveInput.value !== '' && moneyToGiveInput.value !== '0') {
-                        document.getElementById('money-to-receive-input').value = '';
-                    }
-                }
-                initiatorInfoContainer.appendChild(moneyToGiveInput);
-
-                let initiatorFieldList = document.createElement('div');
-                let initiatorCheckboxName = 'initiator-checkboxes';
-                for (let field of preDealInfo.offer_initiator_fields) {
-                    let fieldInfoCheckbox = document.createElement('input');
-                    fieldInfoCheckbox.type = 'checkbox';
-                    fieldInfoCheckbox.name = initiatorCheckboxName;
-                    fieldInfoCheckbox.value = field.id;
-                    fieldInfoCheckbox.id = `${field.id}-checkbox`;
-
-                    let checkboxLabel = document.createElement('label');
-                    checkboxLabel.for = fieldInfoCheckbox.id;
-                    checkboxLabel.innerText = field.name;
-
-                    initiatorFieldList.appendChild(fieldInfoCheckbox);
-                    initiatorFieldList.appendChild(checkboxLabel);
-                    initiatorFieldList.appendChild(document.createElement('br'));
-                }
-                initiatorInfoContainer.appendChild(initiatorFieldList);
+                renderMoneyInput(initiatorInfoContainer, MONEY_TO_GIVE_INPUT_ID, MONEY_TO_RECEIVE_INPUT_ID);
+                renderSideFieldCheckboxes(addresseeInfoContainer,
+                    preDealInfo.offer_initiator_fields, OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
 
                 let addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', 'Contractor:');
-
-                let moneyToReceiveInput = document.createElement('input');
-                moneyToReceiveInput.id = 'money-to-receive-input';
-                moneyToReceiveInput.style.fontSize = '15px';
-                moneyToReceiveInput.placeholder = 'sum of money...';
-                moneyToReceiveInput.oninput = () => {
-                    moneyToReceiveInput.value = moneyToReceiveInput.value
-                        .replace(/\D/g, '')
-                        .replace(/^0[^.]/, '0');
-                    if (moneyToReceiveInput.value !== '' && moneyToReceiveInput.value !== '0') {
-                        document.getElementById('money-to-give-input').value = '';
-                    }
-                }
-                addresseeInfoContainer.appendChild(moneyToReceiveInput);
-
-                let addresseeFieldList = document.createElement('div');
-                let addresseeCheckboxName = 'addressee-checkboxes';
-                for (let field of preDealInfo.offer_addressee_fields) {
-                    let fieldInfoCheckbox = document.createElement('input');
-                    fieldInfoCheckbox.type = 'checkbox';
-                    fieldInfoCheckbox.name = addresseeCheckboxName;
-                    fieldInfoCheckbox.value = field.id;
-                    fieldInfoCheckbox.id = `${field.id}-checkbox`;
-
-                    let checkboxLabel = document.createElement('label');
-                    checkboxLabel.for = fieldInfoCheckbox.id;
-                    checkboxLabel.innerText = field.name;
-
-                    addresseeFieldList.appendChild(fieldInfoCheckbox);
-                    addresseeFieldList.appendChild(checkboxLabel);
-                    addresseeFieldList.appendChild(document.createElement('br'));
-                }
-                addresseeInfoContainer.appendChild(addresseeFieldList);
+                renderMoneyInput(addresseeInfoContainer, MONEY_TO_RECEIVE_INPUT_ID, MONEY_TO_GIVE_INPUT_ID);
+                renderSideFieldCheckboxes(addresseeInfoContainer,
+                    preDealInfo.offer_addressee_fields, OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
 
                 renderLeftButton(offerInfoBox, 'Send an offer', () => {
                     sendPostHttpRequest(
@@ -95,10 +40,9 @@ export function startOfferProcess(addresseeId) {
                             console.error(requester.response)
                             // TODO: show info from server error if user mistake
                         },
-                        createOffer()
+                        createOfferBody()
                     )
                 });
-
                 renderRightButton(offerInfoBox, 'Cancel', () => offerInfoBox.remove());
             } else {
                 console.error('failed to load available management actions');
@@ -119,36 +63,12 @@ export function renderOfferProposal(offerProposal) {
     renderOfferInfoBoxDescription(offerInfoBox, `${initiatorName} made you an offer:`);
 
     let addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You give:');
-    if (moneyToReceive && moneyToReceive > 0) {
-        let moneyAddresseeGives = document.createElement('p');
-        moneyAddresseeGives.innerText = `money: $${moneyToReceive}`;
-        addresseeInfoContainer.appendChild(moneyAddresseeGives);
-        addresseeInfoContainer.appendChild(document.createElement('br'));
-    }
-    if (fieldsToBuy && fieldsToBuy.length > 0) {
-        for (let field of fieldsToBuy) {
-            let fieldName = document.createElement('p');
-            fieldName.innerText = field.name;
-            addresseeInfoContainer.appendChild(fieldName);
-            addresseeInfoContainer.appendChild(document.createElement('br'));
-        }
-    }
+    renderMoneyProposal(addresseeInfoContainer, moneyToReceive);
+    renderFieldsProposal(addresseeInfoContainer, fieldsToBuy);
 
     let initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', `${initiatorName} gives:`);
-    if (moneyToGive && moneyToGive > 0) {
-        let moneyInitiatorGives = document.createElement('p');
-        moneyInitiatorGives.innerText = `money: $${moneyToGive}`;
-        initiatorInfoContainer.appendChild(moneyInitiatorGives);
-        initiatorInfoContainer.appendChild(document.createElement('br'));
-    }
-    if (fieldsToSell && fieldsToSell.length > 0) {
-        for (let field of fieldsToSell) {
-            let fieldName = document.createElement('p');
-            fieldName.innerText = field.name;
-            initiatorInfoContainer.appendChild(fieldName);
-            initiatorInfoContainer.appendChild(document.createElement('br'));
-        }
-    }
+    renderMoneyProposal(initiatorInfoContainer, moneyToGive);
+    renderFieldsProposal(initiatorInfoContainer, fieldsToSell);
 
     renderLeftButton(offerInfoBox, 'Accept', () => {
         sendPostHttpRequest(`${getBaseGameUrl()}/offer/process?action=ACCEPT`, true);
@@ -167,19 +87,11 @@ export function removeReplyWaitingScreen() {
     }
 }
 
-function createOffer() {
-    let initiatorFields = [...document.querySelectorAll('input[name=initiator-checkboxes]:checked')];
-    let fieldsToSell;
-    if (initiatorFields && initiatorFields.length > 0) {
-        fieldsToSell = initiatorFields.map(checkbox => checkbox.value);
-    }
-    let addresseeFields = [...document.querySelectorAll('input[name=addressee-checkboxes]:checked')];
-    let fieldsToBuy;
-    if (addresseeFields && addresseeFields.length > 0) {
-        fieldsToBuy = addresseeFields.map(checkbox => checkbox.value);
-    }
-    let moneyToGive = document.getElementById('money-to-give-input').value;
-    let moneyToReceive = document.getElementById('money-to-receive-input').value;
+function createOfferBody() {
+    let fieldsToSell = getCheckedFieldValues(OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
+    let fieldsToBuy = getCheckedFieldValues(OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
+    let moneyToGive = document.getElementById(MONEY_TO_GIVE_INPUT_ID).value;
+    let moneyToReceive = document.getElementById(MONEY_TO_RECEIVE_INPUT_ID).value;
     return new Offer(fieldsToSell, fieldsToBuy, moneyToGive, moneyToReceive);
 }
 
@@ -237,6 +149,76 @@ function renderBottomButton(offerInfoBox, name, clickFunction) {
     addClickEvent(button, clickFunction);
     offerInfoBox.appendChild(button);
     return button;
+}
+
+function renderMoneyInput(sideInfoContainer, id, mutuallyExclusiveInputId) {
+    let moneyInput = document.createElement('input');
+    moneyInput.id = id;
+    moneyInput.placeholder = 'sum of money...';
+    moneyInput.style.fontSize = '15px';
+    moneyInput.oninput = () => {
+        moneyInput.value = moneyInput.value.replace(/\D/g, '').replace(/^0[^.]/, '0');
+        if (moneyInput.value !== '' && moneyInput.value !== '0') {
+            let anotherMoneyInput = document.getElementById(mutuallyExclusiveInputId);
+            if (anotherMoneyInput) {
+                anotherMoneyInput.value = '';
+            }
+        }
+    }
+    sideInfoContainer.appendChild(moneyInput);
+}
+
+function renderSideFieldCheckboxes(sideInfoContainer, fields, groupName) {
+    let fieldCheckboxList = document.createElement('div');
+    for (let field of fields) {
+        let fieldInfoCheckbox = document.createElement('input');
+        fieldInfoCheckbox.type = 'checkbox';
+        fieldInfoCheckbox.name = groupName;
+        fieldInfoCheckbox.value = field.id;
+        fieldInfoCheckbox.id = `${field.id}-checkbox`;
+
+        let checkboxLabel = document.createElement('label');
+        checkboxLabel.for = fieldInfoCheckbox.id;
+        checkboxLabel.innerText = field.name;
+
+        fieldCheckboxList.appendChild(fieldInfoCheckbox);
+        fieldCheckboxList.appendChild(checkboxLabel);
+        addLineSeparator(fieldCheckboxList);
+    }
+    sideInfoContainer.appendChild(fieldCheckboxList);
+}
+
+function renderMoneyProposal(sideInfoContainer, moneyAmount) {
+    if (moneyAmount && moneyAmount > 0) {
+        let moneyProposal = document.createElement('p');
+        moneyProposal.innerText = `money: $${moneyAmount}`;
+        sideInfoContainer.appendChild(moneyProposal);
+        addLineSeparator(sideInfoContainer);
+    }
+}
+
+function renderFieldsProposal(sideInfoContainer, fields) {
+    if (fields && fields.length > 0) {
+        for (let field of fields) {
+            let fieldName = document.createElement('p');
+            fieldName.innerText = field.name;
+            sideInfoContainer.appendChild(fieldName);
+            addLineSeparator(sideInfoContainer);
+        }
+    }
+}
+
+function addLineSeparator(parentElement) {
+    parentElement.appendChild(document.createElement('br'));
+}
+
+function getCheckedFieldValues(groupName) {
+    let checkedFields = [...document.querySelectorAll(`input[name=${groupName}]:checked`)];
+    let fieldsValues;
+    if (checkedFields && checkedFields.length > 0) {
+        fieldsValues = checkedFields.map(checkbox => checkbox.value);
+    }
+    return fieldsValues;
 }
 
 class Offer {
