@@ -10,7 +10,7 @@ export function addClickEvent(button, listenerFunction) {
 }
 
 export function createActionButton(text, url, disabled) {
-    let actionButton = document.createElement('button');
+    const actionButton = document.createElement('button');
     actionButton.innerText = text;
     actionButton.className = 'action-button';
     if (url != null) {
@@ -23,18 +23,18 @@ export function createActionButton(text, url, disabled) {
 }
 
 export function removeOldActionContainer() {
-    let oldContainer = document.getElementById(ACTION_CONTAINER_ID);
+    const oldContainer = document.getElementById(ACTION_CONTAINER_ID);
     if (oldContainer) {
         oldContainer.remove();
     }
 }
 
 export function renderActionContainer(text, button1, button2) {
-    let actionContainer = document.createElement('div');
+    const actionContainer = document.createElement('div');
     actionContainer.id = ACTION_CONTAINER_ID;
     actionContainer.className = 'action-container';
 
-    let actionPhrase = document.createElement('div');
+    const actionPhrase = document.createElement('div');
     actionPhrase.className = 'action-phrase';
     actionPhrase.innerText = text;
     actionContainer.appendChild(actionPhrase);
@@ -51,17 +51,17 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
     if (availableActions.length <= 0) {
         return;
     }
-    let managementContainer = document.createElement("div");
+    const managementContainer = document.createElement("div");
     managementContainer.id = PROPERTY_MANAGEMENT_CONTAINER_ID;
     managementContainer.className = 'management-container';
     htmlPropertyField.appendChild(managementContainer);
 
-    let closeOnClickedOutsideListener = function (event) {
+    const closeOnClickedOutsideListener = function (event) {
         if (event.target.id !== PROPERTY_MANAGEMENT_CONTAINER_ID) {
-            managementContainer.remove();
+            finishPropertyManagement(managementContainer, closeOnClickedOutsideListener);
         }
     };
-    document.addEventListener('click', (event) => closeOnClickedOutsideListener(event));
+    document.addEventListener('click', closeOnClickedOutsideListener);
     for (let action of availableActions) {
         let buttonText;
         let buttonOnClickFunction;
@@ -88,30 +88,30 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
             idPostfix = 'sell';
             buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/sell_house`, true);
         } else {
-            managementContainer.remove();
+            finishPropertyManagement(managementContainer, closeOnClickedOutsideListener);
             console.error('unknown action type');
             return;
         }
-        let button = createManagementButton(managementContainer, buttonText, idPostfix, buttonOnClickFunction);
-        addClickEvent(button, () => document.removeEventListener('click', closeOnClickedOutsideListener));
+        const button = createManagementButton(managementContainer, buttonText, idPostfix, buttonOnClickFunction);
+        addClickEvent(button, () => finishPropertyManagement(managementContainer, closeOnClickedOutsideListener));
     }
 }
 
 export function renderGiveUpConfirmation() {
-    let confirmationShadow = document.createElement('div');
+    const confirmationShadow = document.createElement('div');
     confirmationShadow.className = 'fullscreen-shadow-container';
     document.body.appendChild(confirmationShadow);
-    let confirmContent = document.createElement('div');
+    const confirmContent = document.createElement('div');
     confirmContent.className = 'center-screen-container';
     confirmationShadow.appendChild(confirmContent);
-    let confirmTextElement = document.createElement('p');
+    const confirmTextElement = document.createElement('p');
     confirmTextElement.innerText = 'Do you really want to give up?';
     confirmContent.appendChild(confirmTextElement);
 
-    let confirmGiveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
+    const confirmGiveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
     confirmGiveUpButton.style.backgroundColor = 'red';
     confirmGiveUpButton.style.color = 'white';
-    let cancelGiveUpButton = createActionButton('Cancel');
+    const cancelGiveUpButton = createActionButton('Cancel');
     for (let button of [confirmGiveUpButton, cancelGiveUpButton]) {
         confirmContent.appendChild(button);
         addClickEvent(button, () => confirmationShadow.remove());
@@ -119,12 +119,16 @@ export function renderGiveUpConfirmation() {
 }
 
 function createManagementButton(managementContainer, buttonText, idPostfix, onclickFunction) {
-    let button = document.createElement('button');
+    const button = document.createElement('button');
     button.className = 'manage-field-button';
     button.innerHTML = buttonText;
     button.id = `${PROPERTY_MANAGEMENT_PREFIX}-${idPostfix}`;
     managementContainer.appendChild(button);
-    addClickEvent(button, () => managementContainer.remove());
     addClickEvent(button, () => onclickFunction());
     return button;
+}
+
+function finishPropertyManagement(managementContainer, closeOnClickListener) {
+    managementContainer.remove();
+    document.removeEventListener('click', closeOnClickListener);
 }

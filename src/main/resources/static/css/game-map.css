@@ -298,3 +298,21 @@ div::-webkit-scrollbar-thumb:hover {
     bottom: 0;
     margin-bottom: 15px;
 }
+
+.house-container {
+    position: absolute;
+}
+
+.house-pic {
+    width: 10px;
+    height: 10px;
+    background-image: url('/images/house.png');
+    background-size: 10px;
+}
+
+.hotel-pic {
+    width: 20px;
+    height: 20px;
+    background-image: url('/images/hotel.png');
+    background-size: 20px;
+}

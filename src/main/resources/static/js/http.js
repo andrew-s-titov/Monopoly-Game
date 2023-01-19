@@ -6,7 +6,7 @@ let WEBSOCKET_BASE_URL = null;
 
 export function setHost(host) {
     HOST = host;
-    let localhost = HOST.includes('localhost', 0);
+    const localhost = HOST.includes('localhost', 0);
     SCHEME = localhost ? 'http' : 'https';
     WEBSOCKET_SCHEME = localhost ? 'ws' : 'wss';
     BASE_GAME_URL = `${SCHEME}://${HOST}/game`;
@@ -34,7 +34,7 @@ export function sendPostHttpRequest(url, async, onRequesterLoadFunction, onReque
 }
 
 function sendHttpRequest(method, url, async, onRequesterLoadFunction, onRequesterErrorFunction, body) {
-    let requester = prepareHttpRequester(method, url, async);
+    const requester = prepareHttpRequester(method, url, async);
     if (onRequesterLoadFunction != null) requester.onload = () => onRequesterLoadFunction(requester);
     if (onRequesterErrorFunction != null) requester.onerror = () => onRequesterErrorFunction(requester);
     if (body) {
@@ -46,7 +46,7 @@ function sendHttpRequest(method, url, async, onRequesterLoadFunction, onRequeste
 }
 
 function prepareHttpRequester(method, url, async) {
-    let httpRequester = new XMLHttpRequest();
+    const httpRequester = new XMLHttpRequest();
     httpRequester.open(method, url, async);
     httpRequester.withCredentials = true;
     return httpRequester;

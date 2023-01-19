@@ -5,60 +5,39 @@ const stepPx = fieldNarrowSidePx;
 const cornerStepAdjustmentPx = (fieldWideSidePx - fieldNarrowSidePx) / 2;
 const chipWidth = 24;
 const chipWidthAdjustment = chipWidth / 2;
+const PX_POSTFIX = 'px';
 
 export function moveChip(chip, fieldIndex) {
+    if (fieldIndex < 0 || fieldIndex > 39) {
+        console.error(`no field with id ${fieldIndex} found on map`);
+        return;
+    }
     chip.style.top = defineChipTop(fieldIndex);
     chip.style.left = defineChipLeft(fieldIndex);
 }
 
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let startTop = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment; // adding body default margin;
-    let postfix = 'px';
-    if (fieldIndex >= 0 && fieldIndex <= 10) {
-        return startTop + postfix;
-    } else if (fieldIndex >= 20 && fieldIndex <= 30) {
-        return (startTop
-                + stepPx * 10
-                + cornerStepAdjustmentPx * 2)
-            + postfix;
+    let top = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment; // adding body default margin;
+    if (fieldIndex >= 20 && fieldIndex <= 30) {
+        top += stepPx * 10 + cornerStepAdjustmentPx * 2;
     } else if (fieldIndex > 10 && fieldIndex < 20) {
-        return (startTop
-                + cornerStepAdjustmentPx
-                + stepPx * (fieldIndex - 10))
-            + postfix;
+        top += cornerStepAdjustmentPx + stepPx * (fieldIndex - 10);
     } else if (fieldIndex > 30 && fieldIndex < 40) {
-        return (startTop
-                + cornerStepAdjustmentPx
-                + stepPx * (40 - fieldIndex))
-            + postfix;
-    } else {
-        console.error(`no field with id ${fieldIndex} found on map`);
+        top += cornerStepAdjustmentPx + stepPx * (40 - fieldIndex);
     }
+    return top + PX_POSTFIX;
 }
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let startLeft = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment;
-    let postfix = 'px';
-    if (fieldIndex === 0 || (fieldIndex >= 30 && fieldIndex < 40)) {
-        return startLeft + postfix;
-    } else if (fieldIndex >= 10 && fieldIndex <= 20) {
-        return (startLeft
-                + stepPx * 10
-                + cornerStepAdjustmentPx * 2)
-            + postfix;
+    let left = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment;
+    if (fieldIndex >= 10 && fieldIndex <= 20) {
+        left += stepPx * 10 + cornerStepAdjustmentPx * 2;
     } else if (fieldIndex > 0 && fieldIndex < 10) {
-        return (startLeft
-                + stepPx * fieldIndex
-                + cornerStepAdjustmentPx)
-            + postfix;
+        left += stepPx * fieldIndex + cornerStepAdjustmentPx;
     } else if (fieldIndex > 20 && fieldIndex < 30) {
-        return (startLeft
-                + stepPx * (30 - fieldIndex)
-                + cornerStepAdjustmentPx)
-            + postfix;
-    } else {
-        console.error(`no field with id ${fieldIndex} found on map`);
+        left += stepPx * (30 - fieldIndex) + cornerStepAdjustmentPx;
     }
+    return left + PX_POSTFIX;
 }

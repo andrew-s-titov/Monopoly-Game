@@ -6,7 +6,7 @@ import {renderDiceGifs, renderDiceResult, hideDice, preloadDice} from './dice.js
 import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js';
 import {renderMortgageState, renderHouses, renderFieldViews} from './field-view.js';
 import {
-    addPlayers, changePlayerMoney, getPlayerColor, getPlayerIndex, getPlayerName,
+    addPlayers, changePlayerMoney, getPlayerColorById, getPlayerIndexById, getPlayerNameById,
     movePlayerChip, bankruptPlayer
 } from './players.js';
 import {removeReplyWaitingScreen, renderOfferProposal} from './offer.js';
@@ -19,22 +19,22 @@ let webSocket = null;
 let gameInProgress = false;
 
 window.onload = () => {
-    let host = document.getElementById('proxy-host').innerText;
+    const host = document.getElementById('proxy-host').innerText;
     setHost(host);
 
-    let submitPlayerNameButton = document.getElementById('submitPlayerName');
+    const submitPlayerNameButton = document.getElementById('submitPlayerName');
     if (submitPlayerNameButton) addClickEvent(submitPlayerNameButton, () => joinGameRoom());
 
-    let startGameButton = document.getElementById('startGameButton');
+    const startGameButton = document.getElementById('startGameButton');
     if (startGameButton) addClickEvent(startGameButton, () => startGame());
 
-    let disconnectPlayerButton = document.getElementById('disconnectPlayerButton');
+    const disconnectPlayerButton = document.getElementById('disconnectPlayerButton');
     if (disconnectPlayerButton) addClickEvent(disconnectPlayerButton, () => disconnectPlayer());
 
-    let playerMessageButton = document.getElementById('player-message-button');
+    const playerMessageButton = document.getElementById('player-message-button');
     if (playerMessageButton) addClickEvent(playerMessageButton, () => processPlayerMessage());
 
-    let playerMessageInput = document.getElementById('playerNameInput');
+    const playerMessageInput = document.getElementById('playerNameInput');
     if (playerMessageInput) {
         playerMessageInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
@@ -43,7 +43,7 @@ window.onload = () => {
             }
         });
     }
-    let reconnect = document.getElementById('reconnect');
+    const reconnect = document.getElementById('reconnect');
     if (reconnect) {
         if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
             openWebsocket(reconnect.innerText);
@@ -61,7 +61,7 @@ function joinGameRoom() {
                 if (requester.status === 200) {
                     openWebsocket(playerName);
                 } else {
-                    let errorPopUp = document.getElementById('errorMessage');
+                    const errorPopUp = document.getElementById('errorMessage');
                     errorPopUp.style.display = 'block';
                     if (requester.status === 400) {
                         errorPopUp.innerHTML = requester.responseText;
@@ -91,7 +91,7 @@ function openWebsocket(username) {
         const socketMessageCode = socketMessage.code;
         console.log(`websocket event code is ${socketMessageCode}`);
         if (socketMessageCode === 100) {
-            let playerId = socketMessage.player_id;
+            const playerId = socketMessage.player_id;
             console.log(`received current user identification event, id: ${playerId}`);
             thisPlayerId = playerId;
         } else if (socketMessageCode === 101) {
@@ -158,7 +158,7 @@ function savePlayerIdToCookie(playerId) {
 }
 
 function getPlayerIdFromCookie() {
-    let playerCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith(`${PLAYER_ID_COOKIE}=`));
+    const playerCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith(`${PLAYER_ID_COOKIE}=`));
     return playerCookie ? playerCookie.split('=')[1] : null;
 }
 
@@ -183,7 +183,7 @@ function startGame() {
 }
 
 function httpError(errorHtmlElementId) {
-    let errorPopUp = document.getElementById(errorHtmlElementId);
+    const errorPopUp = document.getElementById(errorHtmlElementId);
     if (errorPopUp) {
         errorPopUp.style.display = 'block';
         errorPopUp.innerHTML = 'Unexpected server error';
@@ -212,16 +212,15 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
 
     outlinePlayer(gameMapRefreshEvent.current_player);
 
-    let fieldViews = gameMapRefreshEvent.fields;
+    const fieldViews = gameMapRefreshEvent.fields;
     renderFieldViews(fieldViews);
     for (let fieldView of fieldViews) {
-        let fieldIndex = fieldView.id;
-        applyFieldManagementEvents(fieldIndex);
+        applyFieldManagementEvents(fieldView.id);
     }
 
     // auto-click 'send' button in message box if input is active
-    let playerMessageInput = document.getElementById('player-message-input');
-    playerMessageInput.addEventListener('keypress', function (event) {
+    const playerMessageInput = document.getElementById('player-message-input');
+    playerMessageInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
             document.getElementById('player-message-button').click();
@@ -232,9 +231,9 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
 }
 
 function onPlayerConnected(playerConnectedEvent) {
-    let playerName = playerConnectedEvent.player_name;
+    const playerName = playerConnectedEvent.player_name;
     for (let i = 0; i < 5; i++) {
-        let playerField = document.getElementById(`player${i}`);
+        const playerField = document.getElementById(`player${i}`);
         if (playerField.innerHTML.trim() === '') {
             playerField.innerHTML = playerName;
             playerField.style.textAlign = 'center';
@@ -257,16 +256,16 @@ function onPlayerDisconnected(playerDisconnectedEvent) {
 }
 
 function onChatMessage(chatMessageEvent) {
-    let playerId = chatMessageEvent.player_id;
+    const playerId = chatMessageEvent.player_id;
 
-    let messageElement = messageDiv();
+    const messageElement = messageDiv();
 
-    let nameText = document.createElement('span');
-    nameText.style.color = getPlayerColor(playerId);
+    const nameText = document.createElement('span');
+    nameText.style.color = getPlayerColorById(playerId);
     nameText.style.fontWeight = 'bold';
-    nameText.innerText = getPlayerName(playerId);
+    nameText.innerText = getPlayerNameById(playerId);
 
-    let messageText = document.createElement('span');
+    const messageText = document.createElement('span');
     messageText.innerText = `: ${chatMessageEvent.message}`;
 
     messageElement.appendChild(nameText);
@@ -275,32 +274,32 @@ function onChatMessage(chatMessageEvent) {
 }
 
 function onSystemMessage(systemMessageEvent) {
-    let message = systemMessageEvent.message;
-    let messageElement = messageDiv();
+    const message = systemMessageEvent.message;
+    const messageElement = messageDiv();
     messageElement.textContent = message;
     messageElement.style.fontStyle = 'italic';
     sendMessageToChat(messageElement);
 }
 
 function messageDiv() {
-    let messageElement = document.createElement('div');
+    const messageElement = document.createElement('div');
     messageElement.className = 'message-body';
     return messageElement;
 }
 
 function sendMessageToChat(htmlDivMessage) {
-    let messageContainer = document.getElementById('message-container');
+    const messageContainer = document.getElementById('message-container');
     messageContainer.appendChild(htmlDivMessage);
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
 function onTurnStart(turnStartEvent) {
     removePlayersOutline();
-    let playerToGo = turnStartEvent.player_id;
+    const playerToGo = turnStartEvent.player_id;
     outlinePlayer(playerToGo);
     if (thisPlayerId === playerToGo) {
 
-        let throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, false);
+        const throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, false);
         addClickEvent(throwDiceButton, () => throwDiceButton.remove());
         throwDiceButton.classList.add('roll-the-dice-button', 'flushing');
         document.getElementById('message-container').appendChild(throwDiceButton);
@@ -310,7 +309,7 @@ function onTurnStart(turnStartEvent) {
 function processPlayerMessage() {
     const playerMessageInput = document.getElementById('player-message-input');
     if (playerMessageInput) {
-        let text = playerMessageInput.value;
+        const text = playerMessageInput.value;
         if (text.trim() !== '' && webSocket != null) {
             webSocket.send(text);
             playerMessageInput.value = '';
@@ -319,7 +318,7 @@ function processPlayerMessage() {
 }
 
 function outlinePlayer(playerId) {
-    let playerIndex = getPlayerIndex(playerId);
+    const playerIndex = getPlayerIndexById(playerId);
     document.getElementById(`player${playerIndex}-group`).classList.add(PLAYER_OUTLINE_CLASSNAME);
 }
 
@@ -353,7 +352,7 @@ function onDiceResult(diceResultEvent) {
 }
 
 function onPlayerChipMove(chipMoveEvent) {
-    let playerId = chipMoveEvent.player_id;
+    const playerId = chipMoveEvent.player_id;
     movePlayerChip(playerId, chipMoveEvent.field);
     if (chipMoveEvent.need_after_move_call && playerId === thisPlayerId) {
         setTimeout(() => {
@@ -369,40 +368,40 @@ function onMoneyChange(moneyChangeEvent) {
 }
 
 function onBuyProposal(buyProposalEvent) {
-    let playerId = buyProposalEvent.player_id;
-    let price = buyProposalEvent.price;
-    let field = buyProposalEvent.field_name;
+    const playerId = buyProposalEvent.player_id;
+    const price = buyProposalEvent.price;
+    const fieldName = buyProposalEvent.field_name;
     if (thisPlayerId === playerId) {
         let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, false);
         let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, false);
-        renderActionContainer(`Do you like to buy ${field} for $${price}?`, acceptButton, auctionButton);
+        renderActionContainer(`Do you like to buy ${fieldName} for $${price}?`, acceptButton, auctionButton);
     }
 }
 
 function onJailReleaseProcess(jailReleaseProcessEvent) {
     removePlayersOutline();
-    let imprisonedPlayer = jailReleaseProcessEvent.player_id;
-    outlinePlayer(imprisonedPlayer);
-    if (thisPlayerId === imprisonedPlayer) {
+    const imprisonedPlayerId = jailReleaseProcessEvent.player_id;
+    outlinePlayer(imprisonedPlayerId);
+    if (thisPlayerId === imprisonedPlayerId) {
         removeOldActionContainer();
-        let payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${getBaseGameUrl()}/jail?action=PAY`,
+        const payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${getBaseGameUrl()}/jail?action=PAY`,
             !jailReleaseProcessEvent.bail_available);
-        let luckButton = createActionButton('Try luck', `${getBaseGameUrl()}/jail?action=LUCK`, false);
+        const luckButton = createActionButton('Try luck', `${getBaseGameUrl()}/jail?action=LUCK`, false);
         renderActionContainer('Chose a way out:', payButton, luckButton);
     }
 }
 
 function onAuctionBuyProposal(auctionBuyProposalEvent) {
-    let buyButton = createActionButton('Buy', `${getBaseGameUrl()}/auction/buy?action=ACCEPT`, false);
-    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/buy?action=DECLINE`, false);
+    const buyButton = createActionButton('Buy', `${getBaseGameUrl()}/auction/buy?action=ACCEPT`, false);
+    const declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/buy?action=DECLINE`, false);
     renderActionContainer(
         `Do you want to buy ${auctionBuyProposalEvent.field_name} for $${auctionBuyProposalEvent.proposal}?`,
         buyButton, declineButton);
 }
 
 function onAuctionRaiseProposal(auctionRaiseProposalEvent) {
-    let raiseButton = createActionButton('Raise', `${getBaseGameUrl()}/auction/raise?action=ACCEPT`, false);
-    let declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/raise?action=DECLINE`, false);
+    const raiseButton = createActionButton('Raise', `${getBaseGameUrl()}/auction/raise?action=ACCEPT`, false);
+    const declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/raise?action=DECLINE`, false);
     renderActionContainer(
         `Do you want to raise ${auctionRaiseProposalEvent.field_name} price to $${auctionRaiseProposalEvent.proposal}?`,
         raiseButton, declineButton);
@@ -410,10 +409,10 @@ function onAuctionRaiseProposal(auctionRaiseProposalEvent) {
 
 function onPayCommand(payCommandEvent) {
     removeOldActionContainer();
-    let sum = payCommandEvent.sum;
-    let payable = payCommandEvent.payable;
-    let wiseToGiveUp = payCommandEvent.wise_to_give_up;
-    let payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, !payable);
+    const sum = payCommandEvent.sum;
+    const payable = payCommandEvent.payable;
+    const wiseToGiveUp = payCommandEvent.wise_to_give_up;
+    const payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, !payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
         giveUpButton = createActionButton('Give up');
@@ -423,19 +422,19 @@ function onPayCommand(payCommandEvent) {
 }
 
 function onMortgageChange(mortgageChangeEvent) {
-    let changes = mortgageChangeEvent.changes;
+    const changes = mortgageChangeEvent.changes;
     for (let change of changes) {
         renderMortgageState(change.field, change.turns);
     }
 }
 
 function onGameOver(gameOverEvent) {
-    let winnerName = gameOverEvent.player_name;
+    const winnerName = gameOverEvent.player_name;
 
-    let winnerInfoContainer = document.createElement('div');
+    const winnerInfoContainer = document.createElement('div');
     winnerInfoContainer.className = 'fullscreen-shadow-container';
 
-    let winnerInfo = document.createElement('div');
+    const winnerInfo = document.createElement('div');
     winnerInfo.className = 'center-screen-container';
     winnerInfo.innerText = `${winnerName} is the winner!`;
 
@@ -448,13 +447,12 @@ function onGameOver(gameOverEvent) {
             webSocket.close();
             webSocket = null;
         }
-        document.getElementById('startPage').style.display = 'block';
         location.reload();
     }, 5000);
 }
 
 function applyFieldManagementEvents(fieldIndex) {
-    let htmlField = document.getElementById(`field${fieldIndex}`);
+    const htmlField = document.getElementById(`field${fieldIndex}`);
     if (!htmlField) {
         console.error(`no field with id ${fieldIndex} found on map`);
         return;

@@ -1,4 +1,3 @@
-import {PLAYER_COLORS} from './colors.js'
 import {moveChip} from "./chip-movement.js";
 import {addClickEvent, renderGiveUpConfirmation} from "./buttons.js";
 import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
@@ -6,29 +5,38 @@ import {startOfferProcess} from "./offer.js";
 
 const PLAYER_MAP = new Map();
 const CHIP_MAP = new Map();
+const PLAYER_COLORS = [
+    'cornflowerblue',
+    'crimson',
+    'mediumseagreen',
+    'purple',
+    'orange'
+];
 
 export function addPlayers(jsonPlayerArray) {
     for (let index = 0; index < jsonPlayerArray.length; index++) {
-        let player = jsonPlayerArray[index];
-        let playerColor = PLAYER_COLORS[index];
-        let playerObject = new Player(index, player.name, PLAYER_COLORS[index]);
-        PLAYER_MAP.set(player.id, playerObject);
+        const jsonPlayer = jsonPlayerArray[index];
+        const playerColor = PLAYER_COLORS[index];
+        const playerId = jsonPlayer.id;
+        const playerName = jsonPlayer.name;
+        const playerObject = new Player(index, playerName, playerColor);
+        PLAYER_MAP.set(playerId, playerObject);
 
-        document.getElementById(`player${index}-name`).innerHTML = player.name;
-        document.getElementById(`player${index}-money`).innerHTML = `$ ${player.money}`;
-        renderPlayerPicture(index);
-        if (player.hasOwnProperty('bankrupt') && !player.bankrupt) {
-            renderPlayerChip(index, playerColor, player.position);
+        document.getElementById(`player${index}-name`).innerHTML = playerName;
+        document.getElementById(`player${index}-money`).innerHTML = `$ ${jsonPlayer.money}`;
+        renderPlayerPicture(index, playerId);
+        if (jsonPlayer.hasOwnProperty('bankrupt') && !jsonPlayer.bankrupt) {
+            renderPlayerChip(index, playerColor, jsonPlayer.position);
             document.getElementById(`player${index}-group`).style.backgroundColor = playerColor;
         } else {
-            document.getElementById(`player${playerObject.index}-money`).style.color = 'grey';
-            document.getElementById(`player${playerObject.index}-name`).style.color = 'grey';
+            document.getElementById(`player${index}-money`).style.color = 'grey';
+            document.getElementById(`player${index}-name`).style.color = 'grey';
         }
     }
 }
 
 export function bankruptPlayer(playerId) {
-    let playerIndex = PLAYER_MAP.get(playerId).index;
+    const playerIndex = getPlayerIndexById(playerId);
     document.getElementById(`player${playerIndex}-group`).style.backgroundColor = 'transparent';
     document.getElementById(`player${playerIndex}-money`).style.color = 'grey';
     document.getElementById(`player${playerIndex}-name`).style.color = 'grey';
@@ -36,50 +44,42 @@ export function bankruptPlayer(playerId) {
 }
 
 export function changePlayerMoney(playerId, money) {
-    let playerObject = PLAYER_MAP.get(playerId);
-    document.getElementById(`player${playerObject.index}-money`).innerHTML = `$ ${money}`;
+    document.getElementById(`player${getPlayerIndexById(playerId)}-money`).innerHTML = `$ ${money}`;
 }
 
-export function getPlayerIndex(playerId) {
+export function getPlayerIndexById(playerId) {
     return PLAYER_MAP.get(playerId).index;
 }
 
-export function getPlayerColor(playerId) {
+export function getPlayerColorById(playerId) {
     return PLAYER_MAP.get(playerId).color;
 }
 
-export function getPlayerName(playerId) {
+export function getPlayerNameById(playerId) {
     return PLAYER_MAP.get(playerId).name;
 }
 
 export function movePlayerChip(playerId, fieldIndex) {
-    let playerIndex = PLAYER_MAP.get(playerId).index;
-    let chip = CHIP_MAP.get(playerIndex);
+    const chip = CHIP_MAP.get(getPlayerIndexById(playerId));
     moveChip(chip, fieldIndex);
 }
 
-function getPlayerIdByIndex(playerIndex) {
-    for (let [id, playerObject] of PLAYER_MAP) {
-        if (playerObject.index === playerIndex) return id;
-    }
-}
-
-function renderPlayerPicture(index) {
-    let playerIcon = document.createElement('img');
+function renderPlayerPicture(playerIndex, playerId) {
+    const playerIcon = document.createElement('img');
     playerIcon.setAttribute('src', 'images/user.png')
     playerIcon.style.width = '90px';
     playerIcon.style.height = '90px';
-    let playerIconField = document.getElementById(`player${index}-icon`);
+    const playerIconField = document.getElementById(`player${playerIndex}-icon`);
     playerIconField.appendChild(playerIcon);
 
-    applyPlayerManagementEvents(index);
+    applyPlayerManagementEvents(playerIconField, playerIndex, playerId);
 }
 
 function renderPlayerChip(index, color, position) {
-    let chip = document.createElement('div');
+    const chip = document.createElement('div');
     chip.id = `chip${index}`;
     chip.className = 'chip-outer';
-    let chipInnerCircle = document.createElement('div');
+    const chipInnerCircle = document.createElement('div');
     chipInnerCircle.className = 'chip-inner';
     chipInnerCircle.style.background = color;
 
@@ -89,22 +89,17 @@ function renderPlayerChip(index, color, position) {
     moveChip(chip, position);
 }
 
-function applyPlayerManagementEvents(playerIndex) {
-    let playerIconField = document.getElementById(`player${playerIndex}-icon`);
-    if (!playerIconField) {
-        console.error(`no field with id ${playerIndex} found on map`);
-        return;
-    }
+function applyPlayerManagementEvents(playerIconField, playerIndex, playerId) {
     playerIconField.addEventListener('click', (event) => {
         if (event.target.id.startsWith(`player${playerIndex}`)) {
             return;
         }
-        sendGetHttpRequest(`${getBaseGameUrl()}/player/${getPlayerIdByIndex(playerIndex)}/management`, true,
+        sendGetHttpRequest(`${getBaseGameUrl()}/player/${playerId}/management`, true,
             function (requester) {
                 if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                    let managementActions = JSON.parse(requester.response);
+                    const managementActions = JSON.parse(requester.response);
                     if (managementActions.length > 0) {
-                        renderPlayerManagementContainer(playerIconField, playerIndex, managementActions);
+                        renderPlayerManagementContainer(playerIconField, playerIndex, playerId, managementActions);
                     }
                 } else {
                     console.error('failed to load available management actions');
@@ -114,37 +109,43 @@ function applyPlayerManagementEvents(playerIndex) {
     });
 }
 
-export function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex, availableActions) {
-    let containerId = `player${playerIndex}-action-container`;
-    let managementContainer = document.createElement("div");
+function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex, playerId, availableActions) {
+    const containerId = `player${playerIndex}-action-container`;
+    const managementContainer = document.createElement("div");
     managementContainer.className = 'management-container';
+    managementContainer.id = containerId;
 
-    let hideOnClickOutsideListener = function(event) {
+    const closeOnClickOutsideListener = function(event) {
         if (event.target.id !== containerId) {
-            managementContainer.remove();
+            finishPlayerAction(managementContainer, closeOnClickOutsideListener);
         }
     }
-    document.addEventListener('click', event => hideOnClickOutsideListener(event));
-    for (let action of availableActions) {
-        let button = document.createElement('button');
-        button.id = `player${playerIndex}-action-button`;
+    document.addEventListener('click', closeOnClickOutsideListener);
+    for (let actionIndex = 0; actionIndex < availableActions.length; actionIndex++) {
+        const action = availableActions[actionIndex];
+        const button = document.createElement('button');
+        button.id = `player${playerIndex}-action-button-${actionIndex}`;
         button.className = 'manage-player-button';
         if (action === 'GIVE_UP') {
             button.innerHTML = 'Give up';
             addClickEvent(button, () => renderGiveUpConfirmation());
         } else if (action === 'OFFER') {
             button.innerHTML = 'Offer a contract';
-            button.addEventListener('click', () => startOfferProcess(getPlayerIdByIndex(playerIndex)));
+            addClickEvent(button, () => startOfferProcess(playerId));
         } else {
-            managementContainer.remove();
+            finishPlayerAction(managementContainer, closeOnClickOutsideListener);
             console.error('unknown action type');
             return;
         }
-        addClickEvent(button, () => managementContainer.remove());
-        addClickEvent(button, () => document.removeEventListener('click', hideOnClickOutsideListener));
+        addClickEvent(button, () => finishPlayerAction(managementContainer, closeOnClickOutsideListener));
         managementContainer.appendChild(button);
     }
     htmlPlayerIconField.appendChild(managementContainer);
+}
+
+function finishPlayerAction(managementContainer, closeOnClickListener) {
+    managementContainer.remove();
+    document.removeEventListener('click', closeOnClickListener)
 }
 
 class Player {

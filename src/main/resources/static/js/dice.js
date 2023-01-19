@@ -11,8 +11,8 @@ export function hideDice() {
 }
 
 export function renderDiceResult(left, right) {
-    let leftImage = `images/dice${left}.png`;
-    let rightImage = `images/dice${right}.png`;
+    const leftImage = `images/dice${left}.png`;
+    const rightImage = `images/dice${right}.png`;
     if (!document.getElementById(DICE_CONTAINER_ID)) {
         renderDiceView(leftImage, rightImage);
     } else {
@@ -22,27 +22,27 @@ export function renderDiceResult(left, right) {
 }
 
 export function preloadDice() {
-    let diceLeftGif = document.createElement('img');
+    const diceLeftGif = document.createElement('img');
     diceLeftGif.src = 'images/dice-left.gif';
-    let diceRightGif = document.createElement('img');
+    const diceRightGif = document.createElement('img');
     diceRightGif.src = 'images/dice-right.gif';
     for (let i = 1; i <= 6; i++) {
-        let dice = document.createElement('img');
+        const dice = document.createElement('img');
         dice.src = `images/dice${i}.png`;
     }
 }
 
 function renderDiceView(leftDiceImage, rightDiceImage) {
-    let diceContainer = document.createElement('div');
+    const diceContainer = document.createElement('div');
     diceContainer.id = DICE_CONTAINER_ID;
     diceContainer.className = 'dice-container';
     document.getElementById('message-container').appendChild(diceContainer);
 
-    let diceLeft = document.createElement('img');
+    const diceLeft = document.createElement('img');
     diceLeft.id = DICE_LEFT_ID;
     diceLeft.style.float = 'left';
 
-    let diceRight = document.createElement('img');
+    const diceRight = document.createElement('img');
     diceRight.id = DICE_RIGHT_ID;
     diceRight.style.float = 'right';
 

@@ -11,18 +11,18 @@ export function startOfferProcess(addresseeId) {
     sendGetHttpRequest(`${getBaseGameUrl()}/offer/${addresseeId}/info`, true,
         function (requester) {
             if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                let preDealInfo = JSON.parse(requester.response);
+                const preDealInfo = JSON.parse(requester.response);
 
-                let offerInfoBox = renderOfferInfoBox();
+                const offerInfoBox = renderOfferInfoBox();
                 renderOfferInfoBoxDescription(offerInfoBox,
                     'Choose fields to buy or sell and enter money to exchange');
 
-                let initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You:');
+                const initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You:');
                 renderMoneyInput(initiatorInfoContainer, MONEY_TO_GIVE_INPUT_ID, MONEY_TO_RECEIVE_INPUT_ID);
                 renderSideFieldCheckboxes(initiatorInfoContainer,
                     preDealInfo.offer_initiator_fields, OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
 
-                let addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', 'Contractor:');
+                const addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', 'Contractor:');
                 renderMoneyInput(addresseeInfoContainer, MONEY_TO_RECEIVE_INPUT_ID, MONEY_TO_GIVE_INPUT_ID);
                 renderSideFieldCheckboxes(addresseeInfoContainer,
                     preDealInfo.offer_addressee_fields, OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
@@ -53,20 +53,20 @@ export function startOfferProcess(addresseeId) {
 }
 
 export function renderOfferProposal(offerProposal) {
-    let initiatorName = offerProposal.initiator_name;
-    let fieldsToBuy = offerProposal.fields_to_buy;
-    let fieldsToSell = offerProposal.fields_to_sell;
-    let moneyToGive = offerProposal.money_to_give;
-    let moneyToReceive = offerProposal.money_to_receive;
+    const initiatorName = offerProposal.initiator_name;
+    const fieldsToBuy = offerProposal.fields_to_buy;
+    const fieldsToSell = offerProposal.fields_to_sell;
+    const moneyToGive = offerProposal.money_to_give;
+    const moneyToReceive = offerProposal.money_to_receive;
 
-    let offerInfoBox = renderOfferInfoBox();
+    const offerInfoBox = renderOfferInfoBox();
     renderOfferInfoBoxDescription(offerInfoBox, `${initiatorName} made you an offer:`);
 
-    let addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You give:');
+    const addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You give:');
     renderMoneyProposal(addresseeInfoContainer, moneyToReceive);
     renderFieldsProposal(addresseeInfoContainer, fieldsToBuy);
 
-    let initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', `${initiatorName} gives:`);
+    const initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', `${initiatorName} gives:`);
     renderMoneyProposal(initiatorInfoContainer, moneyToGive);
     renderFieldsProposal(initiatorInfoContainer, fieldsToSell);
 
@@ -81,36 +81,36 @@ export function renderOfferProposal(offerProposal) {
 }
 
 export function removeReplyWaitingScreen() {
-    let replyWaitingScreen = document.getElementById(REPLY_WAITING_SCREEN_ID);
+    const replyWaitingScreen = document.getElementById(REPLY_WAITING_SCREEN_ID);
     if (replyWaitingScreen) {
         replyWaitingScreen.remove();
     }
 }
 
 function createOfferBody() {
-    let fieldsToSell = getCheckedFieldValues(OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
-    let fieldsToBuy = getCheckedFieldValues(OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
-    let moneyToGive = document.getElementById(MONEY_TO_GIVE_INPUT_ID).value;
-    let moneyToReceive = document.getElementById(MONEY_TO_RECEIVE_INPUT_ID).value;
+    const fieldsToSell = getCheckedFieldValues(OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
+    const fieldsToBuy = getCheckedFieldValues(OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
+    const moneyToGive = document.getElementById(MONEY_TO_GIVE_INPUT_ID).value;
+    const moneyToReceive = document.getElementById(MONEY_TO_RECEIVE_INPUT_ID).value;
     return new Offer(fieldsToSell, fieldsToBuy, moneyToGive, moneyToReceive);
 }
 
 function renderReplyWaitingScreen() {
-    let offerInfoBox = renderOfferInfoBox();
+    const offerInfoBox = renderOfferInfoBox();
     offerInfoBox.id = REPLY_WAITING_SCREEN_ID;
 
-    let waitingMessage = document.createElement('p');
+    const waitingMessage = document.createElement('p');
     waitingMessage.innerText = 'Waiting for reply...';
     offerInfoBox.appendChild(waitingMessage);
 }
 
 function renderOfferInfoBox() {
-    let offerInfoBoxId = 'offer-info-box';
-    let oldOfferBox = document.getElementById(offerInfoBoxId);
+    const offerInfoBoxId = 'offer-info-box';
+    const oldOfferBox = document.getElementById(offerInfoBoxId);
     if (oldOfferBox) {
         oldOfferBox.remove();
     }
-    let offerInfoBox = document.createElement('div');
+    const offerInfoBox = document.createElement('div');
     offerInfoBox.id = offerInfoBoxId;
     offerInfoBox.className = 'offer-info-box';
     document.getElementById('message-container').appendChild(offerInfoBox);
@@ -118,18 +118,18 @@ function renderOfferInfoBox() {
 }
 
 function renderOfferInfoBoxDescription(offerInfoBox, description) {
-    let text = document.createElement('span');
+    const text = document.createElement('span');
     text.innerText = description;
     text.className = 'offer-box-description';
     offerInfoBox.appendChild(text);
 }
 
 function renderOfferSideContainer(offerInfoBox, side, description) {
-    let offerSideContainer = document.createElement('div');
+    const offerSideContainer = document.createElement('div');
     offerSideContainer.className = 'offer-side-info-container';
     offerSideContainer.style.float = side;
 
-    let initiatorFieldText = document.createElement('p');
+    const initiatorFieldText = document.createElement('p');
     initiatorFieldText.innerText = description;
     initiatorFieldText.className = 'offer-side-name';
     offerSideContainer.appendChild(initiatorFieldText);
@@ -139,17 +139,17 @@ function renderOfferSideContainer(offerInfoBox, side, description) {
 }
 
 function renderLeftButton(offerInfoBox, name, clickFunction) {
-    let leftButton = renderBottomButton(offerInfoBox, name, clickFunction);
+    const leftButton = renderBottomButton(offerInfoBox, name, clickFunction);
     leftButton.style.left = '20%';
 }
 
 function renderRightButton(offerInfoBox, name, clickFunction) {
-    let leftButton = renderBottomButton(offerInfoBox, name, clickFunction);
+    const leftButton = renderBottomButton(offerInfoBox, name, clickFunction);
     leftButton.style.right = '20%';
 }
 
 function renderBottomButton(offerInfoBox, name, clickFunction) {
-    let button = document.createElement('button');
+    const button = document.createElement('button');
     button.className = 'offer-button';
     button.innerText = name;
     addClickEvent(button, clickFunction);
@@ -158,14 +158,14 @@ function renderBottomButton(offerInfoBox, name, clickFunction) {
 }
 
 function renderMoneyInput(sideInfoContainer, id, mutuallyExclusiveInputId) {
-    let moneyInput = document.createElement('input');
+    const moneyInput = document.createElement('input');
     moneyInput.id = id;
     moneyInput.placeholder = 'sum of money...';
     moneyInput.style.fontSize = '15px';
     moneyInput.oninput = () => {
         moneyInput.value = moneyInput.value.replace(/\D/g, '').replace(/^0[^.]/, '0');
         if (moneyInput.value !== '' && moneyInput.value !== '0') {
-            let anotherMoneyInput = document.getElementById(mutuallyExclusiveInputId);
+            const anotherMoneyInput = document.getElementById(mutuallyExclusiveInputId);
             if (anotherMoneyInput) {
                 anotherMoneyInput.value = '';
             }
@@ -175,15 +175,15 @@ function renderMoneyInput(sideInfoContainer, id, mutuallyExclusiveInputId) {
 }
 
 function renderSideFieldCheckboxes(sideInfoContainer, fields, groupName) {
-    let fieldCheckboxList = document.createElement('div');
+    const fieldCheckboxList = document.createElement('div');
     for (let field of fields) {
-        let fieldInfoCheckbox = document.createElement('input');
+        const fieldInfoCheckbox = document.createElement('input');
         fieldInfoCheckbox.type = 'checkbox';
         fieldInfoCheckbox.name = groupName;
         fieldInfoCheckbox.value = field.id;
         fieldInfoCheckbox.id = `${field.id}-checkbox`;
 
-        let checkboxLabel = document.createElement('label');
+        const checkboxLabel = document.createElement('label');
         checkboxLabel.for = fieldInfoCheckbox.id;
         checkboxLabel.innerText = field.name;
 
@@ -196,7 +196,7 @@ function renderSideFieldCheckboxes(sideInfoContainer, fields, groupName) {
 
 function renderMoneyProposal(sideInfoContainer, moneyAmount) {
     if (moneyAmount && moneyAmount > 0) {
-        let moneyProposal = document.createElement('p');
+        const moneyProposal = document.createElement('p');
         moneyProposal.innerText = `money: $${moneyAmount}`;
         sideInfoContainer.appendChild(moneyProposal);
         addLineSeparator(sideInfoContainer);
@@ -206,7 +206,7 @@ function renderMoneyProposal(sideInfoContainer, moneyAmount) {
 function renderFieldsProposal(sideInfoContainer, fields) {
     if (fields && fields.length > 0) {
         for (let field of fields) {
-            let fieldName = document.createElement('p');
+            const fieldName = document.createElement('p');
             fieldName.innerText = field.name;
             sideInfoContainer.appendChild(fieldName);
             addLineSeparator(sideInfoContainer);
@@ -219,7 +219,7 @@ function addLineSeparator(parentElement) {
 }
 
 function getCheckedFieldValues(groupName) {
-    let checkedFields = [...document.querySelectorAll(`input[name=${groupName}]:checked`)];
+    const checkedFields = [...document.querySelectorAll(`input[name=${groupName}]:checked`)];
     let fieldsValues;
     if (checkedFields && checkedFields.length > 0) {
         fieldsValues = checkedFields.map(checkbox => checkbox.value);
