@@ -121,7 +121,7 @@ export function renderGiveUpConfirmation() {
 function createManagementButton(managementContainer, buttonText, idPostfix, onclickFunction) {
     const button = document.createElement('button');
     button.className = 'manage-field-button';
-    button.innerHTML = buttonText;
+    button.textContent = buttonText;
     button.id = `${PROPERTY_MANAGEMENT_PREFIX}-${idPostfix}`;
     managementContainer.appendChild(button);
     addClickEvent(button, () => onclickFunction());

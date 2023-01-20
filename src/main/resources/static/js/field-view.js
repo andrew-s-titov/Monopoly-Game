@@ -8,7 +8,7 @@ export function renderFieldViews(fieldViews) {
         const fieldIndex = fieldView.id;
         const nameField = document.getElementById(`field${fieldIndex}-name`);
         if (nameField) {
-            nameField.innerHTML = fieldView.name;
+            nameField.textContent = fieldView.name;
         }
         if (fieldView.hasOwnProperty('owner_id') && fieldView.owner_id != null) {
             addOwnerCover(fieldIndex, fieldView.owner_id);
@@ -16,7 +16,7 @@ export function renderFieldViews(fieldViews) {
             removeOwnerCover(fieldIndex);
         }
         if (fieldView.hasOwnProperty('price_tag')) {
-            document.getElementById(`field${fieldIndex}-price`).innerHTML = fieldView.price_tag;
+            document.getElementById(`field${fieldIndex}-price`).textContent = fieldView.price_tag;
         }
         if (fieldView.hasOwnProperty('mortgage') && fieldView.mortgage) {
             renderMortgageTag(fieldIndex);

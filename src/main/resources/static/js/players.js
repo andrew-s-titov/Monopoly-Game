@@ -22,8 +22,8 @@ export function addPlayers(jsonPlayerArray) {
         const playerObject = new Player(index, playerName, playerColor);
         PLAYER_MAP.set(playerId, playerObject);
 
-        document.getElementById(`player${index}-name`).innerHTML = playerName;
-        document.getElementById(`player${index}-money`).innerHTML = `$ ${jsonPlayer.money}`;
+        document.getElementById(`player${index}-name`).textContent = playerName;
+        document.getElementById(`player${index}-money`).textContent = `$ ${jsonPlayer.money}`;
         renderPlayerPicture(index, playerId);
         if (jsonPlayer.hasOwnProperty('bankrupt') && !jsonPlayer.bankrupt) {
             renderPlayerChip(index, playerColor, jsonPlayer.position);
@@ -44,7 +44,7 @@ export function bankruptPlayer(playerId) {
 }
 
 export function changePlayerMoney(playerId, money) {
-    document.getElementById(`player${getPlayerIndexById(playerId)}-money`).innerHTML = `$ ${money}`;
+    document.getElementById(`player${getPlayerIndexById(playerId)}-money`).textContent = `$ ${money}`;
 }
 
 export function getPlayerIndexById(playerId) {
@@ -127,10 +127,10 @@ function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex, playe
         button.id = `player${playerIndex}-action-button-${actionIndex}`;
         button.className = 'manage-player-button';
         if (action === 'GIVE_UP') {
-            button.innerHTML = 'Give up';
+            button.textContent = 'Give up';
             addClickEvent(button, () => renderGiveUpConfirmation());
         } else if (action === 'OFFER') {
-            button.innerHTML = 'Offer a contract';
+            button.textContent = 'Offer a contract';
             addClickEvent(button, () => startOfferProcess(playerId));
         } else {
             finishPlayerAction(managementContainer, closeOnClickOutsideListener);

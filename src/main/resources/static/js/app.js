@@ -64,9 +64,9 @@ function joinGameRoom() {
                     const errorPopUp = document.getElementById('errorMessage');
                     errorPopUp.style.display = 'block';
                     if (requester.status === 400) {
-                        errorPopUp.innerHTML = requester.responseText;
+                        errorPopUp.textContent = requester.responseText;
                     } else {
-                        errorPopUp.innerHTML = 'Unexpected server error';
+                        errorPopUp.textContent = 'Unexpected server error';
                     }
                 }
             }
@@ -186,7 +186,7 @@ function httpError(errorHtmlElementId) {
     const errorPopUp = document.getElementById(errorHtmlElementId);
     if (errorPopUp) {
         errorPopUp.style.display = 'block';
-        errorPopUp.innerHTML = 'Unexpected server error';
+        errorPopUp.textContent = 'Unexpected server error';
     } else {
         console.error(`cannot find html element with id ${errorHtmlElementId}`);
     }
@@ -234,8 +234,8 @@ function onPlayerConnected(playerConnectedEvent) {
     const playerName = playerConnectedEvent.player_name;
     for (let i = 0; i < 5; i++) {
         const playerField = document.getElementById(`player${i}`);
-        if (playerField.innerHTML.trim() === '') {
-            playerField.innerHTML = playerName;
+        if (playerField.textContent.trim() === '') {
+            playerField.textContent = playerName;
             playerField.style.textAlign = 'center';
             document.getElementById(`player${i}-image`).style.display = 'block';
             break;
@@ -247,8 +247,8 @@ function onPlayerDisconnected(playerDisconnectedEvent) {
     let playerName = playerDisconnectedEvent.player_name;
     for (let i = 0; i < 5; i++) {
         const playerField = document.getElementById(`player${i}`);
-        if (playerField.innerHTML === playerName) {
-            playerField.innerHTML = '';
+        if (playerField.textContent === playerName) {
+            playerField.textContent = '';
             document.getElementById(`player${i}-image`).style.display = 'none';
             break;
         }
