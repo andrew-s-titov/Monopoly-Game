@@ -14,7 +14,7 @@ import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.ChanceContainer;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;

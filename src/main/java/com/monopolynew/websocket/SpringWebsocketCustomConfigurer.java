@@ -12,7 +12,6 @@ import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class SpringWebsocketCustomConfigurer extends ServerEndpointConfig.Configurator implements ApplicationContextAware {
@@ -33,8 +32,7 @@ public class SpringWebsocketCustomConfigurer extends ServerEndpointConfig.Config
     public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
         List<String> cookieHeader = request.getHeaders().get("Cookie");
         String playerIdCookieValue = findPlayerIdCookieValue(cookieHeader);
-        String playerId = playerIdCookieValue != null ? playerIdCookieValue : UUID.randomUUID().toString();
-        sec.getUserProperties().put(GlobalConfig.PLAYER_ID_KEY, playerId);
+        sec.getUserProperties().put(GlobalConfig.PLAYER_ID_KEY, playerIdCookieValue);
         super.modifyHandshake(sec, request, response);
     }
 

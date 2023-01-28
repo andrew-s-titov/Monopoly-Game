@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class MoneyChangeEvent implements WebsocketEvent {
+public class MoneyChangeEvent implements GameEvent {
 
     private final int code = 305;
 

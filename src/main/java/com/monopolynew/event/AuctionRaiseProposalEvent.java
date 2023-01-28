@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class AuctionRaiseProposalEvent implements WebsocketEvent {
+public class AuctionRaiseProposalEvent implements GameEvent {
 
     private final int code = 309;
 

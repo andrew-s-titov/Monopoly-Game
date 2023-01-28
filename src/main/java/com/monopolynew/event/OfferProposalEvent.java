@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class OfferProposalEvent implements WebsocketEvent {
+public class OfferProposalEvent implements GameEvent {
 
     private final int code = 316;
 

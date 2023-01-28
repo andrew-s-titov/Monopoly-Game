@@ -1,6 +1,6 @@
 package com.monopolynew.event;
 
-public interface WebsocketEvent {
+public interface GameEvent {
 
     int getCode();
 }

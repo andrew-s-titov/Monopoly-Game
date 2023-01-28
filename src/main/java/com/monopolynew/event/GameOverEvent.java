@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class GameOverEvent implements WebsocketEvent {
+public class GameOverEvent implements GameEvent {
 
     private final int code = 315;
 

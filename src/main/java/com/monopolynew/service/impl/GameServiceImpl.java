@@ -34,7 +34,7 @@ import com.monopolynew.service.GameService;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
 import com.monopolynew.util.TriConsumer;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class FieldViewChangeEvent implements WebsocketEvent {
+public class FieldViewChangeEvent implements GameEvent {
 
     private final int code = 307;
 

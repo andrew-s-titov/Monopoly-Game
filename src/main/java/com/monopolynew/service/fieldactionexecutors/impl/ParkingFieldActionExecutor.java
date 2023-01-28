@@ -5,7 +5,7 @@ import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;
 import com.monopolynew.service.GameHelper;
 import com.monopolynew.service.fieldactionexecutors.FieldActionExecutor;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

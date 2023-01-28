@@ -12,7 +12,7 @@ import com.monopolynew.game.state.Auction;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;

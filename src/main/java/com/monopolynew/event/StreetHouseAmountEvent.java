@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class StreetHouseAmountEvent implements WebsocketEvent {
+public class StreetHouseAmountEvent implements GameEvent {
 
     private final int code = 314;
 

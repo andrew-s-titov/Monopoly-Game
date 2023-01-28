@@ -11,7 +11,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class GameMapRefreshEvent implements WebsocketEvent {
+public class GameMapRefreshEvent implements GameEvent {
 
     private final int code = 300;
 

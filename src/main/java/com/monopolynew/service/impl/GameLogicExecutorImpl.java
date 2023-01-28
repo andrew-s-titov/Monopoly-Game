@@ -26,7 +26,7 @@ import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.GameFieldConverter;
 import com.monopolynew.service.GameHelper;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
-public class GameHelperImpl implements GameHelper {
+public class GameLogicExecutorImpl implements GameHelper {
 
     private final GameEventSender gameEventSender;
     private final GameFieldConverter gameFieldConverter;

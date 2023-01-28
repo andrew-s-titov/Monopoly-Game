@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class PlayerConnectedEvent implements WebsocketEvent {
+public class PlayerConnectedEvent implements GameEvent {
 
     private final int code = 101;
 

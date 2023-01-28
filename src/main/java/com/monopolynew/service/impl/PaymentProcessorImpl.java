@@ -10,7 +10,7 @@ import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.service.GameHelper;
 import com.monopolynew.service.PaymentProcessor;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;

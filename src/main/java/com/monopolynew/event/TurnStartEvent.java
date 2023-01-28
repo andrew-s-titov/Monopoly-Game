@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class TurnStartEvent implements WebsocketEvent {
+public class TurnStartEvent implements GameEvent {
 
     private final int code = 301;
 

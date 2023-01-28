@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class OfferProcessedEvent implements WebsocketEvent {
+public class OfferProcessedEvent implements GameEvent {
 
     private final int code = 317;
 }

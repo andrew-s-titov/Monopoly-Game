@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ChipMoveEvent implements WebsocketEvent {
+public class ChipMoveEvent implements GameEvent {
 
     private final int code = 304;
 

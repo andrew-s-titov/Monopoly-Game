@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DiceRollingStartEvent implements WebsocketEvent {
+public class DiceRollingStartEvent implements GameEvent {
 
     private final int code = 302;
 

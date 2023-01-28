@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class JailReleaseProcessEvent implements WebsocketEvent {
+public class JailReleaseProcessEvent implements GameEvent {
 
     private final int code = 308;
 

@@ -11,14 +11,13 @@ import com.monopolynew.event.StreetHouseAmountEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
-import com.monopolynew.map.ActionableField;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameFieldConverter;
-import com.monopolynew.websocket.GameEventSender;
+import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

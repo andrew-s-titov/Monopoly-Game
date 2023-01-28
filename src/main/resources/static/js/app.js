@@ -151,12 +151,6 @@ function disconnectPlayer() {
     location.reload();
 }
 
-function savePlayerIdToCookie(playerId) {
-    const expirationTime = new Date();
-    expirationTime.setTime(expirationTime.getTime() + (24 * 60 * 60 * 1000)); // setting expiration in 1 day
-    document.cookie = `${PLAYER_ID_COOKIE}=${playerId};expires=${expirationTime.toUTCString()};path=/`;
-}
-
 function getPlayerIdFromCookie() {
     const playerCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith(`${PLAYER_ID_COOKIE}=`));
     return playerCookie ? playerCookie.split('=')[1] : null;
@@ -201,11 +195,7 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     document.getElementById('mapTable').style.backgroundImage = "url('/images/map-back.png')";
     document.getElementById('mapTable').style.backgroundSize = '658px';
 
-    if (thisPlayerId == null) {
-        thisPlayerId = getPlayerIdFromCookie();
-    } else {
-        savePlayerIdToCookie(thisPlayerId);
-    }
+    thisPlayerId = getPlayerIdFromCookie();
 
     const players = gameMapRefreshEvent.players;
     addPlayers(players);
@@ -257,7 +247,6 @@ function onPlayerDisconnected(playerDisconnectedEvent) {
 
 function onChatMessage(chatMessageEvent) {
     const playerId = chatMessageEvent.player_id;
-
     const messageElement = messageDiv();
 
     const nameText = document.createElement('span');
@@ -266,7 +255,7 @@ function onChatMessage(chatMessageEvent) {
     nameText.innerText = getPlayerNameById(playerId);
 
     const messageText = document.createElement('span');
-    messageText.innerText = `: ${chatMessageEvent.message}`;
+    messageText.textContent = `: ${chatMessageEvent.message}`;
 
     messageElement.appendChild(nameText);
     messageElement.appendChild(messageText);
@@ -311,7 +300,8 @@ function processPlayerMessage() {
     if (playerMessageInput) {
         const text = playerMessageInput.value;
         if (text.trim() !== '' && webSocket != null) {
-            webSocket.send(text);
+            const playerMessage = {playerId: thisPlayerId, message: text};
+            webSocket.send(JSON.stringify(playerMessage));
             playerMessageInput.value = '';
         }
     }
