@@ -2,8 +2,6 @@ package com.monopolynew.service.impl;
 
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
-import com.monopolynew.event.AuctionBuyProposalEvent;
-import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -11,8 +9,9 @@ import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.Auction;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
-import com.monopolynew.service.GameLogicExecutor;
+import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
+import com.monopolynew.service.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -27,13 +26,14 @@ public class AuctionManagerImpl implements AuctionManager {
 
     private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
+    private final GameEventGenerator gameEventGenerator;
 
     @Override
     public void startNewAuction(Game game, PurchasableField field) {
         game.setStage(GameStage.AUCTION_IN_PROGRESS);
         var currentPlayer = game.getCurrentPlayer();
         game.setAuction(new Auction(game, field));
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " started an auction"));
+        gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName() + " started an auction"));
         auctionStep(game);
     }
 
@@ -43,14 +43,14 @@ public class AuctionManagerImpl implements AuctionManager {
         List<Player> participants = auction.getParticipants();
         if (participants.size() == 0) {
             // there's no one who wanted to or could take part in the auction
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text("No one took part in the auction"));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent("No one took part in the auction"));
             finishAuction(game);
         } else if (participants.size() > 1) {
             // propose to raise the stake
             var player = auction.getNextPlayer();
             if (player.getMoney() >= auction.getAuctionPrice() + Rules.AUCTION_STEP) {
                 game.setStage(GameStage.AWAITING_AUCTION_RAISE);
-                gameEventSender.sendToPlayer(player.getId(), AuctionRaiseProposalEvent.fromAuction(auction));
+                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newAuctionRaiseProposalEvent(auction));
             } else {
                 // player can't afford to raise the stake - exclude from participants and proceed to next player
                 auction.removeParticipant();
@@ -62,7 +62,7 @@ public class AuctionManagerImpl implements AuctionManager {
                 // if first circle - next player is the only participant: propose on start price
                 var playerId = player.getId();
                 game.setStage(GameStage.AWAITING_AUCTION_BUY);
-                gameEventSender.sendToPlayer(playerId, AuctionBuyProposalEvent.fromAuction(auction));
+                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newAuctionBuyProposalEvent(auction));
             } else {
                 // automatically sell to the winner
                 gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), player);
@@ -81,7 +81,7 @@ public class AuctionManagerImpl implements AuctionManager {
             Player buyer = auction.getCurrentParticipant();
             gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyer);
         } else {
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text("No one took part in the auction"));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent("No one took part in the auction"));
         }
         finishAuction(game);
     }
@@ -95,7 +95,7 @@ public class AuctionManagerImpl implements AuctionManager {
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();
             gameEventSender.sendToAllPlayers(
-                    SystemMessageEvent.text("The lot price went up to $" + auction.getAuctionPrice() + "k"));
+                    new SystemMessageEvent("The lot price went up to $" + auction.getAuctionPrice() + "k"));
         } else if (ProposalAction.DECLINE.equals(action)) {
             auction.removeParticipant();
         }

@@ -14,7 +14,6 @@ import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Dice;
@@ -87,8 +86,7 @@ public class GameServiceImpl implements GameService {
         }
         game.startGame();
         gameEventSender.sendToAllPlayers(gameEventGenerator.newMapRefreshEvent(game));
-        Player currentPlayer = game.getCurrentPlayer();
-        gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(currentPlayer));
+        gameEventSender.sendToAllPlayers(new TurnStartEvent(game.getCurrentPlayer().getId()));
     }
 
     @Override
@@ -122,7 +120,7 @@ public class GameServiceImpl implements GameService {
             }
             gameEventSender.sendToAllPlayers(
                     new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(message));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(message));
         }
     }
 
@@ -146,7 +144,7 @@ public class GameServiceImpl implements GameService {
             if (lastDice.isDoublet()) {
                 currentPlayer.amnesty();
                 game.setStage(GameStage.ROLLED_FOR_TURN);
-                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                         currentPlayer.getName() + " is pardoned under amnesty"));
                 doRegularMove(game);
             } else {
@@ -155,7 +153,7 @@ public class GameServiceImpl implements GameService {
                     paymentProcessor.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
                 } else {
                     currentPlayer.doTime();
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is doing time"));
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName() + " is doing time"));
                     gameLogicExecutor.endTurn(game);
                 }
             }
@@ -224,10 +222,10 @@ public class GameServiceImpl implements GameService {
             currentPlayer.releaseFromJail();
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                     MoneyState.fromPlayer(currentPlayer))));
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                     currentPlayer.getName() + " is released on bail"));
             game.setStage(GameStage.TURN_START);
-            gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(currentPlayer));
+            gameEventSender.sendToAllPlayers(new TurnStartEvent(currentPlayer.getId()));
         } else if (jailAction.equals(JailAction.LUCK)) {
             notifyAboutDiceRolling(game);
         }
@@ -244,7 +242,7 @@ public class GameServiceImpl implements GameService {
         // TODO: check if game is in progress
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(player.getName() + " gave up"));
+        gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + " gave up"));
         gameLogicExecutor.bankruptPlayer(game, player);
         // TODO: implementation
     }
@@ -346,10 +344,10 @@ public class GameServiceImpl implements GameService {
             int sum = checkToPay.getSum();
             if (checkToPay.isPayable() && playerMoneyAfterManagement < sum) {
                 checkToPay.setPayable(false);
-                gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(checkToPay));
+                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
             } else if (!checkToPay.isPayable() && playerMoneyAfterManagement >= sum) {
                 checkToPay.setPayable(true);
-                gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(checkToPay));
+                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
             }
         } else if (GameStage.JAIL_RELEASE_START.equals(stage)) {
             if (playerMoneyBeforeManagement < Rules.JAIL_BAIL && playerMoneyAfterManagement >= Rules.JAIL_BAIL) {
@@ -367,6 +365,6 @@ public class GameServiceImpl implements GameService {
         } else {
             throw new IllegalStateException("cannot roll the dice - wrong game stage");
         }
-        gameEventSender.sendToAllPlayers(DiceRollingStartEvent.forPlayer(game.getCurrentPlayer()));
+        gameEventSender.sendToAllPlayers(new DiceRollingStartEvent(game.getCurrentPlayer().getId()));
     }
 }

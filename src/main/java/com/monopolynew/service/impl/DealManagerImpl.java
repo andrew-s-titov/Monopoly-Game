@@ -80,7 +80,7 @@ public class DealManagerImpl implements DealManager {
                 .stageToReturnTo(currentGameStage)
                 .build();
         game.setOffer(newOffer);
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+        gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
         gameEventSender.sendToPlayer(offerAddresseeId, gameEventGenerator.newOfferProposalEvent(game));
     }
@@ -99,9 +99,9 @@ public class DealManagerImpl implements DealManager {
         }
         var offerInitiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(offerAddressee.getName() + " declined the offer"));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(offerAddressee.getName() + " declined the offer"));
         } else {
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(offerAddressee.getName() + " accepted the offer"));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(offerAddressee.getName() + " accepted the offer"));
             processOfferPayment(offer.getMoneyToGive(), offerInitiator, offerAddressee);
             processOfferPayment(offer.getMoneyToReceive(), offerAddressee, offerInitiator);
             processOfferFieldExchange(offer.getFieldsToBuy(), offerInitiator);
@@ -113,7 +113,7 @@ public class DealManagerImpl implements DealManager {
         String offerInitiatorId = offerInitiator.getId();
         gameEventSender.sendToPlayer(offerInitiatorId, new OfferProcessedEvent());
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(offerInitiatorId, TurnStartEvent.forPlayer(offerInitiator));
+            gameEventSender.sendToPlayer(offerInitiatorId, new TurnStartEvent(offerInitiatorId));
         }
         if (GameStage.JAIL_RELEASE_START.equals(stageToReturnTo)) {
             gameEventSender.sendToPlayer(offerInitiatorId,

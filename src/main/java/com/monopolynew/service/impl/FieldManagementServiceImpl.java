@@ -100,20 +100,16 @@ public class FieldManagementServiceImpl implements FieldManagementService {
 
     @Override
     public void buyHouse(Game game, int fieldIndex, String playerId) {
-        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
-            if (f instanceof StreetField) {
-                var streetField = (StreetField) f;
-                Player currentPlayer = g.getCurrentPlayer();
-                if (housePurchaseAvailable(g, currentPlayer, streetField)) {
+        doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
+            if (field instanceof StreetField) {
+                var streetField = (StreetField) field;
+                Player currentPlayer = aGame.getCurrentPlayer();
+                if (housePurchaseAvailable(aGame, currentPlayer, streetField)) {
                     streetField.addHouse();
-                    g.getGameMap().setPurchaseMadeFlag(streetField.getGroupId());
+                    aGame.getGameMap().setPurchaseMadeFlag(streetField.getGroupId());
                     streetField.setNewRent(true);
                     currentPlayer.takeMoney(streetField.getHousePrice());
-                    gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                            Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-                    gameEventSender.sendToAllPlayers(StreetHouseAmountEvent.fromStreetField(streetField));
-                    gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(
-                            Collections.singletonList(gameFieldConverter.toView(streetField))));
+                    notifyAfterHouseManagementChange(currentPlayer, streetField);
                     return;
                 }
             }
@@ -123,19 +119,15 @@ public class FieldManagementServiceImpl implements FieldManagementService {
 
     @Override
     public void sellHouse(Game game, int fieldIndex, String playerId) {
-        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
-            if (f instanceof StreetField) {
-                var streetField = (StreetField) f;
-                if (houseSaleAvailable(g, streetField)) {
+        doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
+            if (field instanceof StreetField) {
+                var streetField = (StreetField) field;
+                if (houseSaleAvailable(aGame, streetField)) {
                     streetField.sellHouse();
                     streetField.setNewRent(true);
-                    Player currentPlayer = g.getCurrentPlayer();
+                    Player currentPlayer = aGame.getCurrentPlayer();
                     currentPlayer.addMoney(streetField.getHousePrice());
-                    gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                            Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-                    gameEventSender.sendToAllPlayers(StreetHouseAmountEvent.fromStreetField(streetField));
-                    gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(
-                            Collections.singletonList(gameFieldConverter.toView(streetField))));
+                    notifyAfterHouseManagementChange(currentPlayer, streetField);
                     return;
                 }
             }
@@ -241,5 +233,13 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         if (fieldIndex < 0 || fieldIndex > GameMap.LAST_FIELD_INDEX) {
             throw new IllegalArgumentException(String.format("Field with index %s don't exist", fieldIndex));
         }
+    }
+
+    private void notifyAfterHouseManagementChange(Player currentPlayer, StreetField streetField) {
+        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+                Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
+        gameEventSender.sendToAllPlayers(new StreetHouseAmountEvent(streetField.getId(), streetField.getHouses()));
+        gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(
+                Collections.singletonList(gameFieldConverter.toView(streetField))));
     }
 }

@@ -2,7 +2,6 @@ package com.monopolynew.event;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.monopolynew.game.Player;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,8 +13,4 @@ public class BankruptcyEvent implements GameEvent {
     private final int code = 311;
 
     private final String playerId;
-
-    public static BankruptcyEvent forPlayer(Player player) {
-        return new BankruptcyEvent(player.getId());
-    }
 }

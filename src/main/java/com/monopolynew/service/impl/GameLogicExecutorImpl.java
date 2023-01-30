@@ -6,7 +6,6 @@ import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.MortgageChange;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
-import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.ChipMoveEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.GameOverEvent;
@@ -24,9 +23,10 @@ import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
+import com.monopolynew.service.GameEventGenerator;
+import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameFieldConverter;
 import com.monopolynew.service.GameLogicExecutor;
-import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -44,6 +44,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private final GameEventSender gameEventSender;
     private final GameFieldConverter gameFieldConverter;
+    private final GameEventGenerator gameEventGenerator;
 
     @Override
     public void movePlayer(Game game, Player player, int newPositionIndex, boolean forward) {
@@ -51,7 +52,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         changePlayerPosition(player, newPositionIndex, true);
         if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                     String.format("%s received $%s for starting a new circle",
                             player.getName(), Rules.CIRCLE_MONEY)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
@@ -64,7 +65,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         player.resetDoublets();
         player.imprison();
         gameEventSender.sendToAllPlayers(
-                SystemMessageEvent.text(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
+                new SystemMessageEvent(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
         changePlayerPosition(player, GameMap.JAIL_FIELD_NUMBER, false);
         endTurn(game);
     }
@@ -74,14 +75,14 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         var buyProposal = new BuyProposal(player, field);
         game.setBuyProposal(buyProposal);
         game.setStage(GameStage.BUY_PROPOSAL);
-        gameEventSender.sendToPlayer(player.getId(), BuyProposalEvent.fromProposal(buyProposal));
+        gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newBuyProposalEvent(buyProposal));
     }
 
     @Override
     public void doBuyField(Game game, PurchasableField field, int price, Player player) {
         field.newOwner(player);
         player.takeMoney(price);
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+        gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                 String.format("%s is buying %s for $%s", player.getName(), field.getName(), price)));
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(player))));
@@ -190,14 +191,14 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         } else {
             nextPlayer = toNextPlayer(game);
         }
+        String nextPlayerId = nextPlayer.getId();
         if (nextPlayer.isImprisoned()) {
             game.setStage(GameStage.JAIL_RELEASE_START);
-            String nextPlayerId = nextPlayer.getId();
             gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(
                     nextPlayerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
         } else {
             game.setStage(GameStage.TURN_START);
-            gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(nextPlayer));
+            gameEventSender.sendToAllPlayers(new TurnStartEvent(nextPlayerId));
         }
     }
 
@@ -206,7 +207,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         GameStage stage = game.getStage();
         Player currentPlayer = game.getCurrentPlayer();
         player.goBankrupt();
-        gameEventSender.sendToAllPlayers(BankruptcyEvent.forPlayer(player));
+        gameEventSender.sendToAllPlayers(new BankruptcyEvent(player.getId()));
         if (player.equals(currentPlayer) && GameStage.AWAITING_PAYMENT.equals(stage) && game.getCheckToPay().getBeneficiary() != null) {
             Player beneficiary = game.getCheckToPay().getBeneficiary();
             int playerMoneyLeft = player.getMoney();
@@ -277,7 +278,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException("failed to get last non-bankrupt player"));
             game.finishGame();
-            gameEventSender.sendToAllPlayers(GameOverEvent.withWinner(winner));
+            gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getId(), winner.getName()));
             // TODO: close websocket connection for all players
             // gameEventSender.closeExchangeChannel();
             return true;
@@ -294,7 +295,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isBankrupt() || nextPlayer.isSkipping()) {
             if (nextPlayer.isSkipping()) {
-                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(nextPlayer.getName() + " is skipping his/her turn"));
+                gameEventSender.sendToAllPlayers(new SystemMessageEvent(nextPlayer.getName() + " is skipping his/her turn"));
                 nextPlayer.skip();
             }
             nextPlayer = toNextPlayer(game);

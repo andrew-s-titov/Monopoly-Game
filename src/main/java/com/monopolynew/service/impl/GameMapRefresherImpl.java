@@ -1,12 +1,8 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.enums.GameStage;
-import com.monopolynew.event.AuctionBuyProposalEvent;
-import com.monopolynew.event.AuctionRaiseProposalEvent;
-import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
-import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
@@ -32,7 +28,7 @@ public class GameMapRefresherImpl implements GameMapRefresher {
         if (currentPlayerId.equals(playerId)) {
             switch (gameStage) {
                 case TURN_START: {
-                    gameEventSender.sendToPlayer(playerId, TurnStartEvent.forPlayer(player));
+                    gameEventSender.sendToPlayer(playerId, new TurnStartEvent(currentPlayerId));
                     break;
                 }
                 case JAIL_RELEASE_START: {
@@ -41,26 +37,26 @@ public class GameMapRefresherImpl implements GameMapRefresher {
                     break;
                 }
                 case BUY_PROPOSAL: {
-                    gameEventSender.sendToPlayer(playerId, BuyProposalEvent.fromProposal(game.getBuyProposal()));
+                    gameEventSender.sendToPlayer(playerId, gameEventGenerator.newBuyProposalEvent(game.getBuyProposal()));
                     break;
                 }
                 case AWAITING_AUCTION_BUY: {
                     var auction = game.getAuction();
                     if (playerId.equals(auction.getCurrentParticipant().getId())) {
-                        gameEventSender.sendToPlayer(playerId, AuctionBuyProposalEvent.fromAuction(auction));
+                        gameEventSender.sendToPlayer(playerId, gameEventGenerator.newAuctionBuyProposalEvent(auction));
                     }
                     break;
                 }
                 case AWAITING_AUCTION_RAISE: {
                     var auction = game.getAuction();
                     if (playerId.equals(auction.getCurrentParticipant().getId())) {
-                        gameEventSender.sendToPlayer(playerId, AuctionRaiseProposalEvent.fromAuction(auction));
+                        gameEventSender.sendToPlayer(playerId, gameEventGenerator.newAuctionRaiseProposalEvent(auction));
                     }
                     break;
                 }
                 case AWAITING_PAYMENT:
                 case AWAITING_JAIL_FINE: {
-                    gameEventSender.sendToPlayer(playerId, PayCommandEvent.fromCheck(game.getCheckToPay()));
+                    gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(game.getCheckToPay()));
                     break;
                 }
                 case ROLLED_FOR_JAIL:
@@ -85,7 +81,8 @@ public class GameMapRefresherImpl implements GameMapRefresher {
             var currentParticipantId = auction.getCurrentParticipant().getId();
             if (playerId.equals(currentParticipantId)) {
                 gameEventSender.sendToPlayer(playerId, GameStage.AWAITING_AUCTION_BUY.equals(gameStage) ?
-                        AuctionBuyProposalEvent.fromAuction(auction) : AuctionRaiseProposalEvent.fromAuction(auction));
+                        gameEventGenerator.newAuctionBuyProposalEvent(auction) :
+                        gameEventGenerator.newAuctionRaiseProposalEvent(auction));
             }
         }
     }

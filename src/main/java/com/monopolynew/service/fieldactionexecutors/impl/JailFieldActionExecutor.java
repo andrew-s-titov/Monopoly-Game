@@ -24,7 +24,7 @@ public class JailFieldActionExecutor implements FieldActionExecutor {
     @Override
     public void executeAction(Game game) {
         Player currentPlayer = game.getCurrentPlayer();
-        gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+        gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                 currentPlayer.getName() + " is visiting Jail for a tour"));
         gameLogicExecutor.endTurn(game);
     }

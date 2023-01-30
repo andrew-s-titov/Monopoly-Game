@@ -28,7 +28,6 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -72,18 +71,19 @@ public class GameWebSocketHandler {
             // sending a new player event to show other players
             game.getPlayers().stream()
                     .filter(player -> !player.getId().equals(playerId))
-                    .forEach(player -> gameEventSender.sendToPlayer(playerId, PlayerConnectedEvent.fromPlayer(player)));
+                    .forEach(player -> gameEventSender.sendToPlayer(playerId,
+                            new PlayerConnectedEvent(player.getId(), player.getName())));
         }
         var player = Player.newPlayer(playerId, playerName);
         game.addPlayer(player);
-        gameEventSender.sendToAllPlayers(PlayerConnectedEvent.fromPlayer(player));
+        gameEventSender.sendToAllPlayers(new PlayerConnectedEvent(playerId, playerName));
     }
 
     @OnMessage
     public void onMessage(String message) {
         try {
             PlayerMessageDTO playerMessage = objectMapper.readValue(message, PlayerMessageDTO.class);
-            gameEventSender.sendToAllPlayers(ChatMessageEvent.fromPlayerMessage(playerMessage));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(playerMessage.getPlayerId(), playerMessage.getMessage()));
         } catch (IOException e) {
             // TODO: process exception gracefully
             throw new RuntimeException(e);
@@ -101,7 +101,7 @@ public class GameWebSocketHandler {
                 var playerId = playerWsSessionRepository.getPlayerIdBySessionId(session.getId());
                 if (playerId != null) {
                     var player = game.getPlayerById(playerId);
-                    gameEventSender.sendToAllPlayers(PlayerDisconnectedEvent.fromPlayer(player));
+                    gameEventSender.sendToAllPlayers(new PlayerDisconnectedEvent(playerId, player.getName()));
                     game.removePlayer(playerId);
                 }
             }

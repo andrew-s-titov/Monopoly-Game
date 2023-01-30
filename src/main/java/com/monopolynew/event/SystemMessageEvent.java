@@ -10,8 +10,4 @@ public class SystemMessageEvent implements GameEvent {
     private final int code = 201;
 
     private final String message;
-
-    public static SystemMessageEvent text(String message) {
-        return new SystemMessageEvent(message);
-    }
 }

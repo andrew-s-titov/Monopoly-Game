@@ -77,7 +77,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     }
                     currentPlayer.addMoney(giftTotal);
                     moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                             String.format("%s has a birthday - every player is paying him/her $%s",
                                     currentPlayer.getName(), giftSize)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
@@ -101,7 +101,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                         }
                     }
                     moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                             String.format("%s is paying everyone $%s for help with election campaign",
                                     currentPlayer.getName(), rewardRate)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
@@ -124,7 +124,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     for (Integer houses : housesOnStreets) {
                         tax += houses == Rules.MAX_HOUSES_ON_STREET ? perHotel : houses * perHouse;
                     }
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                             String.format("%s failed tax audit and is paying $%s per house and $%s per hotel owned",
                                     currentPlayer.getName(), perHouse, perHotel)));
                     if (tax > 0) {
@@ -159,14 +159,14 @@ public class ChanceContainerImpl implements ChanceContainer {
                             .orElseThrow(() -> new IllegalStateException("wrong distance calculations"))
                             .getKey();
 
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName()
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName()
                             + " was urgently called on a business trip and is proceeding to the nearest airport"));
                     gameLogicExecutor.movePlayer(game, currentPlayer, nearestField.getId(), false);
                 },
 
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                             String.format("%s unexpectedly ended up on the %s field after a booze",
                                     currentPlayer.getName(), FieldAction.START.getName())));
                     boolean forward = currentPlayer.getPosition() > GameMap.NUMBER_OF_FIELDS / 2;
@@ -175,7 +175,7 @@ public class ChanceContainerImpl implements ChanceContainer {
 
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
-                    gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is TELEPORTING!"));
+                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName() + " is TELEPORTING!"));
                     GameMap gameMap = game.getGameMap();
                     List<Integer> purchasableFieldsIndexes = gameMap.getFields().stream()
                             .filter(field -> field instanceof PurchasableField)
@@ -192,7 +192,7 @@ public class ChanceContainerImpl implements ChanceContainer {
         return game -> {
             Player currentPlayer = game.getCurrentPlayer();
             currentPlayer.skipTurns(turns);
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                     String.format(formatMessage, currentPlayer.getName(), turns)));
             gameLogicExecutor.endTurn(game);
         };
@@ -206,7 +206,7 @@ public class ChanceContainerImpl implements ChanceContainer {
             } else {
                 currentPlayer.takeMoney(amount);
             }
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                     String.format(formatMessage, currentPlayer.getName(), amount)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));

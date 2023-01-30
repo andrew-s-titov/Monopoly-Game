@@ -2,7 +2,6 @@ package com.monopolynew.event;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.monopolynew.dto.CheckToPay;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -20,10 +19,4 @@ public class PayCommandEvent implements GameEvent {
     private final boolean payable;
 
     private final boolean wiseToGiveUp;
-
-    public static PayCommandEvent fromCheck(CheckToPay checkToPay) {
-        var player = checkToPay.getPlayer();
-        var sum = checkToPay.getSum();
-        return new PayCommandEvent(player.getId(), sum, player.getMoney() >= sum, checkToPay.isWiseToGiveUp());
-    }
 }

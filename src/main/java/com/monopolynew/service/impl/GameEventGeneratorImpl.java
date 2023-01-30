@@ -1,8 +1,16 @@
 package com.monopolynew.service.impl;
 
+import com.monopolynew.dto.CheckToPay;
+import com.monopolynew.event.AuctionBuyProposalEvent;
+import com.monopolynew.event.AuctionRaiseProposalEvent;
+import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.GameMapRefreshEvent;
 import com.monopolynew.event.OfferProposalEvent;
+import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.game.Game;
+import com.monopolynew.game.Rules;
+import com.monopolynew.game.state.Auction;
+import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameFieldConverter;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +42,35 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
                 .moneyToGive(moneyToGive)
                 .moneyToReceive(moneyToReceive)
                 .build();
+    }
+
+    @Override
+    public AuctionBuyProposalEvent newAuctionBuyProposalEvent(Auction auction) {
+        return new AuctionBuyProposalEvent(
+                auction.getField().getName(),
+                auction.getAuctionPrice()
+        );
+    }
+
+    @Override
+    public AuctionRaiseProposalEvent newAuctionRaiseProposalEvent(Auction auction) {
+        return new AuctionRaiseProposalEvent(
+                auction.getCurrentParticipant().getId(),
+                auction.getField().getName(),
+                auction.getAuctionPrice() + Rules.AUCTION_STEP
+        );
+    }
+
+    @Override
+    public BuyProposalEvent newBuyProposalEvent(BuyProposal buyProposal) {
+        var purchasableField = buyProposal.getField();
+        return new BuyProposalEvent(buyProposal.getPlayer().getId(), purchasableField.getName(), purchasableField.getPrice());
+    }
+
+    @Override
+    public PayCommandEvent newPayCommandEvent(CheckToPay checkToPay) {
+        var player = checkToPay.getPlayer();
+        var checkSum = checkToPay.getSum();
+        return new PayCommandEvent(player.getId(), checkSum, player.getMoney() >= checkSum, checkToPay.isWiseToGiveUp());
     }
 }

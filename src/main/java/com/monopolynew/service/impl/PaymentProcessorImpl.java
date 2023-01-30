@@ -4,13 +4,13 @@ import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
+import com.monopolynew.service.GameEventGenerator;
+import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.PaymentProcessor;
-import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -24,6 +24,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
 
     private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
+    private final GameEventGenerator gameEventGenerator;
 
     @Override
     public void startPaymentProcess(Game game, Player player, Player beneficiary, int amount, String paymentComment) {
@@ -36,7 +37,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             game.setStage(newGameStage);
             var checkToPay = new CheckToPay(player, beneficiary, amount, true, false, paymentComment);
             game.setCheckToPay(checkToPay);
-            gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.fromCheck(checkToPay));
+            gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
         } else {
             int assets = gameLogicExecutor.computePlayerAssets(game, player);
             boolean enoughAssets = assets >= amount;
@@ -45,9 +46,9 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.9 < amount,
                         paymentComment);
                 game.setCheckToPay(checkToPay);
-                gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.fromCheck(checkToPay));
+                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
             } else {
-                gameEventSender.sendToAllPlayers(SystemMessageEvent.text(player.getName() + "went bankrupt"));
+                gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + "went bankrupt"));
                 gameLogicExecutor.bankruptPlayer(game, player);
             }
         }
@@ -77,7 +78,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
         var paymentComment = checkToPay.getComment();
         if (StringUtils.isNotBlank(paymentComment)) {
-            gameEventSender.sendToAllPlayers(SystemMessageEvent.text(paymentComment));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(paymentComment));
         }
         game.setCheckToPay(null);
 

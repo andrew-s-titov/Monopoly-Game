@@ -1,6 +1,5 @@
 package com.monopolynew.event;
 
-import com.monopolynew.map.StreetField;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -13,8 +12,4 @@ public class StreetHouseAmountEvent implements GameEvent {
     private final int field;
 
     private final int amount;
-
-    public static StreetHouseAmountEvent fromStreetField(StreetField field) {
-        return new StreetHouseAmountEvent(field.getId(), field.getHouses());
-    }
 }
