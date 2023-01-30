@@ -1,4 +1,4 @@
-import {addClickEvent} from "./buttons.js";
+import {addClickEvent, hideThrowDiceButton, removeOldActionContainer} from "./buttons.js";
 import {getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest} from "./http.js";
 
 const REPLY_WAITING_SCREEN_ID = 'reply-waiting-screen';
@@ -34,6 +34,8 @@ export function startOfferProcess(addresseeId) {
                             if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
                                 renderReplyWaitingScreen();
                                 offerInfoBox.remove();
+                                hideThrowDiceButton();
+                                removeOldActionContainer();
                             }
                         },
                         function (requester) {

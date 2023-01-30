@@ -4,7 +4,7 @@ import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.fieldactionexecutors.FieldActionExecutor;
 import com.monopolynew.service.GameEventSender;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class JailFieldActionExecutor implements FieldActionExecutor {
 
     private final GameEventSender gameEventSender;
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
 
     @Getter
     private final FieldAction fieldAction = FieldAction.JAIL;
@@ -26,6 +26,6 @@ public class JailFieldActionExecutor implements FieldActionExecutor {
         Player currentPlayer = game.getCurrentPlayer();
         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                 currentPlayer.getName() + " is visiting Jail for a tour"));
-        gameHelper.endTurn(game);
+        gameLogicExecutor.endTurn(game);
     }
 }

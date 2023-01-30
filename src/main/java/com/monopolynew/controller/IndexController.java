@@ -29,11 +29,17 @@ public class IndexController {
                            @CookieValue(value = GlobalConfig.PLAYER_ID_KEY, required = false) String playerIdCookie) {
         model.addAttribute("gameStarted", gameService.isGameStarted());
         model.addAttribute("proxyHost", proxyHost);
-        if (gameService.isGameStarted() && playerIdCookie != null && !playerIdCookie.equalsIgnoreCase("null")) {
-            model.addAttribute("needToReconnect", gameService.getPlayerName(playerIdCookie));
+        if (playerIdCookie != null && !playerIdCookie.equalsIgnoreCase("null")) {
+            if (gameService.isGameStarted()) {
+                var playerName = gameService.getPlayerName(playerIdCookie);
+                if (playerName != null) {
+                    model.addAttribute("needToReconnect", playerName);
+                }
+            }
         } else {
             // TODO: remove upon login feature implementation
             Cookie cookie = new Cookie(GlobalConfig.PLAYER_ID_KEY, UUID.randomUUID().toString());
+            cookie.setMaxAge(60 * 60 * 24 * 365);
             cookie.setPath("/");
             response.addCookie(cookie);
         }

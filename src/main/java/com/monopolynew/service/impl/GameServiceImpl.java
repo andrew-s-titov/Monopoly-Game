@@ -27,14 +27,14 @@ import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
 import com.monopolynew.service.DealManager;
 import com.monopolynew.service.FieldManagementService;
-import com.monopolynew.service.GameHelper;
-import com.monopolynew.service.GameMapRefresher;
+import com.monopolynew.service.GameEventGenerator;
+import com.monopolynew.service.GameEventSender;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.GameRepository;
 import com.monopolynew.service.GameService;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
 import com.monopolynew.util.TriConsumer;
-import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -52,11 +52,11 @@ public class GameServiceImpl implements GameService {
 
     private final GameRepository gameRepository;
     private final Dice dice;
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
     private final StepProcessor stepProcessor;
     private final AuctionManager auctionManager;
     private final GameEventSender gameEventSender;
-    private final GameMapRefresher gameMapRefresher;
+    private final GameEventGenerator gameEventGenerator;
     private final PaymentProcessor paymentProcessor;
     private final FieldManagementService fieldManagementService;
     private final DealManager dealManager;
@@ -73,7 +73,8 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public String getPlayerName(String playerId) {
-        return gameRepository.getGame().getPlayerById(playerId).getName();
+        var player = gameRepository.getGame().getPlayerById(playerId);
+        return player == null ? null :  player.getName();
     }
 
     @Override
@@ -85,34 +86,39 @@ public class GameServiceImpl implements GameService {
             throw new IllegalStateException("Cannot start a game without at least 2 players");
         }
         game.startGame();
-        gameEventSender.sendToAllPlayers(gameMapRefresher.getRefreshEvent(game));
+        gameEventSender.sendToAllPlayers(gameEventGenerator.newMapRefreshEvent(game));
         Player currentPlayer = game.getCurrentPlayer();
         gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(currentPlayer));
     }
 
     @Override
-    public void startRolling() {
+    public void startDiceRolling() {
         Game game = gameRepository.getGame();
         notifyAboutDiceRolling(game);
+        var lastDice = dice.rollTheDice();
+        game.setLastDice(lastDice);
+        var currentGameStage = game.getStage();
+        var currentPlayer = game.getCurrentPlayer();
+        if (lastDice.isDoublet()) {
+            if (GameStage.ROLLED_FOR_TURN.equals(currentGameStage) && !currentPlayer.isAmnestied()) {
+                currentPlayer.incrementDoublets();
+            }
+        } else {
+            currentPlayer.resetDoublets();
+        }
     }
 
     @Override
-    public void doRollTheDice() {
+    public void broadcastDiceResult() {
         Game game = gameRepository.getGame();
         GameStage stage = game.getStage();
         if (GameStage.ROLLED_FOR_TURN.equals(stage) || GameStage.ROLLED_FOR_JAIL.equals(stage)) {
-            var lastDice = dice.rollTheDice();
-            game.setLastDice(lastDice);
+            var lastDice = game.getLastDice();
             Player currentPlayer = game.getCurrentPlayer();
             String message = String.format("%s rolled the dice and got %s : %s",
                     currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
             if (lastDice.isDoublet()) {
                 message = message + " (doublet)";
-                if (stage.equals(GameStage.ROLLED_FOR_TURN) && !currentPlayer.isAmnestied()) {
-                    currentPlayer.incrementDoublets();
-                }
-            } else {
-                currentPlayer.resetDoublets();
             }
             gameEventSender.sendToAllPlayers(
                     new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
@@ -132,7 +138,7 @@ public class GameServiceImpl implements GameService {
         if (GameStage.ROLLED_FOR_TURN.equals(stage)) {
             if (currentPlayer.committedFraud()) {
                 currentPlayer.resetDoublets();
-                gameHelper.sendToJailAndEndTurn(game, currentPlayer, "for fraud");
+                gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer, "for fraud");
             } else {
                 doRegularMove(game);
             }
@@ -150,7 +156,7 @@ public class GameServiceImpl implements GameService {
                 } else {
                     currentPlayer.doTime();
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " is doing time"));
-                    gameHelper.endTurn(game);
+                    gameLogicExecutor.endTurn(game);
                 }
             }
         } else {
@@ -182,9 +188,9 @@ public class GameServiceImpl implements GameService {
         PurchasableField field = buyProposal.getField();
         game.setBuyProposal(null);
         if (action.equals(ProposalAction.ACCEPT)) {
-            gameHelper.doBuyField(game, field, field.getPrice(), buyer);
+            gameLogicExecutor.doBuyField(game, field, field.getPrice(), buyer);
             game.setStage(GameStage.TURN_START);
-            gameHelper.endTurn(game);
+            gameLogicExecutor.endTurn(game);
         } else if (action.equals(ProposalAction.DECLINE)) {
             auctionManager.startNewAuction(game, field);
         }
@@ -239,7 +245,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(player.getName() + " gave up"));
-        gameHelper.bankruptPlayer(game, player);
+        gameLogicExecutor.bankruptPlayer(game, player);
         // TODO: implementation
     }
 
@@ -316,8 +322,8 @@ public class GameServiceImpl implements GameService {
         var lastDice = game.getLastDice();
         var currentPlayer = game.getCurrentPlayer();
         checkPlayerCanMakeMove(currentPlayer);
-        var newPosition = gameHelper.computeNewPlayerPosition(currentPlayer, lastDice);
-        gameHelper.movePlayer(game, currentPlayer, newPosition, true);
+        var newPosition = gameLogicExecutor.computeNewPlayerPosition(currentPlayer, lastDice);
+        gameLogicExecutor.movePlayer(game, currentPlayer, newPosition, true);
     }
 
     private void checkPlayerCanMakeMove(Player player) {

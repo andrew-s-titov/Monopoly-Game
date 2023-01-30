@@ -82,19 +82,19 @@
     z-index: 3;
 }
 
-.flushing {
-    animation: flush 2s;
-    -webkit-animation: flush 2s;
+.flashing {
+    animation: flash 2s;
+    -webkit-animation: flash 2s;
     animation-iteration-count: infinite;
     -webkit-animation-iteration-count: infinite;
 }
 
-@keyframes flush  {
+@keyframes flash  {
     0%   {color: black; background: white}
     50%  {color: white; background: black}
     100% {color: black; background: white}
 }
-@-webkit-keyframes flush {
+@-webkit-keyframes flash {
     0%   {color: black; background: white}
     50%  {color: white; background: black}
     100% {color: black; background: white}

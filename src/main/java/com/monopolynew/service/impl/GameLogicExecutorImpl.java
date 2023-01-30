@@ -25,7 +25,7 @@ import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.GameFieldConverter;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
-public class GameLogicExecutorImpl implements GameHelper {
+public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private final GameEventSender gameEventSender;
     private final GameFieldConverter gameFieldConverter;
@@ -192,9 +192,9 @@ public class GameLogicExecutorImpl implements GameHelper {
         }
         if (nextPlayer.isImprisoned()) {
             game.setStage(GameStage.JAIL_RELEASE_START);
-            String playerId = nextPlayer.getId();
+            String nextPlayerId = nextPlayer.getId();
             gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(
-                    playerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
+                    nextPlayerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
         } else {
             game.setStage(GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(TurnStartEvent.forPlayer(nextPlayer));

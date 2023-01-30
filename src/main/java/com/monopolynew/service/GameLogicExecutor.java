@@ -6,7 +6,7 @@ import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
 import org.springframework.lang.Nullable;
 
-public interface GameHelper {
+public interface GameLogicExecutor {
 
     void movePlayer(Game game, Player player, int newPositionIndex, boolean forward);
 

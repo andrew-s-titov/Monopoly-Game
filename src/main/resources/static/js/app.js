@@ -1,13 +1,24 @@
 import {
-    addClickEvent, createActionButton, renderActionContainer, removeOldActionContainer,
-    renderPropertyManagementContainer, renderGiveUpConfirmation, PROPERTY_MANAGEMENT_PREFIX
+    addClickEvent,
+    createActionButton,
+    renderThrowDiceButton,
+    PROPERTY_MANAGEMENT_PREFIX,
+    removeOldActionContainer,
+    renderActionContainer,
+    renderGiveUpConfirmation,
+    renderPropertyManagementContainer
 } from './buttons.js';
-import {renderDiceGifs, renderDiceResult, hideDice, preloadDice} from './dice.js';
-import {setHost, getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest, getBaseWebsocketUrl} from './http.js';
-import {renderMortgageState, renderHouses, renderFieldViews} from './field-view.js';
+import {hideDice, preloadDice, renderDiceGifs, renderDiceResult} from './dice.js';
+import {getBaseGameUrl, getBaseWebsocketUrl, sendGetHttpRequest, sendPostHttpRequest, setHost} from './http.js';
+import {renderFieldViews, renderHouses, renderMortgageState} from './field-view.js';
 import {
-    addPlayers, changePlayerMoney, getPlayerColorById, getPlayerIndexById, getPlayerNameById,
-    movePlayerChip, bankruptPlayer
+    addPlayers,
+    bankruptPlayer,
+    changePlayerMoney,
+    getPlayerColorById,
+    getPlayerIndexById,
+    getPlayerNameById,
+    movePlayerChip
 } from './players.js';
 import {removeReplyWaitingScreen, renderOfferProposal} from './offer.js';
 
@@ -46,6 +57,7 @@ window.onload = () => {
     const reconnect = document.getElementById('reconnect');
     if (reconnect) {
         if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
+            document.getElementById('startPage').style.display = 'none';
             openWebsocket(reconnect.innerText);
         } else {
             console.warn('websocket is not closed!')
@@ -54,6 +66,8 @@ window.onload = () => {
 };
 
 function joinGameRoom() {
+    document.getElementById('startPage').style.display = 'none';
+    document.getElementById('playersBeforeGame').style.display = 'block';
     const playerName = document.getElementById('playerNameInput').value;
     sendGetHttpRequest(`${getBaseGameUrl()}?name=${playerName}`, true,
         function (requester) {
@@ -78,9 +92,6 @@ function joinGameRoom() {
 }
 
 function openWebsocket(username) {
-    document.getElementById('startPage').style.display = 'none';
-    document.getElementById('playersBeforeGame').style.display = 'block';
-
     webSocket = new WebSocket(`${getBaseWebsocketUrl()}/${username}`);
     webSocket.onclose = (event) => {
         console.log('websocket connection is closed');
@@ -90,11 +101,7 @@ function openWebsocket(username) {
         const socketMessage = JSON.parse(message.data);
         const socketMessageCode = socketMessage.code;
         console.log(`websocket event code is ${socketMessageCode}`);
-        if (socketMessageCode === 100) {
-            const playerId = socketMessage.player_id;
-            console.log(`received current user identification event, id: ${playerId}`);
-            thisPlayerId = playerId;
-        } else if (socketMessageCode === 101) {
+        if (socketMessageCode === 101) {
             onPlayerConnected(socketMessage);
         } else if (socketMessageCode === 102) {
             onPlayerDisconnected(socketMessage);
@@ -195,8 +202,6 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     document.getElementById('mapTable').style.backgroundImage = "url('/images/map-back.png')";
     document.getElementById('mapTable').style.backgroundSize = '658px';
 
-    thisPlayerId = getPlayerIdFromCookie();
-
     const players = gameMapRefreshEvent.players;
     addPlayers(players);
 
@@ -286,12 +291,8 @@ function onTurnStart(turnStartEvent) {
     removePlayersOutline();
     const playerToGo = turnStartEvent.player_id;
     outlinePlayer(playerToGo);
-    if (thisPlayerId === playerToGo) {
-
-        const throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/notify`, false);
-        addClickEvent(throwDiceButton, () => throwDiceButton.remove());
-        throwDiceButton.classList.add('roll-the-dice-button', 'flushing');
-        document.getElementById('message-container').appendChild(throwDiceButton);
+    if (getThisPlayerId() === playerToGo) {
+        renderThrowDiceButton();
     }
 }
 
@@ -300,7 +301,7 @@ function processPlayerMessage() {
     if (playerMessageInput) {
         const text = playerMessageInput.value;
         if (text.trim() !== '' && webSocket != null) {
-            const playerMessage = {playerId: thisPlayerId, message: text};
+            const playerMessage = {playerId: getThisPlayerId(), message: text};
             webSocket.send(JSON.stringify(playerMessage));
             playerMessageInput.value = '';
         }
@@ -324,9 +325,9 @@ function removePlayersOutline() {
 
 function onDiceStartRolling(diceRollingStartEvent) {
     renderDiceGifs();
-    if (thisPlayerId === diceRollingStartEvent.player_id) {
+    if (getThisPlayerId() === diceRollingStartEvent.player_id) {
         setTimeout(() => {
-            sendGetHttpRequest(`${getBaseGameUrl()}/dice/roll`, true)
+            sendGetHttpRequest(`${getBaseGameUrl()}/dice/result`, true)
         }, 1500);
     }
 }
@@ -335,7 +336,7 @@ function onDiceResult(diceResultEvent) {
     renderDiceResult(diceResultEvent.first_dice, diceResultEvent.second_dice);
     setTimeout(() => {
         hideDice();
-        if (thisPlayerId === diceResultEvent.player_id) {
+        if (getThisPlayerId() === diceResultEvent.player_id) {
             sendGetHttpRequest(`${getBaseGameUrl()}/dice/after`, true);
         }
     }, 2000);
@@ -344,7 +345,7 @@ function onDiceResult(diceResultEvent) {
 function onPlayerChipMove(chipMoveEvent) {
     const playerId = chipMoveEvent.player_id;
     movePlayerChip(playerId, chipMoveEvent.field);
-    if (chipMoveEvent.need_after_move_call && playerId === thisPlayerId) {
+    if (chipMoveEvent.need_after_move_call && getThisPlayerId() === playerId) {
         setTimeout(() => {
             sendGetHttpRequest(`${getBaseGameUrl()}/after_move`, true);
         }, 500);
@@ -361,7 +362,7 @@ function onBuyProposal(buyProposalEvent) {
     const playerId = buyProposalEvent.player_id;
     const price = buyProposalEvent.price;
     const fieldName = buyProposalEvent.field_name;
-    if (thisPlayerId === playerId) {
+    if (getThisPlayerId() === playerId) {
         let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, false);
         let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, false);
         renderActionContainer(`Do you like to buy ${fieldName} for $${price}?`, acceptButton, auctionButton);
@@ -372,7 +373,7 @@ function onJailReleaseProcess(jailReleaseProcessEvent) {
     removePlayersOutline();
     const imprisonedPlayerId = jailReleaseProcessEvent.player_id;
     outlinePlayer(imprisonedPlayerId);
-    if (thisPlayerId === imprisonedPlayerId) {
+    if (getThisPlayerId() === imprisonedPlayerId) {
         removeOldActionContainer();
         const payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${getBaseGameUrl()}/jail?action=PAY`,
             !jailReleaseProcessEvent.bail_available);
@@ -469,4 +470,11 @@ function onDealOffer(offerProposal) {
 
 function onOfferProcessed() {
     removeReplyWaitingScreen();
+}
+
+function getThisPlayerId() {
+    if (typeof thisPlayerId === undefined || thisPlayerId === null) {
+        thisPlayerId = getPlayerIdFromCookie();
+    }
+    return thisPlayerId;
 }

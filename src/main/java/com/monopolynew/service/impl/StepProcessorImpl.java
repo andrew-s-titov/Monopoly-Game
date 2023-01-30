@@ -9,7 +9,7 @@ import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StaticRentField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.AuctionManager;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
 import com.monopolynew.service.fieldactionexecutors.FieldActionExecutor;
@@ -22,14 +22,14 @@ import java.util.stream.Collectors;
 @Component
 public class StepProcessorImpl implements StepProcessor {
 
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
     private final AuctionManager auctionManager;
     private final PaymentProcessor paymentProcessor;
     private final Map<FieldAction, FieldActionExecutor> fieldActionExecutorMap;
 
-    public StepProcessorImpl(GameHelper gameHelper, AuctionManager auctionManager,
+    public StepProcessorImpl(GameLogicExecutor gameLogicExecutor, AuctionManager auctionManager,
                              PaymentProcessor paymentProcessor, List<FieldActionExecutor> fieldActionExecutors) {
-        this.gameHelper = gameHelper;
+        this.gameLogicExecutor = gameLogicExecutor;
         this.auctionManager = auctionManager;
         this.paymentProcessor = paymentProcessor;
         this.fieldActionExecutorMap = fieldActionExecutors.stream()
@@ -68,14 +68,14 @@ public class StepProcessorImpl implements StepProcessor {
         if (field.isFree()) {
             int streetPrice = field.getPrice();
             if (streetPrice <= player.getMoney()) {
-                gameHelper.sendBuyProposal(game, player, field);
+                gameLogicExecutor.sendBuyProposal(game, player, field);
             } else {
                 // TODO: auto auction or let sell or mortgage something?
                 auctionManager.startNewAuction(game, field);
             }
             return false;
         } else if (field.isMortgaged() || player.equals(field.getOwner())) {
-            gameHelper.endTurn(game);
+            gameLogicExecutor.endTurn(game);
             return false;
         } else {
             return true;

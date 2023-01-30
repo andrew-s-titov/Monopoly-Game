@@ -13,7 +13,7 @@ import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.ChanceContainer;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.GameEventSender;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,17 +34,17 @@ public class ChanceContainerImpl implements ChanceContainer {
     @Getter
     private final List<Consumer<Game>> chances;
 
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
 
     @Autowired
-    public ChanceContainerImpl(GameHelper gameHelper, GameEventSender gameEventSender) {
-        this.gameHelper = gameHelper;
+    public ChanceContainerImpl(GameLogicExecutor gameLogicExecutor, GameEventSender gameEventSender) {
+        this.gameLogicExecutor = gameLogicExecutor;
         this.gameEventSender = gameEventSender;
-        this.chances = createChances(gameHelper, gameEventSender);
+        this.chances = createChances(gameLogicExecutor, gameEventSender);
     }
 
-    private List<Consumer<Game>> createChances(GameHelper gameHelper, GameEventSender gameEventSender) {
+    private List<Consumer<Game>> createChances(GameLogicExecutor gameLogicExecutor, GameEventSender gameEventSender) {
         return List.of(
                 moneyChance(50, true, "%s found $%s on the pavement"),
                 moneyChance(70, true, "%s won $%s in the lottery"),
@@ -81,7 +81,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                             String.format("%s has a birthday - every player is paying him/her $%s",
                                     currentPlayer.getName(), giftSize)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
-                    gameHelper.endTurn(game);
+                    gameLogicExecutor.endTurn(game);
                 },
 
                 game -> {
@@ -105,7 +105,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                             String.format("%s is paying everyone $%s for help with election campaign",
                                     currentPlayer.getName(), rewardRate)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
-                    gameHelper.endTurn(game);
+                    gameLogicExecutor.endTurn(game);
                 },
 
                 game -> {
@@ -132,12 +132,12 @@ public class ChanceContainerImpl implements ChanceContainer {
                         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                     }
-                    gameHelper.endTurn(game);
+                    gameLogicExecutor.endTurn(game);
                 },
 
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
-                    gameHelper.sendToJailAndEndTurn(game, currentPlayer, "for bribing a traffic police officer");
+                    gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer, "for bribing a traffic police officer");
                 },
 
                 game -> {
@@ -161,7 +161,7 @@ public class ChanceContainerImpl implements ChanceContainer {
 
                     gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName()
                             + " was urgently called on a business trip and is proceeding to the nearest airport"));
-                    gameHelper.movePlayer(game, currentPlayer, nearestField.getId(), false);
+                    gameLogicExecutor.movePlayer(game, currentPlayer, nearestField.getId(), false);
                 },
 
                 game -> {
@@ -170,7 +170,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                             String.format("%s unexpectedly ended up on the %s field after a booze",
                                     currentPlayer.getName(), FieldAction.START.getName())));
                     boolean forward = currentPlayer.getPosition() > GameMap.NUMBER_OF_FIELDS / 2;
-                    gameHelper.movePlayer(game, currentPlayer, 0, forward);
+                    gameLogicExecutor.movePlayer(game, currentPlayer, 0, forward);
                 },
 
                 game -> {
@@ -183,7 +183,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                             .collect(Collectors.toList());
                     var random = new Random().nextInt(purchasableFieldsIndexes.size());
                     Integer randomFieldIndex = purchasableFieldsIndexes.get(random);
-                    gameHelper.movePlayer(game, currentPlayer, randomFieldIndex, false);
+                    gameLogicExecutor.movePlayer(game, currentPlayer, randomFieldIndex, false);
                 }
         );
     }
@@ -194,7 +194,7 @@ public class ChanceContainerImpl implements ChanceContainer {
             currentPlayer.skipTurns(turns);
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                     String.format(formatMessage, currentPlayer.getName(), turns)));
-            gameHelper.endTurn(game);
+            gameLogicExecutor.endTurn(game);
         };
     }
 
@@ -210,7 +210,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     String.format(formatMessage, currentPlayer.getName(), amount)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-            gameHelper.endTurn(game);
+            gameLogicExecutor.endTurn(game);
         };
     }
 }

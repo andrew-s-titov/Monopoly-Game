@@ -7,7 +7,7 @@ import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.fieldactionexecutors.FieldActionExecutor;
 import com.monopolynew.service.GameEventSender;
 import lombok.Getter;
@@ -21,7 +21,7 @@ import java.util.Collections;
 public class StartFieldActionExecutor implements FieldActionExecutor {
 
     private final GameEventSender gameEventSender;
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
 
     @Getter
     private final FieldAction fieldAction = FieldAction.START;
@@ -35,6 +35,6 @@ public class StartFieldActionExecutor implements FieldActionExecutor {
                         currentPlayer.getName(), Rules.CIRCLE_MONEY, FieldAction.START.getName())));
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-        gameHelper.endTurn(game);
+        gameLogicExecutor.endTurn(game);
     }
 }

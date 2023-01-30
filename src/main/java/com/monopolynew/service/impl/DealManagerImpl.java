@@ -6,19 +6,22 @@ import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.OfferProcessedEvent;
-import com.monopolynew.event.OfferProposalEvent;
 import com.monopolynew.event.SystemMessageEvent;
+import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
+import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.Offer;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.DealManager;
-import com.monopolynew.service.GameFieldConverter;
+import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
+import com.monopolynew.service.GameFieldConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -33,6 +36,7 @@ public class DealManagerImpl implements DealManager {
 
     // TODO: exception handling, status codes to identify error
 
+    private final GameEventGenerator gameEventGenerator;
     private final GameFieldConverter gameFieldConverter;
     private final GameEventSender gameEventSender;
 
@@ -78,14 +82,7 @@ public class DealManagerImpl implements DealManager {
         game.setOffer(newOffer);
         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
-        var offerProposalEvent = OfferProposalEvent.builder()
-                .initiatorName(currentPlayer.getName())
-                .fieldsToBuy(gameFieldConverter.toListOfferView(fieldsToBuy))
-                .fieldsToSell(gameFieldConverter.toListOfferView(fieldsToSell))
-                .moneyToGive(moneyToGive)
-                .moneyToReceive(moneyToReceive)
-                .build();
-        gameEventSender.sendToPlayer(offerAddresseeId, offerProposalEvent);
+        gameEventSender.sendToPlayer(offerAddresseeId, gameEventGenerator.newOfferProposalEvent(game));
     }
 
     @Override
@@ -111,8 +108,17 @@ public class DealManagerImpl implements DealManager {
             processOfferFieldExchange(offer.getFieldsToSell(), offerAddressee);
         }
         game.setOffer(null);
-        game.setStage(offer.getStageToReturnTo());
-        gameEventSender.sendToPlayer(offerInitiator.getId(), new OfferProcessedEvent());
+        GameStage stageToReturnTo = offer.getStageToReturnTo();
+        game.setStage(stageToReturnTo);
+        String offerInitiatorId = offerInitiator.getId();
+        gameEventSender.sendToPlayer(offerInitiatorId, new OfferProcessedEvent());
+        if (GameStage.TURN_START.equals(stageToReturnTo)) {
+            gameEventSender.sendToPlayer(offerInitiatorId, TurnStartEvent.forPlayer(offerInitiator));
+        }
+        if (GameStage.JAIL_RELEASE_START.equals(stageToReturnTo)) {
+            gameEventSender.sendToPlayer(offerInitiatorId,
+                    new JailReleaseProcessEvent(offerInitiatorId, offerInitiator.getMoney() >= Rules.JAIL_BAIL));
+        }
     }
 
     private List<PurchasableField> getPlayerFields(List<GameField> fields, String playerId) {

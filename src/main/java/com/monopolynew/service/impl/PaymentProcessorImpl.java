@@ -8,7 +8,7 @@ import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.List;
 @Component
 public class PaymentProcessorImpl implements PaymentProcessor {
 
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
 
     @Override
@@ -38,7 +38,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             game.setCheckToPay(checkToPay);
             gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.fromCheck(checkToPay));
         } else {
-            int assets = gameHelper.computePlayerAssets(game, player);
+            int assets = gameLogicExecutor.computePlayerAssets(game, player);
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 game.setStage(newGameStage);
@@ -48,7 +48,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.fromCheck(checkToPay));
             } else {
                 gameEventSender.sendToAllPlayers(SystemMessageEvent.text(player.getName() + "went bankrupt"));
-                gameHelper.bankruptPlayer(game, player);
+                gameLogicExecutor.bankruptPlayer(game, player);
             }
         }
     }
@@ -82,12 +82,12 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         game.setCheckToPay(null);
 
         if (GameStage.AWAITING_PAYMENT.equals(currentGameStage)) {
-            gameHelper.endTurn(game);
+            gameLogicExecutor.endTurn(game);
         } else if (GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
             payer.releaseFromJail();
             game.setStage(GameStage.ROLLED_FOR_TURN);
-            var newPosition = gameHelper.computeNewPlayerPosition(payer, game.getLastDice());
-            gameHelper.movePlayer(game, payer, newPosition, true);
+            var newPosition = gameLogicExecutor.computeNewPlayerPosition(payer, game.getLastDice());
+            gameLogicExecutor.movePlayer(game, payer, newPosition, true);
         }
     }
 

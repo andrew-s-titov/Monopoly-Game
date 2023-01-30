@@ -50,8 +50,8 @@ public class GameWebSocketHandler {
         Game game = gameRepository.getGame();
         if (game.isInProgress()) {
             if (game.playerExists(playerId)) {
-                playerWsSessionRepository.addPlayerSession(playerId, session);
-                gameEventSender.sendToPlayer(playerId, gameMapRefresher.getRefreshEvent(game));
+                playerWsSessionRepository.refreshPlayerSession(playerId, session);
+                gameMapRefresher.restoreGameStateForPlayer(game, playerId);
             } else {
                 String message = "Game in progress";
                 closeSessionForViolation(session, message);
@@ -59,8 +59,8 @@ public class GameWebSocketHandler {
             return;
         }
 
-        List<Session> allSessions = playerWsSessionRepository.getAllSessions();
-        if (!CollectionUtils.isEmpty(allSessions) && allSessions.size() >= Rules.MAX_PLAYERS) {
+        var allActiveSessions = playerWsSessionRepository.getAllSessions();
+        if (!CollectionUtils.isEmpty(allActiveSessions) && allActiveSessions.size() >= Rules.MAX_PLAYERS) {
             gameEventSender.sendToPlayer(playerId, new ErrorEvent("Only " + Rules.MAX_PLAYERS + " are allowed to play"));
             closeSessionForViolation(session, "Max players reached");
             return;
@@ -68,7 +68,7 @@ public class GameWebSocketHandler {
 
         playerWsSessionRepository.addPlayerSession(playerId, session);
 
-        if (!CollectionUtils.isEmpty(allSessions)) {
+        if (!CollectionUtils.isEmpty(allActiveSessions)) {
             // sending a new player event to show other players
             game.getPlayers().stream()
                     .filter(player -> !player.getId().equals(playerId))
@@ -95,15 +95,17 @@ public class GameWebSocketHandler {
         var sessionId = session.getId();
         CloseReason.CloseCode closeCode = reason.getCloseCode();
         if (closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE) || closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
-            var playerId = playerWsSessionRepository.getPlayerIdBySessionId(session.getId());
             var game = gameRepository.getGame();
-            var player = game.getPlayerById(playerId);
-            if (player != null && !game.isInProgress()) {
-                // we don't need to send this if game is in progress
-                gameEventSender.sendToAllPlayers(PlayerDisconnectedEvent.fromPlayer(player));
-                game.removePlayer(playerId);
+            // if a game isn't in progress - send an event for other players about disconnection
+            if (!game.isInProgress()) {
+                var playerId = playerWsSessionRepository.getPlayerIdBySessionId(session.getId());
+                if (playerId != null) {
+                    var player = game.getPlayerById(playerId);
+                    gameEventSender.sendToAllPlayers(PlayerDisconnectedEvent.fromPlayer(player));
+                    game.removePlayer(playerId);
+                }
             }
-            // if game in progress - do not remove to let reconnect
+            // if a game is in progress - do not remove to let the player reconnect with another session
         } else if (closeCode.equals(CloseReason.CloseCodes.VIOLATED_POLICY)) {
             log.debug("Forced websocket connection close for session {}", sessionId);
         } else {

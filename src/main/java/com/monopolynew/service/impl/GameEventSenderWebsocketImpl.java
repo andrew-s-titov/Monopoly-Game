@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import javax.websocket.Session;
 import java.io.IOException;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -38,8 +37,8 @@ public class GameEventSenderWebsocketImpl implements GameEventSender {
 
     @Override
     public void closeExchangeChannel() {
-        List<Session> allSessions = playerWsSessionRepository.getAllSessions();
-        for (Session wsSession : allSessions) {
+        var allActiveSessions = playerWsSessionRepository.getAllSessions();
+        for (Session wsSession : allActiveSessions) {
             if (wsSession.isOpen()) {
                 try {
                     wsSession.close();

@@ -11,7 +11,7 @@ import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.Auction;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.AuctionManager;
-import com.monopolynew.service.GameHelper;
+import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.GameEventSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,14 +25,14 @@ import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
 @Component
 public class AuctionManagerImpl implements AuctionManager {
 
-    private final GameHelper gameHelper;
+    private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
 
     @Override
     public void startNewAuction(Game game, PurchasableField field) {
+        game.setStage(GameStage.AUCTION_IN_PROGRESS);
         var currentPlayer = game.getCurrentPlayer();
         game.setAuction(new Auction(game, field));
-        game.setStage(GameStage.AUCTION);
         gameEventSender.sendToAllPlayers(SystemMessageEvent.text(currentPlayer.getName() + " started an auction"));
         auctionStep(game);
     }
@@ -49,6 +49,7 @@ public class AuctionManagerImpl implements AuctionManager {
             // propose to raise the stake
             var player = auction.getNextPlayer();
             if (player.getMoney() >= auction.getAuctionPrice() + Rules.AUCTION_STEP) {
+                game.setStage(GameStage.AWAITING_AUCTION_RAISE);
                 gameEventSender.sendToPlayer(player.getId(), AuctionRaiseProposalEvent.fromAuction(auction));
             } else {
                 // player can't afford to raise the stake - exclude from participants and proceed to next player
@@ -60,10 +61,11 @@ public class AuctionManagerImpl implements AuctionManager {
             if (auction.isFirstCircle()) {
                 // if first circle - next player is the only participant: propose on start price
                 var playerId = player.getId();
+                game.setStage(GameStage.AWAITING_AUCTION_BUY);
                 gameEventSender.sendToPlayer(playerId, AuctionBuyProposalEvent.fromAuction(auction));
             } else {
                 // automatically sell to the winner
-                gameHelper.doBuyField(game, auction.getField(), auction.getAuctionPrice(), player);
+                gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), player);
                 finishAuction(game);
             }
         }
@@ -72,11 +74,12 @@ public class AuctionManagerImpl implements AuctionManager {
     @Override
     public void processAuctionBuyProposal(Game game, ProposalAction action) {
         var auction = game.getAuction();
-        checkAuctionAvailability(game);
+        checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_BUY, auction);
         Assert.notNull(action, NULL_ARG_MESSAGE);
+        game.setStage(GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             Player buyer = auction.getCurrentParticipant();
-            gameHelper.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyer);
+            gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyer);
         } else {
             gameEventSender.sendToAllPlayers(SystemMessageEvent.text("No one took part in the auction"));
         }
@@ -86,8 +89,9 @@ public class AuctionManagerImpl implements AuctionManager {
     @Override
     public void processAuctionRaiseProposal(Game game, ProposalAction action) {
         Auction auction = game.getAuction();
-        checkAuctionAvailability(game);
+        checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_RAISE, auction);
         Assert.notNull(action, NULL_ARG_MESSAGE);
+        game.setStage(GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();
             gameEventSender.sendToAllPlayers(
@@ -99,16 +103,15 @@ public class AuctionManagerImpl implements AuctionManager {
     }
 
     private void finishAuction(Game game) {
-        game.setStage(GameStage.TURN_START);
         game.setAuction(null);
-        gameHelper.endTurn(game);
+        gameLogicExecutor.endTurn(game);
     }
 
-    private void checkAuctionAvailability(Game game) {
-        if (!GameStage.AUCTION.equals(game.getStage())) {
+    private void checkAuctionAvailability(Game game, GameStage expectedGameStage, Auction auction) {
+        if (!expectedGameStage.equals(game.getStage())) {
             throw new IllegalStateException("can't process auction - wrong game stage");
         }
-        if (game.getAuction() == null) {
+        if (auction == null) {
             throw new IllegalStateException("no active auction found");
         }
     }

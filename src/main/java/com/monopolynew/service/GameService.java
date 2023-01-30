@@ -19,9 +19,9 @@ public interface GameService {
 
     void startGame();
 
-    void startRolling();
+    void startDiceRolling();
 
-    void doRollTheDice();
+    void broadcastDiceResult();
 
     void afterDiceRollAction();
 

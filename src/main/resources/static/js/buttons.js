@@ -4,6 +4,7 @@ export const PROPERTY_MANAGEMENT_PREFIX = "management";
 
 const ACTION_CONTAINER_ID = 'action_container';
 const PROPERTY_MANAGEMENT_CONTAINER_ID = `${PROPERTY_MANAGEMENT_PREFIX}_${ACTION_CONTAINER_ID}`;
+const THROW_DICE_BUTTON_ID = 'throw-dice-button';
 
 export function addClickEvent(button, listenerFunction) {
     button.addEventListener('click', () => listenerFunction());
@@ -20,6 +21,21 @@ export function createActionButton(text, url, disabled) {
         actionButton.disabled = true;
     }
     return actionButton;
+}
+
+export function renderThrowDiceButton() {
+    const throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/roll`, false);
+    throwDiceButton.id = THROW_DICE_BUTTON_ID;
+    throwDiceButton.classList.add('roll-the-dice-button', 'flashing');
+    addClickEvent(throwDiceButton, () => throwDiceButton.remove());
+    document.getElementById('message-container').appendChild(throwDiceButton);
+}
+
+export function hideThrowDiceButton() {
+    const throwDiceButton = document.getElementById(THROW_DICE_BUTTON_ID);
+    if (throwDiceButton) {
+        throwDiceButton.remove();
+    }
 }
 
 export function removeOldActionContainer() {

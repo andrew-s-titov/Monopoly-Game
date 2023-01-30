@@ -35,14 +35,14 @@ public class GameController {
         return message == null ? ResponseEntity.ok().build() : ResponseEntity.badRequest().body(message);
     }
 
-    @GetMapping("/dice/notify")
-    public void notifyAboutRolling() {
-        gameService.startRolling();
+    @GetMapping("/dice/roll")
+    public void startDiceRolling() {
+        gameService.startDiceRolling();
     }
 
-    @GetMapping("/dice/roll")
-    public void rollTheDice() {
-        gameService.doRollTheDice();
+    @GetMapping("/dice/result")
+    public void broadcastDiceResult() {
+        gameService.broadcastDiceResult();
     }
 
     @GetMapping("/dice/after")
