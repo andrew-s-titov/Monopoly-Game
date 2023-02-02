@@ -132,7 +132,7 @@ function openWebsocket(username) {
         } else if (socketMessageCode === 310) {
             onAuctionBuyProposal(socketMessage);
         } else if (socketMessageCode === 311) {
-            bankruptPlayer(socketMessage.player_id);
+            onPlayerBankrupt(socketMessage);
         } else if (socketMessageCode === 312) {
             onPayCommand(socketMessage);
         } else if (socketMessageCode === 313) {
@@ -470,6 +470,14 @@ function onDealOffer(offerProposal) {
 
 function onOfferProcessed() {
     removeReplyWaitingScreen();
+}
+
+function onPlayerBankrupt(socketMessage) {
+    const bankruptPlayerId = socketMessage.player_id;
+    bankruptPlayer(bankruptPlayerId);
+    if (getThisPlayerId() === bankruptPlayerId) {
+        removeOldActionContainer();
+    }
 }
 
 function getThisPlayerId() {
