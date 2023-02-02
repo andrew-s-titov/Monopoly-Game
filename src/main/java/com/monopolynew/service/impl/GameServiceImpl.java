@@ -243,8 +243,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
         gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + " gave up"));
-        gameLogicExecutor.bankruptPlayer(game, player);
-        // TODO: implementation
+        gameLogicExecutor.bankruptPlayerToState(game, player);
     }
 
     @Override

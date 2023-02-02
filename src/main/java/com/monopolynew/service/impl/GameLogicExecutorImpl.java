@@ -203,31 +203,52 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     }
 
     @Override
-    public void bankruptPlayer(Game game, Player player) {
+    public void bankruptPlayerToCreditor(Game game, Player player, Integer remainingAssets) {
+        doBankrupt(game, player, remainingAssets);
+    }
+
+    @Override
+    public void bankruptPlayerToState(Game game, Player player) {
+        doBankrupt(game, player, null);
+    }
+
+    private void doBankrupt(Game game, Player player, Integer remainingAssets) {
         GameStage stage = game.getStage();
         Player currentPlayer = game.getCurrentPlayer();
         player.goBankrupt();
         gameEventSender.sendToAllPlayers(new BankruptcyEvent(player.getId()));
-        if (player.equals(currentPlayer) && GameStage.AWAITING_PAYMENT.equals(stage) && game.getCheckToPay().getBeneficiary() != null) {
-            Player beneficiary = game.getCheckToPay().getBeneficiary();
-            int playerMoneyLeft = player.getMoney();
-            if (playerMoneyLeft > 0) {
-                beneficiary.addMoney(playerMoneyLeft);
-                player.takeMoney(playerMoneyLeft);
-                gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                        List.of(MoneyState.fromPlayer(beneficiary), MoneyState.fromPlayer(player))));
-            }
-            List<PurchasableField> playerFields = getPlayerFields(game, player);
-            playerFields.forEach(field -> field.newOwner(beneficiary));
-            if (!CollectionUtils.isEmpty(playerFields)) {
-                gameEventSender.sendToAllPlayers(
-                        new FieldViewChangeEvent(gameFieldConverter.toListView(playerFields)));
-            }
-        } else {
-            bankruptForState(game, player);
+        var checkToPay = game.getCheckToPay();
+        var sumToPay = checkToPay.getSum();
+        var moneyStates = new ArrayList<MoneyState>();
+        var playerMoneyLeft = player.getMoney();
+        if (playerMoneyLeft > 0) {
+            player.takeMoney(playerMoneyLeft);
+            moneyStates.add(MoneyState.fromPlayer(player));
         }
-
-        if (!checkIfGameEnded(game) && player.equals(currentPlayer)) {
+        var beneficiary = checkToPay.getBeneficiary();
+        if (player.equals(currentPlayer) && GameStage.AWAITING_PAYMENT.equals(stage) && beneficiary != null) {
+            remainingAssets = remainingAssets == null ? computePlayerAssets(game, player) : remainingAssets;
+            beneficiary.addMoney(remainingAssets > sumToPay ? sumToPay : remainingAssets);
+            moneyStates.add(MoneyState.fromPlayer(beneficiary));
+        }
+        if (!CollectionUtils.isEmpty(moneyStates)) {
+            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+        }
+        var playerPurchasableFields = getPlayerFields(game, player);
+        if (!CollectionUtils.isEmpty(playerPurchasableFields)) {
+            playerPurchasableFields.forEach(field -> {
+                field.newOwner(null); // all property goes to the 'bank'
+                if (field.isMortgaged()) {
+                    field.redeem();
+                }
+                if (field instanceof StreetField && ((StreetField) field).getHouses() > 0) {
+                    ((StreetField) field).sellAllHouses();
+                }
+            });
+            gameEventSender.sendToAllPlayers(
+                    new FieldViewChangeEvent(gameFieldConverter.toListView(playerPurchasableFields)));
+        }
+        if (!isGameFinished(game) && player.equals(currentPlayer)) {
             endTurn(game);
         }
     }
@@ -241,32 +262,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 .collect(Collectors.toList());
     }
 
-    private void bankruptForState(Game game, Player player) {
-        int playerMoneyLeft = player.getMoney();
-        if (playerMoneyLeft > 0) {
-            player.takeMoney(playerMoneyLeft);
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                    Collections.singletonList(MoneyState.fromPlayer(player))));
-        }
-        List<PurchasableField> playerFields = getPlayerFields(game, player);
-        playerFields.forEach(field -> {
-            field.newOwner(null);
-            if (field.isMortgaged()) {
-                field.redeem();
-            }
-            if (field instanceof StreetField) {
-                var streetField = (StreetField) field;
-                if (streetField.getHouses() > 0) {
-                    streetField.sellAllHouses();
-                }
-            }
-        });
-        if (!CollectionUtils.isEmpty(playerFields)) {
-            gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(gameFieldConverter.toListView(playerFields)));
-        }
-    }
-
-    private boolean checkIfGameEnded(Game game) {
+    private boolean isGameFinished(Game game) {
         Collection<Player> players = game.getPlayers();
         long nonBankruptPlayers = players.stream()
                 .filter(p -> !p.isBankrupt())

@@ -22,5 +22,7 @@ public interface GameLogicExecutor {
 
     void endTurn(Game game);
 
-    void bankruptPlayer(Game game, Player player);
+    void bankruptPlayerToCreditor(Game game, Player player, Integer remainingAssets);
+
+    void bankruptPlayerToState(Game game, Player player);
 }

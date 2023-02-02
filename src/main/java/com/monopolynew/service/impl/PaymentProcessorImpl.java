@@ -49,7 +49,11 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
             } else {
                 gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + "went bankrupt"));
-                gameLogicExecutor.bankruptPlayer(game, player);
+                if (GameStage.ROLLED_FOR_TURN.equals(currentGameStage)) {
+                    gameLogicExecutor.bankruptPlayerToCreditor(game, player, assets);
+                } else {
+                    gameLogicExecutor.bankruptPlayerToState(game, player);
+                }
             }
         }
     }
