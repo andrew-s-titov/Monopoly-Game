@@ -1,5 +1,6 @@
 package com.monopolynew.service.impl;
 
+import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
@@ -190,8 +191,16 @@ public class ChanceContainerImpl implements ChanceContainer {
 
     private Consumer<Game> skipTurnsChance(int turns, String formatMessage) {
         return game -> {
-            Player currentPlayer = game.getCurrentPlayer();
-            currentPlayer.skipTurns(turns);
+            var currentPlayer = game.getCurrentPlayer();
+            var lastDice = game.getLastDice();
+            if (lastDice != null && lastDice.isDoublet()) {
+                if (turns > 1) {
+                    currentPlayer.skipTurns(turns - 1);
+                }
+                currentPlayer.resetDoublets();
+            } else {
+                currentPlayer.skipTurns(turns);
+            }
             gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                     String.format(formatMessage, currentPlayer.getName(), turns)));
             gameLogicExecutor.endTurn(game);
@@ -200,7 +209,7 @@ public class ChanceContainerImpl implements ChanceContainer {
 
     private Consumer<Game> moneyChance(int amount, boolean give, String formatMessage) {
         return game -> {
-            Player currentPlayer = game.getCurrentPlayer();
+            var currentPlayer = game.getCurrentPlayer();
             if (give) {
                 currentPlayer.addMoney(amount);
             } else {
