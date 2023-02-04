@@ -147,7 +147,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
                     int currentPosition = currentPlayer.getPosition();
-                    CompanyField nearestField = PurchasableFieldGroups.getGroup(game, COMPANY_FIELD_GROUP).stream()
+                    CompanyField nearestField = PurchasableFieldGroups.getGroupById(game, COMPANY_FIELD_GROUP).stream()
                             .map(field -> (CompanyField) field)
                             .map(field -> {
                                 int fieldPosition = field.getId();

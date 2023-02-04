@@ -26,15 +26,6 @@ public class PurchasableFieldGroups {
             9, List.of(37, 39)
     );
 
-    public static List<PurchasableField> getGroup(Game game, int fieldGroupId) {
-        if (fieldGroupId < 0 || fieldGroupId > 9) {
-            throw new IllegalArgumentException("No group exists for id " + fieldGroupId);
-        }
-        return FIELD_GROUPS.get(fieldGroupId).stream()
-                .map(fieldIndex -> (PurchasableField) game.getGameMap().getField(fieldIndex))
-                .collect(Collectors.toList());
-    }
-
     public static List<PurchasableField> getGroupByFieldIndex(Game game, int purchasableFieldIndex) {
         int groupId = getGroupIdByFieldIndex(purchasableFieldIndex);
         return getGroup(game, groupId);
@@ -55,6 +46,15 @@ public class PurchasableFieldGroups {
             }
         }
         throw new IllegalArgumentException("No group exists for index " + fieldIndex);
+    }
+
+    private static List<PurchasableField> getGroup(Game game, int fieldGroupId) {
+        if (fieldGroupId < 0 || fieldGroupId > 9) {
+            throw new IllegalArgumentException("No group exists for id " + fieldGroupId);
+        }
+        return FIELD_GROUPS.get(fieldGroupId).stream()
+                .map(fieldIndex -> (PurchasableField) game.getGameMap().getField(fieldIndex))
+                .collect(Collectors.toList());
     }
 
     public static Set<Integer> getGroupKeys() {
