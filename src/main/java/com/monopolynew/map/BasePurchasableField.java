@@ -13,8 +13,6 @@ public abstract class BasePurchasableField implements PurchasableField {
     @Getter
     protected final String name;
     @Getter
-    private final int groupId;
-    @Getter
     private final int price;
 
     @Getter

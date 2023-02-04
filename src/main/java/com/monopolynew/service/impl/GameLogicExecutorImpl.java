@@ -21,6 +21,7 @@ import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.CompanyField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
+import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.GameEventGenerator;
@@ -66,7 +67,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         player.imprison();
         gameEventSender.sendToAllPlayers(
                 new SystemMessageEvent(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
-        changePlayerPosition(player, GameMap.JAIL_FIELD_NUMBER, false);
+        changePlayerPosition(player, Rules.JAIL_FIELD_NUMBER, false);
         endTurn(game);
     }
 
@@ -89,9 +90,8 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
 
-        int fieldGroupId = field.getGroupId();
         List<GameFieldView> newPriceViews;
-        List<PurchasableField> fieldGroup = game.getGameMap().getGroup(fieldGroupId);
+        List<PurchasableField> fieldGroup = PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId());
         if (field instanceof StreetField) {
             boolean allGroupOwnedByTheSameOwner = fieldGroup.stream()
                     .noneMatch(PurchasableField::isFree)
@@ -148,6 +148,10 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(newPriceViews));
     }
 
+    public void processOwnershipChange() {
+
+    }
+
     @Override
     public int computePlayerAssets(Game game, Player player) {
         int assetSum = player.getMoney();
@@ -172,8 +176,8 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     @Override
     public int computeNewPlayerPosition(Player player, DiceResult diceResult) {
         int result = player.getPosition() + diceResult.getSum();
-        boolean newCircle = result > GameMap.LAST_FIELD_INDEX;
-        return newCircle ? result - GameMap.NUMBER_OF_FIELDS : result;
+        boolean newCircle = result > Rules.LAST_FIELD_INDEX;
+        return newCircle ? result - Rules.NUMBER_OF_FIELDS : result;
     }
 
     @Override

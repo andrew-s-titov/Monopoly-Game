@@ -54,7 +54,7 @@ public class AuctionManagerImpl implements AuctionManager {
             } else {
                 // player can't afford to raise the stake - exclude from participants and proceed to next player
                 auction.removeParticipant();
-                auctionStep(game); // TODO: check for logic and bugs
+                auctionStep(game);
             }
         } else {
             var playerId = auction.getNextPlayer().getId();

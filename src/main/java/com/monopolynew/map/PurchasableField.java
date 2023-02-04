@@ -6,8 +6,6 @@ public interface PurchasableField extends GameField {
 
     int getPrice();
 
-    int getGroupId();
-
     Player getOwner();
 
     boolean isFree();

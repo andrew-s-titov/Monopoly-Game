@@ -12,4 +12,8 @@ public class Rules {
     public static final int TURNS_IN_JAIL = 3;
     public static final int JAIL_BAIL = 50;
     public static final int AUCTION_STEP = 10;
+
+    public static final int NUMBER_OF_FIELDS = 40;
+    public static final int LAST_FIELD_INDEX = NUMBER_OF_FIELDS - 1;
+    public static final int JAIL_FIELD_NUMBER = 10;
 }

@@ -4,6 +4,7 @@ import com.monopolynew.dto.GameFieldOfferView;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
+import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StaticRentField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
@@ -26,7 +27,7 @@ public class GameFieldConverterImpl implements GameFieldConverter {
         boolean mortgage = false;
         if (gameField instanceof PurchasableField) {
             PurchasableField purchasableField = (PurchasableField) gameField;
-            group = purchasableField.getGroupId();
+            group = PurchasableFieldGroups.getGroupIdByFieldIndex(gameField.getId());
             if (purchasableField.isFree()) {
                 priceTag = "$ " + purchasableField.getPrice();
             } else {

@@ -14,6 +14,7 @@ import com.monopolynew.game.Rules;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
+import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameEventSender;
@@ -107,7 +108,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 Player currentPlayer = aGame.getCurrentPlayer();
                 if (housePurchaseAvailable(aGame, currentPlayer, streetField)) {
                     streetField.addHouse();
-                    aGame.getGameMap().setPurchaseMadeFlag(streetField.getGroupId());
+                    aGame.getGameMap().setPurchaseMadeFlag(PurchasableFieldGroups.getGroupIdByFieldIndex(fieldIndex));
                     streetField.setNewRent(true);
                     currentPlayer.takeMoney(streetField.getHousePrice());
                     notifyAfterHouseManagementChange(currentPlayer, streetField);
@@ -143,11 +144,11 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         }
         int currentNumberOfHouses = streetField.getHouses();
         if (currentNumberOfHouses < Rules.MAX_HOUSES_ON_STREET && player.getMoney() >= streetField.getHousePrice()) {
-            int streetGroupId = streetField.getGroupId();
+            int streetGroupId = PurchasableFieldGroups.getGroupIdByFieldIndex(streetField.getId());
             if (game.getGameMap().isPurchaseMadeForGroup(streetGroupId)) {
                 return false;
             }
-            List<PurchasableField> streetGroup = game.getGameMap().getGroup(streetGroupId);
+            List<PurchasableField> streetGroup = PurchasableFieldGroups.getGroupById(game, streetGroupId);
             boolean allOwned = streetGroup.stream()
                     .noneMatch(PurchasableField::isFree);
             if (allOwned) {
@@ -167,7 +168,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     @Override
     public boolean houseSaleAvailable(Game game, StreetField streetField) {
         if (streetField.getHouses() > 0) {
-            return game.getGameMap().getGroup(streetField.getGroupId()).stream()
+            return PurchasableFieldGroups.getGroupByFieldIndex(game, streetField.getId()).stream()
                     .filter(f -> !f.equals(streetField))
                     .map(f -> (StreetField) f)
                     .allMatch(f -> f.getHouses() <= streetField.getHouses());
@@ -179,7 +180,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     public boolean mortgageAvailable(Game game, PurchasableField purchasableField) {
         if (!purchasableField.isMortgaged()) {
             if (purchasableField instanceof StreetField) {
-                return game.getGameMap().getGroup(purchasableField.getGroupId()).stream()
+                return PurchasableFieldGroups.getGroupByFieldIndex(game, purchasableField.getId()).stream()
                         .map(field -> (StreetField) field)
                         .allMatch(field -> field.getHouses() == 0);
             } else {
@@ -234,7 +235,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     private void checkFieldExists(int fieldIndex) {
-        if (fieldIndex < 0 || fieldIndex > GameMap.LAST_FIELD_INDEX) {
+        if (fieldIndex < 0 || fieldIndex > Rules.LAST_FIELD_INDEX) {
             throw new IllegalArgumentException(String.format("Field with index %s don't exist", fieldIndex));
         }
     }

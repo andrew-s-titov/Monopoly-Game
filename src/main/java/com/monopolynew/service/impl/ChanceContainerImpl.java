@@ -12,6 +12,7 @@ import com.monopolynew.map.FieldAction;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
+import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.ChanceContainer;
 import com.monopolynew.service.GameLogicExecutor;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static com.monopolynew.map.PurchasableFieldGroups.COMPANY_FIELD_GROUP;
 
 @Component
 public class ChanceContainerImpl implements ChanceContainer {
@@ -144,15 +147,15 @@ public class ChanceContainerImpl implements ChanceContainer {
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
                     int currentPosition = currentPlayer.getPosition();
-                    CompanyField nearestField = game.getGameMap().getGroup(GameMap.COMPANY_FIELD_GROUP).stream()
+                    CompanyField nearestField = PurchasableFieldGroups.getGroup(game, COMPANY_FIELD_GROUP).stream()
                             .map(field -> (CompanyField) field)
                             .map(field -> {
                                 int fieldPosition = field.getId();
                                 int forward = (fieldPosition > currentPosition) ?
                                         fieldPosition - currentPosition :
-                                        currentPosition + GameMap.NUMBER_OF_FIELDS - fieldPosition;
+                                        currentPosition + Rules.NUMBER_OF_FIELDS - fieldPosition;
                                 int backward = (fieldPosition > currentPosition) ?
-                                        fieldPosition + GameMap.NUMBER_OF_FIELDS - currentPosition :
+                                        fieldPosition + Rules.NUMBER_OF_FIELDS - currentPosition :
                                         currentPosition - fieldPosition;
                                 return Pair.of(field, Math.min(forward, backward));
                             })
@@ -170,7 +173,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                             String.format("%s unexpectedly ended up on the %s field after a booze",
                                     currentPlayer.getName(), FieldAction.START.getName())));
-                    boolean forward = currentPlayer.getPosition() > GameMap.NUMBER_OF_FIELDS / 2;
+                    boolean forward = currentPlayer.getPosition() > Rules.NUMBER_OF_FIELDS / 2;
                     gameLogicExecutor.movePlayer(game, currentPlayer, 0, forward);
                 },
 
