@@ -17,4 +17,6 @@ public class BuyProposalEvent implements GameEvent {
     private final String fieldName;
 
     private final int price;
+
+    private final boolean payable;
 }

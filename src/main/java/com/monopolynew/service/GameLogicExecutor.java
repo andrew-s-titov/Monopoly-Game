@@ -12,9 +12,9 @@ public interface GameLogicExecutor {
 
     void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason);
 
-    void sendBuyProposal(Game game, Player player, PurchasableField field);
+    void sendBuyProposal(Game game, Player player, PurchasableField field, boolean payable);
 
-    void doBuyField(Game game, PurchasableField field, int price, Player player);
+    void doBuyField(Game game, PurchasableField field, int price, String buyerId);
 
     int computePlayerAssets(Game game, Player player);
 

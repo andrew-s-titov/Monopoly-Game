@@ -64,7 +64,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     @Override
     public BuyProposalEvent newBuyProposalEvent(BuyProposal buyProposal) {
         var purchasableField = buyProposal.getField();
-        return new BuyProposalEvent(buyProposal.getPlayer().getId(), purchasableField.getName(), purchasableField.getPrice());
+        return new BuyProposalEvent(buyProposal.getPlayerId(), purchasableField.getName(), purchasableField.getPrice(), buyProposal.isPayable());
     }
 
     @Override

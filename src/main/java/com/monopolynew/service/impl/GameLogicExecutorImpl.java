@@ -71,21 +71,23 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     }
 
     @Override
-    public void sendBuyProposal(Game game, Player player, PurchasableField field) {
-        var buyProposal = new BuyProposal(player, field);
+    public void sendBuyProposal(Game game, Player player, PurchasableField field, boolean payable) {
+        String buyerId = player.getId();
+        var buyProposal = new BuyProposal(buyerId, field, payable);
         game.setBuyProposal(buyProposal);
         game.setStage(GameStage.BUY_PROPOSAL);
-        gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newBuyProposalEvent(buyProposal));
+        gameEventSender.sendToPlayer(buyerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
     }
 
     @Override
-    public void doBuyField(Game game, PurchasableField field, int price, Player player) {
-        field.newOwner(player);
-        player.takeMoney(price);
+    public void doBuyField(Game game, PurchasableField field, int price, String buyerId) {
+        var buyer = game.getPlayerById(buyerId);
+        field.newOwner(buyer);
+        buyer.takeMoney(price);
         gameEventSender.sendToAllPlayers(new SystemMessageEvent(
-                String.format("%s is buying %s for $%s", player.getName(), field.getName(), price)));
+                String.format("%s is buying %s for $%s", buyer.getName(), field.getName(), price)));
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
-                MoneyState.fromPlayer(player))));
+                MoneyState.fromPlayer(buyer))));
 
         int fieldGroupId = field.getGroupId();
         List<GameFieldView> newPriceViews;
@@ -128,7 +130,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             boolean increasedMultiplier = fieldGroup.stream()
                     .noneMatch(PurchasableField::isFree)
                     && fieldGroup.stream()
-                    .allMatch(f -> player.equals(f.getOwner()));
+                    .allMatch(f -> buyer.equals(f.getOwner()));
             if (increasedMultiplier) {
                 fieldGroup.stream()
                         .map(utilityField -> (UtilityField) utilityField)

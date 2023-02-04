@@ -16,9 +16,10 @@ import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.FieldManagementService;
-import com.monopolynew.service.GameFieldConverter;
 import com.monopolynew.service.GameEventSender;
+import com.monopolynew.service.GameFieldConverter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -63,8 +64,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void mortgageField(Game game, int fieldIndex, String playerId) {
-        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
+    public Pair<Integer, Integer> mortgageField(Game game, int fieldIndex, String playerId) {
+        return doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (mortgageAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.mortgage();
@@ -73,15 +74,15 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                 gameEventSender.sendToAllPlayers(new MortgageChangeEvent(
                         Collections.singletonList(new MortgageChange(f.getId(), f.getMortgageTurnsLeft()))));
-            } else {
-                throw new IllegalStateException("Cannot mortgage street with houses");
+                return;
             }
+            throw new IllegalStateException("Cannot mortgage street with houses");
         });
     }
 
     @Override
-    public void redeemMortgagedProperty(Game game, int fieldIndex, String playerId) {
-        doFieldManagement(game, playerId, fieldIndex,(g, f) -> {
+    public Pair<Integer, Integer> redeemMortgagedProperty(Game game, int fieldIndex, String playerId) {
+        return doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (redemptionAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.redeem();
@@ -92,15 +93,15 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                         Collections.singletonList(new MortgageChange(f.getId(), 0))));
                 gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(
                         Collections.singletonList(gameFieldConverter.toView(f))));
-            } else {
-                throw new IllegalStateException("Cannot redeem property - not enough money");
+                return;
             }
+            throw new IllegalStateException("Cannot redeem property - not enough money");
         });
     }
 
     @Override
-    public void buyHouse(Game game, int fieldIndex, String playerId) {
-        doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
+    public Pair<Integer, Integer> buyHouse(Game game, int fieldIndex, String playerId) {
+        return doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
             if (field instanceof StreetField) {
                 var streetField = (StreetField) field;
                 Player currentPlayer = aGame.getCurrentPlayer();
@@ -113,13 +114,13 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     return;
                 }
             }
-            throw new IllegalStateException("Cannot buy a house to this field");
+            throw new IllegalStateException("Cannot buy a house for this property field");
         });
     }
 
     @Override
-    public void sellHouse(Game game, int fieldIndex, String playerId) {
-        doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
+    public Pair<Integer, Integer> sellHouse(Game game, int fieldIndex, String playerId) {
+        return doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
             if (field instanceof StreetField) {
                 var streetField = (StreetField) field;
                 if (houseSaleAvailable(aGame, streetField)) {
@@ -131,7 +132,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     return;
                 }
             }
-            throw new IllegalStateException("Cannot add a house to this field");
+            throw new IllegalStateException("Cannot sell a house on this property field");
         });
     }
 
@@ -198,11 +199,12 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         return purchasableField.getPrice() * 55 / 100;
     }
 
-    private void doFieldManagement(Game game, String playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
+    private Pair<Integer, Integer> doFieldManagement(Game game, String playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
         checkFieldExists(fieldIndex);
         checkFieldManagementAvailability(game, playerId);
 
         Player currentPlayer = game.getCurrentPlayer();
+        int beforeManagementMoneyAmount = currentPlayer.getMoney();
         GameField field = game.getGameMap().getField(fieldIndex);
         if (field instanceof PurchasableField && currentPlayer.equals(((PurchasableField) field).getOwner())) {
             var purchasableField = (PurchasableField) field;
@@ -210,6 +212,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         } else {
             throw new IllegalStateException("Cannot manage field - it doesn't belong to the current player");
         }
+        return Pair.of(beforeManagementMoneyAmount, currentPlayer.getMoney());
     }
 
     private void checkFieldManagementAvailability(Game game, String playerId) {
@@ -226,7 +229,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         return !GameStage.TURN_START.equals(stage)
                 && !GameStage.JAIL_RELEASE_START.equals(stage)
                 && !GameStage.AWAITING_PAYMENT.equals(stage)
-                && !GameStage.AWAITING_JAIL_FINE.equals(stage);
+                && !GameStage.AWAITING_JAIL_FINE.equals(stage)
+                && !GameStage.BUY_PROPOSAL.equals(stage);
     }
 
     private void checkFieldExists(int fieldIndex) {

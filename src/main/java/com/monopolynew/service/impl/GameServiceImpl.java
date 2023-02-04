@@ -33,8 +33,8 @@ import com.monopolynew.service.GameRepository;
 import com.monopolynew.service.GameService;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
-import com.monopolynew.util.TriConsumer;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -182,11 +182,11 @@ public class GameServiceImpl implements GameService {
         }
         Assert.notNull(action, NULL_ARG_MESSAGE);
         // TODO: 'security' risk: check if player id matches the proposal id
-        Player buyer = buyProposal.getPlayer();
+        var buyerId = buyProposal.getPlayerId();
         PurchasableField field = buyProposal.getField();
         game.setBuyProposal(null);
         if (action.equals(ProposalAction.ACCEPT)) {
-            gameLogicExecutor.doBuyField(game, field, field.getPrice(), buyer);
+            gameLogicExecutor.doBuyField(game, field, field.getPrice(), buyerId);
             game.setStage(GameStage.TURN_START);
             gameLogicExecutor.endTurn(game);
         } else if (action.equals(ProposalAction.DECLINE)) {
@@ -273,25 +273,29 @@ public class GameServiceImpl implements GameService {
     @Override
     public void mortgageField(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::mortgageField);
+        var moneyHistory = fieldManagementService.mortgageField(game, fieldIndex, playerId);
+        afterManagementStateCheck(game, moneyHistory);
     }
 
     @Override
     public void redeemMortgagedProperty(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::redeemMortgagedProperty);
+        var moneyHistory = fieldManagementService.redeemMortgagedProperty(game, fieldIndex, playerId);
+        afterManagementStateCheck(game, moneyHistory);
     }
 
     @Override
     public void buyHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::buyHouse);
+        var moneyHistory = fieldManagementService.buyHouse(game, fieldIndex, playerId);
+        afterManagementStateCheck(game, moneyHistory);
     }
 
     @Override
     public void sellHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        managementWithPayCheckResend(game, fieldIndex, playerId, fieldManagementService::sellHouse);
+        var moneyHistory = fieldManagementService.sellHouse(game, fieldIndex, playerId);
+        afterManagementStateCheck(game, moneyHistory);
     }
 
     @Override
@@ -332,27 +336,39 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    private void managementWithPayCheckResend(Game game, int fieldIndex, String playerId, TriConsumer<Game, Integer, String> managementAction) {
-        int playerMoneyBeforeManagement = game.getCurrentPlayer().getMoney();
-        managementAction.apply(game, fieldIndex, playerId);
-        int playerMoneyAfterManagement = game.getCurrentPlayer().getMoney();
+    private void afterManagementStateCheck(Game game, Pair<Integer, Integer> managementMoneyInfo) {
+        int beforeManagementMoneyAmount = managementMoneyInfo.getLeft();
+        int afterManagementMoneyAmount = managementMoneyInfo.getRight();
+        var playerId = game.getCurrentPlayer().getId();
 
         GameStage stage = game.getStage();
         if ((GameStage.AWAITING_PAYMENT.equals(stage) || GameStage.AWAITING_JAIL_FINE.equals(stage))) {
-            CheckToPay checkToPay = game.getCheckToPay();
-            int sum = checkToPay.getSum();
-            if (checkToPay.isPayable() && playerMoneyAfterManagement < sum) {
+            var checkToPay = game.getCheckToPay();
+            var sumToPay = checkToPay.getSum();
+            var checkIsPayable = checkToPay.isPayable();
+            if (checkIsPayable && afterManagementMoneyAmount < sumToPay) {
                 checkToPay.setPayable(false);
                 gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
-            } else if (!checkToPay.isPayable() && playerMoneyAfterManagement >= sum) {
+            } else if (!checkIsPayable && afterManagementMoneyAmount >= sumToPay) {
                 checkToPay.setPayable(true);
                 gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
             }
         } else if (GameStage.JAIL_RELEASE_START.equals(stage)) {
-            if (playerMoneyBeforeManagement < Rules.JAIL_BAIL && playerMoneyAfterManagement >= Rules.JAIL_BAIL) {
+            if (beforeManagementMoneyAmount < Rules.JAIL_BAIL && afterManagementMoneyAmount >= Rules.JAIL_BAIL) {
                 gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, true));
-            } else if (playerMoneyBeforeManagement >= Rules.JAIL_BAIL && playerMoneyAfterManagement < Rules.JAIL_BAIL) {
+            } else if (beforeManagementMoneyAmount >= Rules.JAIL_BAIL && afterManagementMoneyAmount < Rules.JAIL_BAIL) {
                 gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, false));
+            }
+        } else if (GameStage.BUY_PROPOSAL.equals(stage)) {
+            var buyProposal = game.getBuyProposal();
+            var fieldPrice = buyProposal.getField().getPrice();
+            var proposalIsPayable = buyProposal.isPayable();
+            if (proposalIsPayable && afterManagementMoneyAmount < fieldPrice) {
+                buyProposal.setPayable(false);
+                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
+            } else if (!proposalIsPayable && afterManagementMoneyAmount >= fieldPrice) {
+                buyProposal.setPayable(true);
+                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
             }
         }
     }

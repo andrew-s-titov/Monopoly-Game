@@ -57,15 +57,14 @@ public class AuctionManagerImpl implements AuctionManager {
                 auctionStep(game); // TODO: check for logic and bugs
             }
         } else {
-            var player = auction.getNextPlayer();
+            var playerId = auction.getNextPlayer().getId();
             if (auction.isFirstCircle()) {
-                // if first circle - next player is the only participant: propose on start price
-                var playerId = player.getId();
+                // if first circle - next playerId is the only participant: propose on start price
                 game.setStage(GameStage.AWAITING_AUCTION_BUY);
                 gameEventSender.sendToPlayer(playerId, gameEventGenerator.newAuctionBuyProposalEvent(auction));
             } else {
                 // automatically sell to the winner
-                gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), player);
+                gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), playerId);
                 finishAuction(game);
             }
         }
@@ -78,8 +77,8 @@ public class AuctionManagerImpl implements AuctionManager {
         Assert.notNull(action, NULL_ARG_MESSAGE);
         game.setStage(GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
-            Player buyer = auction.getCurrentParticipant();
-            gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyer);
+            var buyerId = auction.getCurrentParticipant().getId();
+            gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyerId);
         } else {
             gameEventSender.sendToAllPlayers(new SystemMessageEvent("No one took part in the auction"));
         }
@@ -94,8 +93,10 @@ public class AuctionManagerImpl implements AuctionManager {
         game.setStage(GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();
-            gameEventSender.sendToAllPlayers(
-                    new SystemMessageEvent("The lot price went up to $" + auction.getAuctionPrice() + "k"));
+            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                    String.format("%s raised lot price to $%s",
+                            auction.getCurrentParticipant().getName(),
+                            auction.getAuctionPrice())));
         } else if (ProposalAction.DECLINE.equals(action)) {
             auction.removeParticipant();
         }

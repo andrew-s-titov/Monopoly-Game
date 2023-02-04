@@ -67,11 +67,15 @@ public class StepProcessorImpl implements StepProcessor {
     private boolean isRentPaymentNeeded(Game game, Player player, PurchasableField field) {
         if (field.isFree()) {
             int streetPrice = field.getPrice();
-            if (streetPrice <= player.getMoney()) {
-                gameLogicExecutor.sendBuyProposal(game, player, field);
+            if (streetPrice > player.getMoney()) {
+                var playerAssets = gameLogicExecutor.computePlayerAssets(game, player);
+                if (playerAssets >= streetPrice) {
+                    gameLogicExecutor.sendBuyProposal(game, player, field, false);
+                } else {
+                    auctionManager.startNewAuction(game, field);
+                }
             } else {
-                // TODO: auto auction or let sell or mortgage something?
-                auctionManager.startNewAuction(game, field);
+                gameLogicExecutor.sendBuyProposal(game, player, field, true);
             }
             return false;
         } else if (field.isMortgaged() || player.equals(field.getOwner())) {

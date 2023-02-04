@@ -363,7 +363,8 @@ function onBuyProposal(buyProposalEvent) {
     const price = buyProposalEvent.price;
     const fieldName = buyProposalEvent.field_name;
     if (getThisPlayerId() === playerId) {
-        let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, false);
+        removeOldActionContainer();
+        let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, !buyProposalEvent.payable);
         let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, false);
         renderActionContainer(`Do you like to buy ${fieldName} for $${price}?`, acceptButton, auctionButton);
     }
