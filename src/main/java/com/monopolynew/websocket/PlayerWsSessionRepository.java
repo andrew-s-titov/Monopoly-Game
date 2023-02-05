@@ -21,5 +21,5 @@ public interface PlayerWsSessionRepository {
     @NonNull
     Collection<Session> getAllSessions();
 
-    void clearSession();
+    void clearSessions();
 }

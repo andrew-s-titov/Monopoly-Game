@@ -19,7 +19,6 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.CompanyField;
-import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
@@ -28,11 +27,13 @@ import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameFieldConverter;
 import com.monopolynew.service.GameLogicExecutor;
+import com.monopolynew.websocket.GameWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import javax.websocket.CloseReason;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -148,10 +149,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(newPriceViews));
     }
 
-    public void processOwnershipChange() {
-
-    }
-
     @Override
     public int computePlayerAssets(Game game, Player player) {
         int assetSum = player.getMoney();
@@ -209,36 +206,29 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     }
 
     @Override
-    public void bankruptPlayerToCreditor(Game game, Player player, Integer remainingAssets) {
-        doBankrupt(game, player, remainingAssets);
-    }
-
-    @Override
-    public void bankruptPlayerToState(Game game, Player player) {
-        doBankrupt(game, player, null);
-    }
-
-    private void doBankrupt(Game game, Player player, Integer remainingAssets) {
+    public void bankruptPlayer(Game game, Player player, Integer remainingAssets) {
         GameStage stage = game.getStage();
-        Player currentPlayer = game.getCurrentPlayer();
         player.goBankrupt();
         gameEventSender.sendToAllPlayers(new BankruptcyEvent(player.getId()));
         var checkToPay = game.getCheckToPay();
-        var sumToPay = checkToPay.getSum();
-        var moneyStates = new ArrayList<MoneyState>();
+        var moneyStatesToSend = new ArrayList<MoneyState>();
         var playerMoneyLeft = player.getMoney();
         if (playerMoneyLeft > 0) {
             player.takeMoney(playerMoneyLeft);
-            moneyStates.add(MoneyState.fromPlayer(player));
+            moneyStatesToSend.add(MoneyState.fromPlayer(player));
         }
-        var beneficiary = checkToPay.getBeneficiary();
-        if (player.equals(currentPlayer) && GameStage.AWAITING_PAYMENT.equals(stage) && beneficiary != null) {
-            remainingAssets = remainingAssets == null ? computePlayerAssets(game, player) : remainingAssets;
-            beneficiary.addMoney(remainingAssets > sumToPay ? sumToPay : remainingAssets);
-            moneyStates.add(MoneyState.fromPlayer(beneficiary));
+        Player currentPlayer = game.getCurrentPlayer();
+        if (checkToPay != null) {
+            var beneficiary = checkToPay.getBeneficiary();
+            var sumToPay = checkToPay.getSum();
+            if (checkToPay.getPlayer().equals(player) && beneficiary != null && GameStage.AWAITING_PAYMENT.equals(stage)) {
+                remainingAssets = remainingAssets == null ? computePlayerAssets(game, player) : remainingAssets;
+                beneficiary.addMoney(remainingAssets > sumToPay ? sumToPay : remainingAssets);
+                moneyStatesToSend.add(MoneyState.fromPlayer(beneficiary));
+            }
         }
-        if (!CollectionUtils.isEmpty(moneyStates)) {
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+        if (!CollectionUtils.isEmpty(moneyStatesToSend)) {
+            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStatesToSend));
         }
         var playerPurchasableFields = getPlayerFields(game, player);
         if (!CollectionUtils.isEmpty(playerPurchasableFields)) {
@@ -281,8 +271,9 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                     .orElseThrow(() -> new IllegalStateException("failed to get last non-bankrupt player"));
             game.finishGame();
             gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getId(), winner.getName()));
-            // TODO: close websocket connection for all players
-            // gameEventSender.closeExchangeChannel();
+            gameEventSender.closeExchangeChannel(
+                    new CloseReason(CloseReason.CloseCodes.getCloseCode(GameWebSocketHandler.GAME_OVER_CLOSE_REASON_CODE),
+                    "game over"));
             return true;
         }
         return false;

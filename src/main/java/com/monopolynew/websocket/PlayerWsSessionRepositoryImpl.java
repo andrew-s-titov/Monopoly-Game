@@ -50,7 +50,7 @@ public class PlayerWsSessionRepositoryImpl implements PlayerWsSessionRepository 
     }
 
     @Override
-    public void clearSession() {
+    public void clearSessions() {
         activePlayerSessions.clear();
     }
 }

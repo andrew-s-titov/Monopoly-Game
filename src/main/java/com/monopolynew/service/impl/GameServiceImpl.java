@@ -1,6 +1,5 @@
 package com.monopolynew.service.impl;
 
-import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
@@ -243,7 +242,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
         gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + " gave up"));
-        gameLogicExecutor.bankruptPlayerToState(game, player);
+        gameLogicExecutor.bankruptPlayer(game, player, null);
     }
 
     @Override

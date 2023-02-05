@@ -1,6 +1,9 @@
 package com.monopolynew.service;
 
 import com.monopolynew.event.GameEvent;
+import org.springframework.lang.Nullable;
+
+import javax.websocket.CloseReason;
 
 public interface GameEventSender {
 
@@ -8,5 +11,5 @@ public interface GameEventSender {
 
     void sendToPlayer(String playerId, GameEvent event);
 
-    void closeExchangeChannel();
+    void closeExchangeChannel(@Nullable CloseReason reason);
 }

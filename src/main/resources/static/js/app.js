@@ -31,13 +31,26 @@ let gameInProgress = false;
 
 let startBackgroundImageWidth;
 let startBackgroundImageHeight;
-let startBackgroundImageSrc;
 
 window.onload = () => {
     const host = document.getElementById('proxy-host').innerText;
     setHost(host);
 
-    initialBackgroundSet();
+    const playerMessageButton = document.getElementById('player-message-button');
+    if (playerMessageButton) addClickEvent(playerMessageButton, () => processPlayerMessage());
+
+    const reconnect = document.getElementById('reconnect');
+    if (reconnect) {
+        if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
+            document.getElementById('startPage').style.display = 'none';
+            openWebsocket(reconnect.innerText);
+        } else {
+            console.warn('websocket is not closed!')
+        }
+        return;
+    }
+
+    initialStartPageBackgroundSet();
     window.addEventListener('resize', resizeBackgroundImage);
 
     const submitPlayerNameButton = document.getElementById('submitPlayerName');
@@ -49,9 +62,6 @@ window.onload = () => {
     const disconnectPlayerButton = document.getElementById('disconnectPlayerButton');
     if (disconnectPlayerButton) addClickEvent(disconnectPlayerButton, () => disconnectPlayer());
 
-    const playerMessageButton = document.getElementById('player-message-button');
-    if (playerMessageButton) addClickEvent(playerMessageButton, () => processPlayerMessage());
-
     const playerMessageInput = document.getElementById('playerNameInput');
     if (playerMessageInput) {
         playerMessageInput.addEventListener('keypress', (event) => {
@@ -60,15 +70,6 @@ window.onload = () => {
                 submitPlayerNameButton.click();
             }
         });
-    }
-    const reconnect = document.getElementById('reconnect');
-    if (reconnect) {
-        if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
-            document.getElementById('startPage').style.display = 'none';
-            openWebsocket(reconnect.innerText);
-        } else {
-            console.warn('websocket is not closed!')
-        }
     }
 };
 
@@ -102,7 +103,11 @@ function openWebsocket(username) {
     webSocket = new WebSocket(`${getBaseWebsocketUrl()}/${username}`);
     webSocket.onclose = (event) => {
         console.log('websocket connection is closed');
-        location.reload();
+        if (event.code === 3000) {
+            reloadPageOnGameOver();
+        } else {
+            location.reload();
+        }
     };
     webSocket.onmessage = (message) => {
         const socketMessage = JSON.parse(message.data);
@@ -201,8 +206,7 @@ function httpError(errorHtmlElementId) {
 }
 
 function onGameStartOrMapRefresh(gameMapRefreshEvent) {
-    document.getElementById('playersBeforeGame').style.display = 'none';
-    document.getElementById('backgroundImageDiv').style.display = 'none';
+    hideStartElements();
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
 
@@ -433,6 +437,7 @@ function onGameOver(gameOverEvent) {
 
     const winnerInfoContainer = document.createElement('div');
     winnerInfoContainer.className = 'fullscreen-shadow-container';
+    winnerInfoContainer.id = 'winner-info-container'
 
     const winnerInfo = document.createElement('div');
     winnerInfo.className = 'center-screen-container';
@@ -441,8 +446,15 @@ function onGameOver(gameOverEvent) {
     winnerInfoContainer.appendChild(winnerInfo);
     document.body.appendChild(winnerInfoContainer);
 
+    reloadPageOnGameOver();
+}
+
+function reloadPageOnGameOver() {
     setTimeout(() => {
-        winnerInfoContainer.remove();
+        const winnerInfoContainer = document.getElementById('winner-info-container');
+        if (winnerInfoContainer) {
+            winnerInfoContainer.remove();
+        }
         if (webSocket != null && webSocket.readyState !== WebSocket.OPEN) {
             webSocket.close();
             webSocket = null;
@@ -496,7 +508,7 @@ function getThisPlayerId() {
     return thisPlayerId;
 }
 
-function initialBackgroundSet() {
+function initialStartPageBackgroundSet() {
     let backgroundImage = document.getElementById('startPageBackgroundImage');
     startBackgroundImageWidth = backgroundImage.width;
     startBackgroundImageHeight = backgroundImage.height;
@@ -513,4 +525,16 @@ function resizeBackgroundImage() {
     backgroundImageDiv.style.backgroundSize =
         `${Math.ceil(proportion * startBackgroundImageWidth)}px ${Math.ceil(proportion * startBackgroundImageHeight)}px`;
     backgroundImageDiv.style.display = 'block';
+}
+
+function hideStartElements() {
+    let playersBeforeGamePage = document.getElementById('playersBeforeGame');
+    if (playersBeforeGamePage) {
+        playersBeforeGamePage.remove();
+    }
+    let backgroundImageDiv = document.getElementById('backgroundImageDiv');
+    if (backgroundImageDiv) {
+        backgroundImageDiv.remove();
+    }
+    window.removeEventListener('resize', resizeBackgroundImage);
 }

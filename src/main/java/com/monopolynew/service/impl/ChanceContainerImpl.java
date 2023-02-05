@@ -1,6 +1,5 @@
 package com.monopolynew.service.impl;
 
-import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
@@ -15,8 +14,8 @@ import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.service.ChanceContainer;
-import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.GameEventSender;
+import com.monopolynew.service.GameLogicExecutor;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,8 +6,10 @@ import com.monopolynew.service.GameEventSender;
 import com.monopolynew.websocket.PlayerWsSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import java.io.IOException;
 
@@ -36,18 +38,22 @@ public class GameEventSenderWebsocketImpl implements GameEventSender {
     }
 
     @Override
-    public void closeExchangeChannel() {
+    public void closeExchangeChannel(@Nullable CloseReason reason) {
         var allActiveSessions = playerWsSessionRepository.getAllSessions();
         for (Session wsSession : allActiveSessions) {
             if (wsSession.isOpen()) {
                 try {
-                    wsSession.close();
+                    if (reason != null) {
+                        wsSession.close(reason);
+                    } else {
+                        wsSession.close();
+                    }
                 } catch (IOException ex) {
                     log.error("Failed to close session: ", ex);
                 }
             }
         }
-        playerWsSessionRepository.clearSession();
+        playerWsSessionRepository.clearSessions();
     }
 
     private void sendToSession(Session session, Object payload) {

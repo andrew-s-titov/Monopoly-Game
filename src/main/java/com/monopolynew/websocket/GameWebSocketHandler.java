@@ -35,6 +35,8 @@ import java.io.IOException;
 @ServerEndpoint(value = "/connect/{playerName}", configurator = SpringWebsocketCustomConfigurer.class)
 public class GameWebSocketHandler {
 
+    public static final int GAME_OVER_CLOSE_REASON_CODE = 3000;
+
     private final ObjectMapper objectMapper;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
@@ -43,7 +45,6 @@ public class GameWebSocketHandler {
 
     @OnOpen
     public void onOpen(Session session, EndpointConfig config, @PathParam("playerName") String playerName) throws IOException {
-        // this ID is generated on first entering and supposed to be past by FE from cookie or storage in header on handshake request
         var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
 
         Game game = gameRepository.getGame();
@@ -101,13 +102,17 @@ public class GameWebSocketHandler {
                 var playerId = playerWsSessionRepository.getPlayerIdBySessionId(session.getId());
                 if (playerId != null) {
                     var player = game.getPlayerById(playerId);
-                    gameEventSender.sendToAllPlayers(new PlayerDisconnectedEvent(playerId, player.getName()));
-                    game.removePlayer(playerId);
+                    if (player != null) {
+                        gameEventSender.sendToAllPlayers(new PlayerDisconnectedEvent(playerId, player.getName()));
+                        game.removePlayer(playerId);
+                    }
                 }
             }
             // if a game is in progress - do not remove to let the player reconnect with another session
         } else if (closeCode.equals(CloseReason.CloseCodes.VIOLATED_POLICY)) {
             log.debug("Forced websocket connection close for session {}", sessionId);
+        } else if (closeCode.equals(CloseReason.CloseCodes.getCloseCode(GAME_OVER_CLOSE_REASON_CODE))) {
+            log.debug("Websocket connection closed on game over {}", sessionId);
         } else {
             log.warn("Not a normal websocket close on session {}", sessionId);
             // TODO: remove player or anything in other cases??

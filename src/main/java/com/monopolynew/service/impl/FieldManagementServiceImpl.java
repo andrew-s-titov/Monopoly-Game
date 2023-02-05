@@ -12,7 +12,6 @@ import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.map.GameField;
-import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
@@ -40,23 +39,25 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         checkFieldExists(fieldIndex);
         GameField field = game.getGameMap().getField(fieldIndex);
         List<FieldManagementAction> actions = new ArrayList<>(FieldManagementAction.values().length);
-        actions.add(FieldManagementAction.INFO);
         if (field instanceof PurchasableField && !managementNotAvailable(game.getStage())) {
-            var purchasableField = (PurchasableField) field;
-            Player currentPlayer = game.getCurrentPlayer();
-            if (currentPlayer.getId().equals(playerId) && !purchasableField.isFree() && currentPlayer.equals(purchasableField.getOwner())) {
-                if (redemptionAvailable(game, purchasableField)) {
-                    actions.add(FieldManagementAction.REDEEM);
-                } else if (mortgageAvailable(game, purchasableField)) {
-                    actions.add(FieldManagementAction.MORTGAGE);
-                }
-                if (purchasableField instanceof StreetField) {
-                    var street = (StreetField) purchasableField;
-                    if (houseSaleAvailable(game, street)) {
-                        actions.add(FieldManagementAction.SELL_HOUSE);
+            actions.add(FieldManagementAction.INFO);
+            if (!managementNotAvailable(game.getStage())) {
+                var purchasableField = (PurchasableField) field;
+                Player currentPlayer = game.getCurrentPlayer();
+                if (currentPlayer.getId().equals(playerId) && !purchasableField.isFree() && currentPlayer.equals(purchasableField.getOwner())) {
+                    if (redemptionAvailable(game, purchasableField)) {
+                        actions.add(FieldManagementAction.REDEEM);
+                    } else if (mortgageAvailable(game, purchasableField)) {
+                        actions.add(FieldManagementAction.MORTGAGE);
                     }
-                    if (housePurchaseAvailable(game, currentPlayer, street)) {
-                        actions.add(FieldManagementAction.BUY_HOUSE);
+                    if (purchasableField instanceof StreetField) {
+                        var street = (StreetField) purchasableField;
+                        if (houseSaleAvailable(game, street)) {
+                            actions.add(FieldManagementAction.SELL_HOUSE);
+                        }
+                        if (housePurchaseAvailable(game, currentPlayer, street)) {
+                            actions.add(FieldManagementAction.BUY_HOUSE);
+                        }
                     }
                 }
             }
