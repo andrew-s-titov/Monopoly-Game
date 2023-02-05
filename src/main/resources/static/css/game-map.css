@@ -5,6 +5,9 @@
     --message-container-width: 457px;
     --message-container-height: 410px;
     --dice-image-width: 126px;
+    --player-icon-size: 90px;
+    --running-circle-size: 6px;
+    --running-circle-translate: calc(var(--player-icon-size) / 2 - var(--running-circle-size) / 2);
 }
 
 .map-table {
@@ -69,11 +72,6 @@
     font-weight: bold;
 }
 
-.player-icon {
-    height: 90px;
-    width: 150px;
-}
-
 .player-name {
     font-size: 17px;
 }
@@ -81,20 +79,31 @@
 .player-money {
     font-size: 13px;
     font-weight: bold;
+    margin-bottom: 7px;
 }
 
-.player-icon, .player-name, .player-money, .player-group {
+.player-icon, .player-name, .player-group {
     margin: 0;
 }
 
 .player-group {
+    width: 150px;
     position: relative;
     background-color: darkslategray;
     color: white;
 }
 
+.player-icon {
+    width: var(--player-icon-size);
+    height: var(--player-icon-size);
+    background-image: url('/images/user.png');
+    background-size: var(--player-icon-size);
+    border-radius: var(--player-icon-size);
+    margin: auto;
+}
+
 .player-outline {
-    box-shadow: 15px 0 6px -5px white inset, -15px 0 6px -5px white inset;
+    box-shadow: 15px 0 3px -5px white;
 }
 
 .message-body {
@@ -315,4 +324,33 @@ div::-webkit-scrollbar-thumb:hover {
     height: 20px;
     background-image: url('/images/hotel.png');
     background-size: 20px;
+}
+
+.running-circle {
+    width: var(--running-circle-size);
+    height: var(--running-circle-size);
+    background: white;
+    border-radius: 50%;
+    margin: auto;
+    position: relative;
+    top: var(--running-circle-translate);
+    animation: running-circle 0.7s linear infinite;
+}
+
+@keyframes running-circle {
+    0% {
+        transform: rotate(0deg) translate(var(--running-circle-translate));
+    }
+    100% {
+        transform: rotate(365deg) translate(var(--running-circle-translate));
+    }
+}
+
+@-webkit-keyframes running-circle {
+    0% {
+        transform: rotate(0deg) translate(var(--running-circle-translate));
+    }
+    100% {
+        transform: rotate(365deg) translate(var(--running-circle-translate));
+    }
 }

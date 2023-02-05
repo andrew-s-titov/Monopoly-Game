@@ -111,7 +111,7 @@ public class GameWebSocketHandler {
             // if a game is in progress - do not remove to let the player reconnect with another session
         } else if (closeCode.equals(CloseReason.CloseCodes.VIOLATED_POLICY)) {
             log.debug("Forced websocket connection close for session {}", sessionId);
-        } else if (closeCode.equals(CloseReason.CloseCodes.getCloseCode(GAME_OVER_CLOSE_REASON_CODE))) {
+        } else if (closeCode.getCode() == GAME_OVER_CLOSE_REASON_CODE) {
             log.debug("Websocket connection closed on game over {}", sessionId);
         } else {
             log.warn("Not a normal websocket close on session {}", sessionId);

@@ -16,7 +16,7 @@
 <div id="backgroundImageDiv" class="full-size-background"></div>
 <img id="startPageBackgroundImage" src="/images/start-background.jpg" style="display: none">
 <div id="startPage">
-    <div id="welcome" style="text-align:center">Welcome to the Monopoly game!</div>
+    <div id="welcome" style="text-align:center; font-weight: bold; font-size: 25px">Welcome to the Monopoly game!</div>
     <br>
     <div th:if="${gameStarted}" style="text-align:center">
         <div th:if="${needToReconnect != null}">
@@ -27,15 +27,15 @@
     <div th:if="!${gameStarted}" style="text-align:center">
         <label for="playerNameInput">Enter your nickname:</label>
         <br>
-        <input id="playerNameInput" type="text" autocomplete="off" autofocus/>
+        <input id="playerNameInput" class="player-name-input" type="text" autocomplete="off" autofocus/>
         <br>
-        <button id="submitPlayerName" style="margin-top: 50px">Join the game</button>
+        <button id="submitPlayerName" class="start-page-button" style="margin-top: 50px">Join the game</button>
     </div>
 
     <div id="errorMessage" class="error-box"></div>
 </div>
 <div id="playersBeforeGame" style="display: none; text-align:center">
-    <p>Registered players:</p>
+    <p style="text-align:center; font-weight: bold; font-size: 25px">Registered players:</p>
     <table style="margin-left:auto; margin-right:auto; border-collapse: collapse">
         <tr class="image-row">
             <td style="width: 200px; height: 250px">
@@ -60,18 +60,18 @@
             </td>
         </tr>
         <tr class="name-row">
-            <td id="player0" style="width: 200px; height: 50px"></td>
-            <td id="player1" style="width: 200px; height: 50px"></td>
-            <td id="player2" style="width: 200px; height: 50px"></td>
-            <td id="player3" style="width: 200px; height: 50px"></td>
-            <td id="player4" style="width: 200px; height: 50px"></td>
+            <td id="player0" class="player-name-holder"></td>
+            <td id="player1" class="player-name-holder"></td>
+            <td id="player2" class="player-name-holder"></td>
+            <td id="player3" class="player-name-holder"></td>
+            <td id="player4" class="player-name-holder"></td>
         </tr>
     </table>
     <br>
-    <button id="startGameButton">Start Game!</button>
+    <button id="startGameButton" class="start-page-button" style="margin-bottom: 20px">Start Game!</button>
     <p id="beforeGameMessage"></p>
 
-    <button id="disconnectPlayerButton">Leave</button>
+    <button id="disconnectPlayerButton" class="start-page-button">Leave</button>
 </div>
 
 <div id="map" style="display: none">
@@ -82,7 +82,7 @@
                     <tr>
                         <td>
                             <div id="player0-group" class="player-group">
-                                <div id="player0-icon" class="player-icon"></div>
+                                <div id="player0-icon"></div>
                                 <div id="player0-name" class="player-name"></div>
                                 <div id="player0-money" class="player-money"></div>
                             </div>
@@ -91,7 +91,7 @@
                     <tr>
                         <td>
                             <div id="player1-group" class="player-group">
-                                <div id="player1-icon" class="player-icon"></div>
+                                <div id="player1-icon"></div>
                                 <div id="player1-name" class="player-name"></div>
                                 <div id="player1-money" class="player-money"></div>
                             </div>
@@ -100,7 +100,7 @@
                     <tr>
                         <td>
                             <div id="player2-group" class="player-group">
-                                <div id="player2-icon" class="player-icon"></div>
+                                <div id="player2-icon"></div>
                                 <div id="player2-name" class="player-name"></div>
                                 <div id="player2-money" class="player-money"></div>
                             </div>
@@ -109,7 +109,7 @@
                     <tr>
                         <td>
                             <div id="player3-group" class="player-group">
-                                <div id="player3-icon" class="player-icon"></div>
+                                <div id="player3-icon"></div>
                                 <div id="player3-name" class="player-name"></div>
                                 <div id="player3-money" class="player-money"></div>
                             </div>
@@ -118,7 +118,7 @@
                     <tr>
                         <td>
                             <div id="player4-group" class="player-group">
-                                <div id="player4-icon" class="player-icon"></div>
+                                <div id="player4-icon"></div>
                                 <div id="player4-name" class="player-name"></div>
                                 <div id="player4-money" class="player-money"></div>
                             </div>

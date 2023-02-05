@@ -24,10 +24,9 @@ export function addPlayers(jsonPlayerArray) {
 
         document.getElementById(`player${index}-name`).textContent = playerName;
         document.getElementById(`player${index}-money`).textContent = `$ ${jsonPlayer.money}`;
-        renderPlayerPicture(index, playerId);
+        renderPlayerPicture(index, playerId, playerColor);
         if (jsonPlayer.hasOwnProperty('bankrupt') && !jsonPlayer.bankrupt) {
             renderPlayerChip(index, playerColor, jsonPlayer.position);
-            document.getElementById(`player${index}-group`).style.backgroundColor = playerColor;
         } else {
             document.getElementById(`player${index}-money`).style.color = 'grey';
             document.getElementById(`player${index}-name`).style.color = 'grey';
@@ -37,7 +36,7 @@ export function addPlayers(jsonPlayerArray) {
 
 export function bankruptPlayer(playerId) {
     const playerIndex = getPlayerIndexById(playerId);
-    document.getElementById(`player${playerIndex}-group`).style.backgroundColor = 'transparent';
+    document.getElementById(`player${playerIndex}-icon`).style.boxShadow = 'none';
     document.getElementById(`player${playerIndex}-money`).style.color = 'grey';
     document.getElementById(`player${playerIndex}-name`).style.color = 'grey';
     CHIP_MAP.get(playerIndex).remove();
@@ -64,13 +63,10 @@ export function movePlayerChip(playerId, fieldIndex) {
     moveChip(chip, fieldIndex);
 }
 
-function renderPlayerPicture(playerIndex, playerId) {
-    const playerIcon = document.createElement('img');
-    playerIcon.setAttribute('src', 'images/user.png')
-    playerIcon.style.width = '90px';
-    playerIcon.style.height = '90px';
+function renderPlayerPicture(playerIndex, playerId, playerColor) {
     const playerIconField = document.getElementById(`player${playerIndex}-icon`);
-    playerIconField.appendChild(playerIcon);
+    playerIconField.classList.add('player-icon');
+    playerIconField.style.boxShadow = `0 0 0px 5px ${playerColor}`;
 
     applyPlayerManagementEvents(playerIconField, playerIndex, playerId);
 }
@@ -91,7 +87,8 @@ function renderPlayerChip(index, color, position) {
 
 function applyPlayerManagementEvents(playerIconField, playerIndex, playerId) {
     playerIconField.addEventListener('click', (event) => {
-        if (event.target.id.startsWith(`player${playerIndex}`)) {
+        const eventTargetId = event.target.id;
+        if (eventTargetId !== `player${playerIndex}-icon` && eventTargetId.startsWith(`player${playerIndex}`)) {
             return;
         }
         sendGetHttpRequest(`${getBaseGameUrl()}/player/${playerId}/management`, true,
@@ -99,7 +96,7 @@ function applyPlayerManagementEvents(playerIconField, playerIndex, playerId) {
                 if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
                     const managementActions = JSON.parse(requester.response);
                     if (managementActions.length > 0) {
-                        renderPlayerManagementContainer(playerIconField, playerIndex, playerId, managementActions);
+                        renderPlayerManagementContainer(playerIndex, playerId, managementActions);
                     }
                 } else {
                     console.error('failed to load available management actions');
@@ -109,7 +106,7 @@ function applyPlayerManagementEvents(playerIconField, playerIndex, playerId) {
     });
 }
 
-function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex, playerId, availableActions) {
+function renderPlayerManagementContainer(playerIndex, playerId, availableActions) {
     const containerId = `player${playerIndex}-action-container`;
     const managementContainer = document.createElement("div");
     managementContainer.className = 'management-container';
@@ -140,7 +137,7 @@ function renderPlayerManagementContainer(htmlPlayerIconField, playerIndex, playe
         addClickEvent(button, () => finishPlayerAction(managementContainer, closeOnClickOutsideListener));
         managementContainer.appendChild(button);
     }
-    htmlPlayerIconField.appendChild(managementContainer);
+    document.getElementById(`player${playerIndex}-group`).appendChild(managementContainer);
 }
 
 function finishPlayerAction(managementContainer, closeOnClickListener) {

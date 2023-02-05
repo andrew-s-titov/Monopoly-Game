@@ -23,7 +23,8 @@ import {
 import {removeReplyWaitingScreen, renderOfferProposal} from './offer.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
-const PLAYER_OUTLINE_CLASSNAME = 'player-outline';
+const RUNNING_CIRCLE_OUTLINE_CLASSNAME = 'running-circle';
+const RUNNING_CIRCLE_OUTLINE_ID = 'running-circle';
 
 let thisPlayerId = null;
 let webSocket = null;
@@ -322,16 +323,16 @@ function processPlayerMessage() {
 
 function outlinePlayer(playerId) {
     const playerIndex = getPlayerIndexById(playerId);
-    document.getElementById(`player${playerIndex}-group`).classList.add(PLAYER_OUTLINE_CLASSNAME);
+    const runningCircle = document.createElement('div');
+    runningCircle.className = RUNNING_CIRCLE_OUTLINE_CLASSNAME;
+    runningCircle.id = RUNNING_CIRCLE_OUTLINE_ID;
+    document.getElementById(`player${playerIndex}-icon`).appendChild(runningCircle);
 }
 
 function removePlayersOutline() {
-    for (let group of document.getElementsByClassName('player-group')) {
-        let groupClassList = group.classList;
-        if (groupClassList.contains(PLAYER_OUTLINE_CLASSNAME)) {
-            groupClassList.remove(PLAYER_OUTLINE_CLASSNAME);
-            return;
-        }
+    const runningCircle = document.getElementById(RUNNING_CIRCLE_OUTLINE_ID);
+    if (runningCircle) {
+        runningCircle.remove();
     }
 }
 

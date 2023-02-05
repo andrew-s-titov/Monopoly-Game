@@ -11,6 +11,11 @@ body, button, input {
 
 button:hover {
     cursor: pointer;
+    background: darkgrey;
+}
+
+button:active {
+    background: lightgrey;
 }
 
 p {

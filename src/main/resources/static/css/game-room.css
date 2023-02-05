@@ -1,15 +1,16 @@
 .image-row td {
-    border-left: 2px solid #dddddd;
-    border-right: 2px solid #dddddd;
-    border-top: 2px solid #dddddd;
     text-align: left;
     padding: 8px;
 }
 
+.player-name-holder {
+    width: 200px;
+    height: 50px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.70);
+}
+
 .name-row td {
-    border-left: 2px solid #dddddd;
-    border-right: 2px solid #dddddd;
-    border-bottom: 2px solid #dddddd;
     text-align: left;
     padding: 8px;
 }
@@ -27,8 +28,21 @@
     background-image: url('/images/start-background.jpg')!important;
 }
 
-#playerNameInput {
+.player-name-input {
     text-align: center;
+    border: none;
+    box-shadow: 0 0 10px 2px grey;
+}
+
+.player-name-input:focus {
+    outline: none;
+}
+
+.start-page-button {
+    border: none;
+    box-shadow: 0 0 10px 2px grey;
+    width: 200px;
+    line-height: 40px;
 }
 
 .error-box {
