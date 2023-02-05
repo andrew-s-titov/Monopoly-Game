@@ -29,9 +29,16 @@ let thisPlayerId = null;
 let webSocket = null;
 let gameInProgress = false;
 
+let startBackgroundImageWidth;
+let startBackgroundImageHeight;
+let startBackgroundImageSrc;
+
 window.onload = () => {
     const host = document.getElementById('proxy-host').innerText;
     setHost(host);
+
+    initialBackgroundSet();
+    window.addEventListener('resize', resizeBackgroundImage);
 
     const submitPlayerNameButton = document.getElementById('submitPlayerName');
     if (submitPlayerNameButton) addClickEvent(submitPlayerNameButton, () => joinGameRoom());
@@ -66,13 +73,13 @@ window.onload = () => {
 };
 
 function joinGameRoom() {
-    document.getElementById('startPage').style.display = 'none';
-    document.getElementById('playersBeforeGame').style.display = 'block';
     const playerName = document.getElementById('playerNameInput').value;
     sendGetHttpRequest(`${getBaseGameUrl()}?name=${playerName}`, true,
         function (requester) {
             if (requester.readyState === XMLHttpRequest.DONE) {
                 if (requester.status === 200) {
+                    document.getElementById('startPage').style.display = 'none';
+                    document.getElementById('playersBeforeGame').style.display = 'block';
                     openWebsocket(playerName);
                 } else {
                     const errorPopUp = document.getElementById('errorMessage');
@@ -195,6 +202,7 @@ function httpError(errorHtmlElementId) {
 
 function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     document.getElementById('playersBeforeGame').style.display = 'none';
+    document.getElementById('backgroundImageDiv').style.display = 'none';
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
 
@@ -486,4 +494,23 @@ function getThisPlayerId() {
         thisPlayerId = getPlayerIdFromCookie();
     }
     return thisPlayerId;
+}
+
+function initialBackgroundSet() {
+    let backgroundImage = document.getElementById('startPageBackgroundImage');
+    startBackgroundImageWidth = backgroundImage.width;
+    startBackgroundImageHeight = backgroundImage.height;
+    backgroundImage.remove();
+    resizeBackgroundImage();
+}
+
+function resizeBackgroundImage() {
+    let backgroundImageDiv = document.getElementById('backgroundImageDiv');
+    let windowWidth = window.innerWidth;
+    let windowHeight = window.innerHeight;
+    let proportion = Math.max(windowWidth/startBackgroundImageWidth, windowHeight/startBackgroundImageHeight);
+
+    backgroundImageDiv.style.backgroundSize =
+        `${Math.ceil(proportion * startBackgroundImageWidth)}px ${Math.ceil(proportion * startBackgroundImageHeight)}px`;
+    backgroundImageDiv.style.display = 'block';
 }
