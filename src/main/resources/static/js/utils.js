@@ -1,3 +1,5 @@
+let errorTimeoutId = 0;
+
 export function removeElementsIfPresent(...elementIDs) {
     for (let elementId of elementIDs) {
         const element = document.getElementById(elementId);
@@ -19,7 +21,16 @@ export function createImage(srcTag, altTag) {
 }
 
 export function displayError(errorMessage) {
+    if (errorTimeoutId !== 0) {
+        clearTimeout(errorTimeoutId)
+    }
     const errorPopUp = document.getElementById('errorMessage');
-    errorPopUp.style.display = 'block';
+    errorPopUp.style.transition = 'none';
     errorPopUp.textContent = errorMessage;
+    errorPopUp.style.opacity = '1';
+    errorTimeoutId = setTimeout(() => {
+            errorPopUp.style.transition = 'opacity 1s ease';
+            errorPopUp.style.opacity = '0'
+        },
+        2000);
 }
