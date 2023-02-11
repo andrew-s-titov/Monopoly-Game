@@ -1,4 +1,5 @@
-import {getPlayerColorById} from "./players.js";
+import {getPlayerColorById} from './players.js';
+import {removeElementsIfPresent} from './utils.js';
 
 const OWNER_COVER_POSTFIX = '-owner-cover';
 const MORTGAGE_TAG_POSTFIX = '-mortgage-cover';
@@ -54,10 +55,7 @@ function renderMortgageTag(fieldIndex) {
 }
 
 function removeOldMortgageCover(fieldIndex) {
-    const mortgageCover = document.getElementById(`field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`);
-    if (mortgageCover) {
-        mortgageCover.remove();
-    }
+    removeElementsIfPresent(`field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`);
 }
 
 export function renderHouses(fieldIndex, amount) {
@@ -67,10 +65,7 @@ export function renderHouses(fieldIndex, amount) {
         return;
     }
     const houseContainerId = `field${fieldIndex}-houses`;
-    const oldContainer = document.getElementById(houseContainerId);
-    if (oldContainer) {
-        oldContainer.remove();
-    }
+    removeElementsIfPresent(houseContainerId);
     if (amount > 0) {
         const houseContainer = document.createElement('div');
         houseContainer.id = houseContainerId;
@@ -108,10 +103,7 @@ function addOwnerCover(fieldIndex, ownerId) {
 }
 
 function removeOwnerCover(fieldIndex) {
-    const ownerCover = document.getElementById(`field${fieldIndex}${OWNER_COVER_POSTFIX}`);
-    if (ownerCover) {
-        ownerCover.remove();
-    }
+    removeElementsIfPresent(`field${fieldIndex}${OWNER_COVER_POSTFIX}`);
 }
 
 function addTextStickingClassName(fieldIndex, htmlElement) {

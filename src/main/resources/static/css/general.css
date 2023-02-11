@@ -7,11 +7,20 @@ table, tr, td {
 body, button, input {
     font-family: 'Century Gothic', serif;
     font-size: 20px;
+    border: none;
+    border-radius: unset;
+}
+
+input:focus {
+    box-shadow: 0 -1px 0 black inset;
+    outline: none;
 }
 
 button:hover {
     cursor: pointer;
     background: darkgrey;
+    border: none;
+    border-radius: unset;
 }
 
 button:active {
@@ -20,4 +29,10 @@ button:active {
 
 p {
     margin: 0;
+}
+
+ul {
+    text-align: left;
+    margin: 0;
+    padding-left: 40px;
 }

@@ -1,11 +1,22 @@
-const priceNarrowSidePx = 14;
-const fieldWideSidePx = 81;
-const fieldNarrowSidePx = 52;
-const stepPx = fieldNarrowSidePx;
-const cornerStepAdjustmentPx = (fieldWideSidePx - fieldNarrowSidePx) / 2;
-const chipWidth = 24;
-const chipWidthAdjustment = chipWidth / 2;
+let _PRICE_NARROW_SIDE = 14;
+let _FIELD_WIDE_SIDE = 81;
+let _FIELD_NARROW_SIDE = 52;
+let _STEP_PX = _FIELD_NARROW_SIDE;
+let _CORNER_STEP_ADJUSTMENT = 14.5;
+let _CHIP_WIDTH = 24;
+let _CHIP_WIDTH_ADJUSTMENT = 12;
 const PX_POSTFIX = 'px';
+
+export async function initialiseChipParams() {
+    const style = getComputedStyle(document.body);
+    _PRICE_NARROW_SIDE = getStylePropertyNumber(style, '--price-narrow-side');
+    _FIELD_WIDE_SIDE = getStylePropertyNumber(style, '--field-wide-side');
+    _FIELD_NARROW_SIDE = getStylePropertyNumber(style, '--field-narrow-side');
+    _STEP_PX = _FIELD_NARROW_SIDE;
+    _CORNER_STEP_ADJUSTMENT = (_FIELD_WIDE_SIDE - _FIELD_NARROW_SIDE) / 2;
+    _CHIP_WIDTH = getStylePropertyNumber(style, '--chip-width');
+    _CHIP_WIDTH_ADJUSTMENT = _CHIP_WIDTH / 2;
+}
 
 export function moveChip(chip, fieldIndex) {
     if (fieldIndex < 0 || fieldIndex > 39) {
@@ -18,26 +29,30 @@ export function moveChip(chip, fieldIndex) {
 
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let top = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment; // adding body default margin;
+    let top = _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT; // adding body default margin;
     if (fieldIndex >= 20 && fieldIndex <= 30) {
-        top += stepPx * 10 + cornerStepAdjustmentPx * 2;
+        top += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 10 && fieldIndex < 20) {
-        top += cornerStepAdjustmentPx + stepPx * (fieldIndex - 10);
+        top += _CORNER_STEP_ADJUSTMENT + _STEP_PX * (fieldIndex - 10);
     } else if (fieldIndex > 30 && fieldIndex < 40) {
-        top += cornerStepAdjustmentPx + stepPx * (40 - fieldIndex);
+        top += _CORNER_STEP_ADJUSTMENT + _STEP_PX * (40 - fieldIndex);
     }
     return top + PX_POSTFIX;
 }
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let left = priceNarrowSidePx + fieldWideSidePx / 2 - chipWidthAdjustment;
+    let left = _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
     if (fieldIndex >= 10 && fieldIndex <= 20) {
-        left += stepPx * 10 + cornerStepAdjustmentPx * 2;
+        left += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 0 && fieldIndex < 10) {
-        left += stepPx * fieldIndex + cornerStepAdjustmentPx;
+        left += _STEP_PX * fieldIndex + _CORNER_STEP_ADJUSTMENT;
     } else if (fieldIndex > 20 && fieldIndex < 30) {
-        left += stepPx * (30 - fieldIndex) + cornerStepAdjustmentPx;
+        left += _STEP_PX * (30 - fieldIndex) + _CORNER_STEP_ADJUSTMENT;
     }
     return left + PX_POSTFIX;
+}
+
+function getStylePropertyNumber(computedStyle, propertyName) {
+    return Number.parseFloat(computedStyle.getPropertyValue(propertyName).trim().replace(PX_POSTFIX, ''));
 }

@@ -1,13 +1,19 @@
+import * as Utils from './utils.js';
+
 const DICE_CONTAINER_ID = 'dice_container';
 const DICE_LEFT_ID = 'dice_left';
 const DICE_RIGHT_ID = 'dice_right';
+const LEFT_DICE_GIF_SRC = 'images/dice-left.gif';
+const RIGHT_DICE_GIF_SRC = 'images/dice-right.gif';
+const LEFT_DICE_ALT_TAG = 'left dice';
+const RIGHT_DICE_ALT_TAG = 'right dice';
 
 export function renderDiceGifs() {
-    renderDiceView('images/dice-left.gif', 'images/dice-right.gif');
+    renderDiceView(LEFT_DICE_GIF_SRC, RIGHT_DICE_GIF_SRC);
 }
 
 export function hideDice() {
-    document.getElementById(DICE_CONTAINER_ID).remove();
+    Utils.removeElementsIfPresent(DICE_CONTAINER_ID);
 }
 
 export function renderDiceResult(left, right) {
@@ -22,14 +28,12 @@ export function renderDiceResult(left, right) {
 }
 
 export function preloadDice() {
-    const diceLeftGif = document.createElement('img');
-    diceLeftGif.src = 'images/dice-left.gif';
-    const diceRightGif = document.createElement('img');
-    diceRightGif.src = 'images/dice-right.gif';
+    const fetchPromisesArray = [];
+    fetchPromisesArray.push(fetch(LEFT_DICE_GIF_SRC), fetch(RIGHT_DICE_GIF_SRC));
     for (let i = 1; i <= 6; i++) {
-        const dice = document.createElement('img');
-        dice.src = `images/dice${i}.png`;
+        fetchPromisesArray.push(fetch(`images/dice${i}.png`));
     }
+    return Promise.allSettled(fetchPromisesArray);
 }
 
 function renderDiceView(leftDiceImage, rightDiceImage) {
@@ -38,17 +42,14 @@ function renderDiceView(leftDiceImage, rightDiceImage) {
     diceContainer.className = 'dice-container';
     document.getElementById('message-container').appendChild(diceContainer);
 
-    const diceLeft = document.createElement('img');
+    const diceLeft = Utils.createImage(leftDiceImage, LEFT_DICE_ALT_TAG);
     diceLeft.id = DICE_LEFT_ID;
     diceLeft.style.float = 'left';
 
-    const diceRight = document.createElement('img');
+    const diceRight = Utils.createImage(rightDiceImage, RIGHT_DICE_ALT_TAG);
     diceRight.id = DICE_RIGHT_ID;
     diceRight.style.float = 'right';
 
     diceContainer.appendChild(diceLeft);
     diceContainer.appendChild(diceRight);
-
-    diceLeft.src = leftDiceImage;
-    diceRight.src = rightDiceImage;
 }

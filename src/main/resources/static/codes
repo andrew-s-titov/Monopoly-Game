@@ -1,4 +1,3 @@
-100 - user identification
 101 - player connected
 102 - player disconnected
 200 - chat message
@@ -19,7 +18,8 @@
 313 - mortgage change
 314 - street house amount
 315 - game over
-316 - offer sent
+316 - offer received
 317 - offer processed
+318 - offer sent
 
 500 - error with message

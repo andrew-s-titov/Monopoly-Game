@@ -10,6 +10,7 @@ import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.OfferProcessedEvent;
+import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
@@ -90,6 +91,7 @@ public class DealManagerImpl implements DealManager {
         game.setOffer(newOffer);
         gameEventSender.sendToAllPlayers(new SystemMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
+        gameEventSender.sendToPlayer(offerInitiatorId, new OfferSentEvent());
         gameEventSender.sendToPlayer(offerAddresseeId, gameEventGenerator.newOfferProposalEvent(game));
     }
 

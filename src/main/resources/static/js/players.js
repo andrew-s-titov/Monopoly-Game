@@ -1,7 +1,7 @@
-import {moveChip} from "./chip-movement.js";
-import {addClickEvent, renderGiveUpConfirmation} from "./buttons.js";
-import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
-import {startOfferProcess} from "./offer.js";
+import {moveChip} from './chip-movement.js';
+import {addClickEvent, renderGiveUpConfirmation} from './buttons.js';
+import {get, baseGameUrl} from './http.js';
+import {startOfferProcess} from './offer.js';
 
 const PLAYER_MAP = new Map();
 const CHIP_MAP = new Map();
@@ -14,7 +14,8 @@ const PLAYER_COLORS = [
 ];
 
 export function addPlayers(jsonPlayerArray) {
-    for (let index = 0; index < jsonPlayerArray.length; index++) {
+    const arrayLength = jsonPlayerArray.length;
+    for (let index = 0; index < arrayLength; index++) {
         const jsonPlayer = jsonPlayerArray[index];
         const playerColor = PLAYER_COLORS[index];
         const playerId = jsonPlayer.id;
@@ -91,16 +92,10 @@ function applyPlayerManagementEvents(playerIconField, playerIndex, playerId) {
         if (eventTargetId !== `player${playerIndex}-icon` && eventTargetId.startsWith(`player${playerIndex}`)) {
             return;
         }
-        sendGetHttpRequest(`${getBaseGameUrl()}/player/${playerId}/management`, true,
-            function (requester) {
-                if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                    const managementActions = JSON.parse(requester.response);
-                    if (managementActions.length > 0) {
-                        renderPlayerManagementContainer(playerIndex, playerId, managementActions);
-                    }
-                } else {
-                    console.error('failed to load available management actions');
-                    console.log(requester.response);
+        get(`${baseGameUrl()}/player/${playerId}/management`,
+            (managementActions) => {
+                if (managementActions.length > 0) {
+                    renderPlayerManagementContainer(playerIndex, playerId, managementActions);
                 }
             });
     });
@@ -108,7 +103,7 @@ function applyPlayerManagementEvents(playerIconField, playerIndex, playerId) {
 
 function renderPlayerManagementContainer(playerIndex, playerId, availableActions) {
     const containerId = `player${playerIndex}-action-container`;
-    const managementContainer = document.createElement("div");
+    const managementContainer = document.createElement('div');
     managementContainer.className = 'management-container';
     managementContainer.id = containerId;
 
@@ -118,14 +113,15 @@ function renderPlayerManagementContainer(playerIndex, playerId, availableActions
         }
     }
     document.addEventListener('click', closeOnClickOutsideListener);
-    for (let actionIndex = 0; actionIndex < availableActions.length; actionIndex++) {
+    let actionsAmount = availableActions.length;
+    for (let actionIndex = 0; actionIndex < actionsAmount; actionIndex++) {
         const action = availableActions[actionIndex];
         const button = document.createElement('button');
         button.id = `player${playerIndex}-action-button-${actionIndex}`;
         button.className = 'manage-player-button';
         if (action === 'GIVE_UP') {
             button.textContent = 'Give up';
-            addClickEvent(button, () => renderGiveUpConfirmation());
+            addClickEvent(button, renderGiveUpConfirmation);
         } else if (action === 'OFFER') {
             button.textContent = 'Offer a contract';
             addClickEvent(button, () => startOfferProcess(playerId));

@@ -2,12 +2,15 @@
     --price-narrow-side: 14px;
     --field-wide-side: 81px;
     --field-narrow-side: 52px;
+    --chip-width: 24px;
+    --chip-inner-width: 20px;
     --message-container-width: 457px;
     --message-container-height: 410px;
     --dice-image-width: 126px;
     --player-icon-size: 90px;
     --running-circle-size: 6px;
     --running-circle-translate: calc(var(--player-icon-size) / 2 - var(--running-circle-size) / 2);
+    --message-input-height: 45px;
 }
 
 .map-table {
@@ -118,8 +121,8 @@
     align-items: center;
     border: none;
     background-color: darkslategray;
-    width: 457px;
-    height: 45px;
+    width: var(--message-container-width);
+    height: var(--message-input-height);
     margin-left: 5px;
     margin-bottom: 5px;
 }
@@ -132,6 +135,7 @@
     color: white;
     font-size: 15px;
     float: left;
+    line-height: 30px;
 }
 
 #player-message-input:focus {
@@ -183,8 +187,8 @@ div::-webkit-scrollbar-thumb:hover {
 }
 
 .chip-outer {
-    width: 24px;
-    height: 24px;
+    width: var(--chip-width);
+    height: var(--chip-width);
     border-radius: 15px;
     position: absolute;
     box-shadow: 1px 1px 1px 0.8px black;
@@ -197,8 +201,8 @@ div::-webkit-scrollbar-thumb:hover {
 
 .chip-inner {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: var(--chip-inner-width);
+    height: var(--chip-inner-width);
     border-radius: 10px;
     margin: 2px;
 }
@@ -277,6 +281,15 @@ div::-webkit-scrollbar-thumb:hover {
     height: 19px;
 }
 
+.offer-money-input {
+    font-size: 15px;
+    box-shadow: 0 -1px 0 lightgrey inset;
+}
+
+.offer-money-input:focus {
+    border: none;
+}
+
 .offer-info-box {
     position: absolute;
     width: inherit;
@@ -288,11 +301,17 @@ div::-webkit-scrollbar-thumb:hover {
 
 .offer-side-name {
     font-weight: bold;
+    margin-bottom: 10px;
 }
 
 .offer-side-info-container {
     display: block;
     width: 50%;
+}
+
+.offer-fields-checkbox-container, .offer-proposal-item {
+    text-align: left;
+    padding-left: 30px;
 }
 
 .offer-box-description {
@@ -306,6 +325,19 @@ div::-webkit-scrollbar-thumb:hover {
     position: absolute;
     bottom: 0;
     margin-bottom: 15px;
+}
+
+.offer-reply-waiting-screen {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: var(--message-input-height);
+    margin: auto;
+    width: calc(var(--message-container-width) / 2);
+    height: calc(var(--message-container-width) / 2);
+    z-index: 3;
+    background-color: rgba(255, 255, 255, 0.6);
 }
 
 .house-container {

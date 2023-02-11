@@ -1,13 +1,14 @@
-import {getBaseGameUrl, sendGetHttpRequest} from "./http.js";
+import * as HttpUtils from './http.js';
+import {removeElementsIfPresent} from './utils.js';
 
-export const PROPERTY_MANAGEMENT_PREFIX = "management";
+export const PROPERTY_MANAGEMENT_PREFIX = 'management';
 
 const ACTION_CONTAINER_ID = 'action_container';
 const PROPERTY_MANAGEMENT_CONTAINER_ID = `${PROPERTY_MANAGEMENT_PREFIX}_${ACTION_CONTAINER_ID}`;
 const THROW_DICE_BUTTON_ID = 'throw-dice-button';
 
 export function addClickEvent(button, listenerFunction) {
-    button.addEventListener('click', () => listenerFunction());
+    button.addEventListener('click', listenerFunction);
 }
 
 export function createActionButton(text, url, disabled) {
@@ -15,7 +16,7 @@ export function createActionButton(text, url, disabled) {
     actionButton.innerText = text;
     actionButton.className = 'action-button';
     if (url != null) {
-        addClickEvent(actionButton, () => sendGetHttpRequest(url, true));
+        addClickEvent(actionButton, () => HttpUtils.get(url));
     }
     if (disabled != null && disabled) {
         actionButton.disabled = true;
@@ -24,25 +25,19 @@ export function createActionButton(text, url, disabled) {
 }
 
 export function renderThrowDiceButton() {
-    const throwDiceButton = createActionButton('Roll the dice!', `${getBaseGameUrl()}/dice/roll`, false);
+    const throwDiceButton = createActionButton('Roll the dice!', `${HttpUtils.baseGameUrl()}/dice/roll`, false);
     throwDiceButton.id = THROW_DICE_BUTTON_ID;
     throwDiceButton.classList.add('roll-the-dice-button', 'flashing');
-    addClickEvent(throwDiceButton, () => throwDiceButton.remove());
+    addClickEvent(throwDiceButton, throwDiceButton.remove);
     document.getElementById('message-container').appendChild(throwDiceButton);
 }
 
 export function hideThrowDiceButton() {
-    const throwDiceButton = document.getElementById(THROW_DICE_BUTTON_ID);
-    if (throwDiceButton) {
-        throwDiceButton.remove();
-    }
+    removeElementsIfPresent(THROW_DICE_BUTTON_ID);
 }
 
 export function removeOldActionContainer() {
-    const oldContainer = document.getElementById(ACTION_CONTAINER_ID);
-    if (oldContainer) {
-        oldContainer.remove();
-    }
+    removeElementsIfPresent(ACTION_CONTAINER_ID);
 }
 
 export function renderActionContainer(text, button1, button2) {
@@ -67,7 +62,7 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
     if (availableActions.length <= 0) {
         return;
     }
-    const managementContainer = document.createElement("div");
+    const managementContainer = document.createElement('div');
     managementContainer.id = PROPERTY_MANAGEMENT_CONTAINER_ID;
     managementContainer.className = 'management-container';
     htmlPropertyField.appendChild(managementContainer);
@@ -90,19 +85,19 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
         } else if (action === 'MORTGAGE') {
             buttonText = 'Mortgage';
             idPostfix = buttonText;
-            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/mortgage`, true);
+            buttonOnClickFunction = () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/field/${fieldIndex}/mortgage`);
         } else if (action === 'REDEEM') {
             buttonText = 'Redeem';
             idPostfix = buttonText;
-            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/redeem`, true);
+            buttonOnClickFunction = () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/field/${fieldIndex}/redeem`);
         } else if (action === 'BUY_HOUSE') {
             buttonText = 'Buy a house';
             idPostfix = 'buy';
-            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/buy_house`, true);
+            buttonOnClickFunction = () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/field/${fieldIndex}/buy_house`);
         } else if (action === 'SELL_HOUSE') {
             buttonText = 'Sell a house';
             idPostfix = 'sell';
-            buttonOnClickFunction = () => sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/sell_house`, true);
+            buttonOnClickFunction = () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/field/${fieldIndex}/sell_house`);
         } else {
             finishPropertyManagement(managementContainer, closeOnClickedOutsideListener);
             console.error('unknown action type');
@@ -124,13 +119,13 @@ export function renderGiveUpConfirmation() {
     confirmTextElement.innerText = 'Do you really want to give up?';
     confirmContent.appendChild(confirmTextElement);
 
-    const confirmGiveUpButton = createActionButton('Give up', `${getBaseGameUrl()}/player/give_up`, false);
+    const confirmGiveUpButton = createActionButton('Give up', `${HttpUtils.baseGameUrl()}/player/give_up`, false);
     confirmGiveUpButton.style.backgroundColor = 'red';
     confirmGiveUpButton.style.color = 'white';
     const cancelGiveUpButton = createActionButton('Cancel');
     for (let button of [confirmGiveUpButton, cancelGiveUpButton]) {
         confirmContent.appendChild(button);
-        addClickEvent(button, () => confirmationShadow.remove());
+        addClickEvent(button, () => confirmationShadow.remove);
     }
 }
 
@@ -140,7 +135,7 @@ function createManagementButton(managementContainer, buttonText, idPostfix, oncl
     button.textContent = buttonText;
     button.id = `${PROPERTY_MANAGEMENT_PREFIX}-${idPostfix}`;
     managementContainer.appendChild(button);
-    addClickEvent(button, () => onclickFunction());
+    addClickEvent(button, onclickFunction);
     return button;
 }
 

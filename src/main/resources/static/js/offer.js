@@ -1,5 +1,6 @@
-import {addClickEvent, hideThrowDiceButton, removeOldActionContainer} from "./buttons.js";
-import {getBaseGameUrl, sendGetHttpRequest, sendPostHttpRequest} from "./http.js";
+import * as Buttons from './buttons.js';
+import * as HttpUtils from './http.js';
+import {removeElementsIfPresent} from './utils.js';
 
 const REPLY_WAITING_SCREEN_ID = 'reply-waiting-screen';
 const MONEY_TO_GIVE_INPUT_ID = 'money-to-give-input';
@@ -8,50 +9,33 @@ const OFFER_INITIATOR_CHECKBOX_GROUP_NAME = 'initiator-checkboxes';
 const OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME = 'addressee-checkboxes';
 
 export function startOfferProcess(addresseeId) {
-    sendGetHttpRequest(`${getBaseGameUrl()}/offer/${addresseeId}/info`, true,
-        function (requester) {
-            if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                const preDealInfo = JSON.parse(requester.response);
+    HttpUtils.get(`${HttpUtils.baseGameUrl()}/offer/${addresseeId}/info`,
+        (preDealInfo) => {
+            const offerInfoBox = renderOfferInfoBox();
+            renderOfferInfoBoxDescription(offerInfoBox,
+                'Choose fields to buy or sell and enter money to exchange');
 
-                const offerInfoBox = renderOfferInfoBox();
-                renderOfferInfoBoxDescription(offerInfoBox,
-                    'Choose fields to buy or sell and enter money to exchange');
+            const initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You:');
+            renderMoneyInput(initiatorInfoContainer, MONEY_TO_GIVE_INPUT_ID, MONEY_TO_RECEIVE_INPUT_ID);
+            renderSideFieldCheckboxes(initiatorInfoContainer,
+                preDealInfo.offer_initiator_fields, OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
 
-                const initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You:');
-                renderMoneyInput(initiatorInfoContainer, MONEY_TO_GIVE_INPUT_ID, MONEY_TO_RECEIVE_INPUT_ID);
-                renderSideFieldCheckboxes(initiatorInfoContainer,
-                    preDealInfo.offer_initiator_fields, OFFER_INITIATOR_CHECKBOX_GROUP_NAME);
+            const addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', 'Contractor:');
+            renderMoneyInput(addresseeInfoContainer, MONEY_TO_RECEIVE_INPUT_ID, MONEY_TO_GIVE_INPUT_ID);
+            renderSideFieldCheckboxes(addresseeInfoContainer,
+                preDealInfo.offer_addressee_fields, OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
 
-                const addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', 'Contractor:');
-                renderMoneyInput(addresseeInfoContainer, MONEY_TO_RECEIVE_INPUT_ID, MONEY_TO_GIVE_INPUT_ID);
-                renderSideFieldCheckboxes(addresseeInfoContainer,
-                    preDealInfo.offer_addressee_fields, OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME);
-
-                renderLeftButton(offerInfoBox, 'Send an offer', () => {
-                    sendPostHttpRequest(
-                        `${getBaseGameUrl()}/offer/${addresseeId}/send`, true,
-                        function (requester) {
-                            if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                                renderReplyWaitingScreen();
-                                offerInfoBox.remove();
-                                hideThrowDiceButton();
-                                removeOldActionContainer();
-                            }
-                        },
-                        function (requester) {
-                            console.error(requester.response)
-                            // TODO: show info from server error if user mistake
-                        },
-                        createOfferBody()
-                    )
-                });
-                renderRightButton(offerInfoBox, 'Cancel', () => offerInfoBox.remove());
-            } else {
-                console.error('failed to load available management actions');
-                console.log(requester.response);
-            }
-        }
-    );
+            renderLeftButton(offerInfoBox, 'Send an offer', () => {
+                HttpUtils.post(`${HttpUtils.baseGameUrl()}/offer/${addresseeId}/send`, createOfferBody(),
+                    () => {
+                        Buttons.hideThrowDiceButton();
+                        Buttons.removeOldActionContainer();
+                        offerInfoBox.remove();
+                    }
+                );
+            });
+            renderRightButton(offerInfoBox, 'Cancel', () => offerInfoBox.remove);
+        });
 }
 
 export function renderOfferProposal(offerProposal) {
@@ -65,28 +49,25 @@ export function renderOfferProposal(offerProposal) {
     renderOfferInfoBoxDescription(offerInfoBox, `${initiatorName} made you an offer:`);
 
     const addresseeInfoContainer = renderOfferSideContainer(offerInfoBox, 'left', 'You give:');
-    renderMoneyProposal(addresseeInfoContainer, moneyToReceive);
-    renderFieldsProposal(addresseeInfoContainer, fieldsToBuy);
+    const addresseeBulletList = document.createElement('ul');
+    addresseeInfoContainer.appendChild(addresseeBulletList);
+    renderMoneyProposal(addresseeBulletList, moneyToReceive);
+    renderFieldsProposal(addresseeBulletList, fieldsToBuy);
 
     const initiatorInfoContainer = renderOfferSideContainer(offerInfoBox, 'right', `${initiatorName} gives:`);
-    renderMoneyProposal(initiatorInfoContainer, moneyToGive);
-    renderFieldsProposal(initiatorInfoContainer, fieldsToSell);
+    const initiatorBulletList = document.createElement('ul');
+    initiatorInfoContainer.appendChild(initiatorBulletList);
+    renderMoneyProposal(initiatorBulletList, moneyToGive);
+    renderFieldsProposal(initiatorBulletList, fieldsToSell);
 
     renderLeftButton(offerInfoBox, 'Accept', () => {
-        sendPostHttpRequest(`${getBaseGameUrl()}/offer/process?action=ACCEPT`, true);
+        HttpUtils.post(`${HttpUtils.baseGameUrl()}/offer/process?action=ACCEPT`);
         offerInfoBox.remove();
     });
     renderRightButton(offerInfoBox, 'Decline', () => {
-        sendPostHttpRequest(`${getBaseGameUrl()}/offer/process?action=DECLINE`, true);
+        HttpUtils.post(`${HttpUtils.baseGameUrl()}/offer/process?action=DECLINE`);
         offerInfoBox.remove();
     });
-}
-
-export function removeReplyWaitingScreen() {
-    const replyWaitingScreen = document.getElementById(REPLY_WAITING_SCREEN_ID);
-    if (replyWaitingScreen) {
-        replyWaitingScreen.remove();
-    }
 }
 
 function createOfferBody() {
@@ -97,21 +78,24 @@ function createOfferBody() {
     return new Offer(fieldsToSell, fieldsToBuy, moneyToGive, moneyToReceive);
 }
 
-function renderReplyWaitingScreen() {
-    const offerInfoBox = renderOfferInfoBox();
-    offerInfoBox.id = REPLY_WAITING_SCREEN_ID;
+export function renderReplyWaitingScreen() {
+    const replyWaitingScreen = document.createElement('div');
+    replyWaitingScreen.className = 'offer-reply-waiting-screen';
+    replyWaitingScreen.id = REPLY_WAITING_SCREEN_ID;
+    document.getElementById('message-container').appendChild(replyWaitingScreen);
 
     const waitingMessage = document.createElement('p');
     waitingMessage.innerText = 'Waiting for reply...';
-    offerInfoBox.appendChild(waitingMessage);
+    replyWaitingScreen.appendChild(waitingMessage);
+}
+
+export function removeReplyWaitingScreen() {
+    removeElementsIfPresent(REPLY_WAITING_SCREEN_ID);
 }
 
 function renderOfferInfoBox() {
     const offerInfoBoxId = 'offer-info-box';
-    const oldOfferBox = document.getElementById(offerInfoBoxId);
-    if (oldOfferBox) {
-        oldOfferBox.remove();
-    }
+    removeElementsIfPresent('offer-info-box');
     const offerInfoBox = document.createElement('div');
     offerInfoBox.id = offerInfoBoxId;
     offerInfoBox.className = 'offer-info-box';
@@ -154,7 +138,7 @@ function renderBottomButton(offerInfoBox, name, clickFunction) {
     const button = document.createElement('button');
     button.className = 'offer-button';
     button.innerText = name;
-    addClickEvent(button, clickFunction);
+    Buttons.addClickEvent(button, clickFunction);
     offerInfoBox.appendChild(button);
     return button;
 }
@@ -163,7 +147,7 @@ function renderMoneyInput(sideInfoContainer, id, mutuallyExclusiveInputId) {
     const moneyInput = document.createElement('input');
     moneyInput.id = id;
     moneyInput.placeholder = 'sum of money...';
-    moneyInput.style.fontSize = '15px';
+    moneyInput.className = 'offer-money-input';
     moneyInput.oninput = () => {
         moneyInput.value = moneyInput.value.replace(/\D/g, '').replace(/^0[^.]/, '0');
         if (moneyInput.value !== '' && moneyInput.value !== '0') {
@@ -178,6 +162,7 @@ function renderMoneyInput(sideInfoContainer, id, mutuallyExclusiveInputId) {
 
 function renderSideFieldCheckboxes(sideInfoContainer, fields, groupName) {
     const fieldCheckboxList = document.createElement('div');
+    fieldCheckboxList.className = 'offer-fields-checkbox-container';
     for (let field of fields) {
         const fieldInfoCheckbox = document.createElement('input');
         fieldInfoCheckbox.type = 'checkbox';
@@ -189,35 +174,29 @@ function renderSideFieldCheckboxes(sideInfoContainer, fields, groupName) {
         checkboxLabel.for = fieldInfoCheckbox.id;
         checkboxLabel.innerText = field.name;
 
-        fieldCheckboxList.appendChild(fieldInfoCheckbox);
-        fieldCheckboxList.appendChild(checkboxLabel);
-        addLineSeparator(fieldCheckboxList);
+        const checkboxLine = document.createElement('div');
+        checkboxLine.append(fieldInfoCheckbox, checkboxLabel);
+        fieldCheckboxList.appendChild(checkboxLine);
     }
     sideInfoContainer.appendChild(fieldCheckboxList);
 }
 
 function renderMoneyProposal(sideInfoContainer, moneyAmount) {
     if (moneyAmount && moneyAmount > 0) {
-        const moneyProposal = document.createElement('p');
+        const moneyProposal = document.createElement('li');
         moneyProposal.innerText = `money: $${moneyAmount}`;
         sideInfoContainer.appendChild(moneyProposal);
-        addLineSeparator(sideInfoContainer);
     }
 }
 
 function renderFieldsProposal(sideInfoContainer, fields) {
     if (fields && fields.length > 0) {
         for (let field of fields) {
-            const fieldName = document.createElement('p');
+            const fieldName = document.createElement('li');
             fieldName.innerText = field.name;
             sideInfoContainer.appendChild(fieldName);
-            addLineSeparator(sideInfoContainer);
         }
     }
-}
-
-function addLineSeparator(parentElement) {
-    parentElement.appendChild(document.createElement('br'));
 }
 
 function getCheckedFieldValues(groupName) {

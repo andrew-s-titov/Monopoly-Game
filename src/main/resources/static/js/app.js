@@ -1,49 +1,38 @@
-import {
-    addClickEvent,
-    createActionButton,
-    renderThrowDiceButton,
-    PROPERTY_MANAGEMENT_PREFIX,
-    removeOldActionContainer,
-    renderActionContainer,
-    renderGiveUpConfirmation,
-    renderPropertyManagementContainer
-} from './buttons.js';
-import {hideDice, preloadDice, renderDiceGifs, renderDiceResult} from './dice.js';
-import {getBaseGameUrl, getBaseWebsocketUrl, sendGetHttpRequest, sendPostHttpRequest, setHost} from './http.js';
-import {renderFieldViews, renderHouses, renderMortgageState} from './field-view.js';
-import {
-    addPlayers,
-    bankruptPlayer,
-    changePlayerMoney,
-    getPlayerColorById,
-    getPlayerIndexById,
-    getPlayerNameById,
-    movePlayerChip
-} from './players.js';
-import {removeReplyWaitingScreen, renderOfferProposal} from './offer.js';
+'strict mode'
+
+import * as Buttons from './buttons.js';
+import * as Dice from './dice.js';
+import * as HttpUtils from './http.js';
+import * as MapFields from './field-view.js';
+import * as PlayerService from './players.js';
+import * as Utils from './utils.js';
+import * as Offers from './offer.js';
+import {initialiseChipParams} from './chip-movement.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
 const RUNNING_CIRCLE_OUTLINE_CLASSNAME = 'running-circle';
 const RUNNING_CIRCLE_OUTLINE_ID = 'running-circle';
+const WINNER_INFO_CONTAINER_ID = 'winner-info-container';
 
-let thisPlayerId = null;
+let thisPlayerId;
 let webSocket = null;
 let gameInProgress = false;
 
-let startBackgroundImageWidth;
-let startBackgroundImageHeight;
+let startBackgroundImageWidth = 0;
+let startBackgroundImageHeight = 0;
 
 window.onload = () => {
     const host = document.getElementById('proxy-host').innerText;
-    setHost(host);
+    HttpUtils.setHost(host);
 
     const playerMessageButton = document.getElementById('player-message-button');
-    if (playerMessageButton) addClickEvent(playerMessageButton, () => processPlayerMessage());
+    if (playerMessageButton) Buttons.addClickEvent(playerMessageButton, processPlayerMessage);
 
     const reconnect = document.getElementById('reconnect');
     if (reconnect) {
         if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
             document.getElementById('startPage').style.display = 'none';
+            void preloadImagesAndInfo();
             openWebsocket(reconnect.innerText);
         } else {
             console.warn('websocket is not closed!')
@@ -55,13 +44,13 @@ window.onload = () => {
     window.addEventListener('resize', resizeBackgroundImage);
 
     const submitPlayerNameButton = document.getElementById('submitPlayerName');
-    if (submitPlayerNameButton) addClickEvent(submitPlayerNameButton, () => joinGameRoom());
+    if (submitPlayerNameButton) Buttons.addClickEvent(submitPlayerNameButton, joinGameRoom);
 
     const startGameButton = document.getElementById('startGameButton');
-    if (startGameButton) addClickEvent(startGameButton, () => startGame());
+    if (startGameButton) Buttons.addClickEvent(startGameButton, startGame);
 
     const disconnectPlayerButton = document.getElementById('disconnectPlayerButton');
-    if (disconnectPlayerButton) addClickEvent(disconnectPlayerButton, () => disconnectPlayer());
+    if (disconnectPlayerButton) Buttons.addClickEvent(disconnectPlayerButton, disconnectPlayer);
 
     const playerMessageInput = document.getElementById('playerNameInput');
     if (playerMessageInput) {
@@ -76,34 +65,20 @@ window.onload = () => {
 
 function joinGameRoom() {
     const playerName = document.getElementById('playerNameInput').value;
-    sendGetHttpRequest(`${getBaseGameUrl()}?name=${playerName}`, true,
-        function (requester) {
-            if (requester.readyState === XMLHttpRequest.DONE) {
-                if (requester.status === 200) {
-                    document.getElementById('startPage').style.display = 'none';
-                    document.getElementById('playersBeforeGame').style.display = 'block';
-                    openWebsocket(playerName);
-                } else {
-                    const errorPopUp = document.getElementById('errorMessage');
-                    errorPopUp.style.display = 'block';
-                    if (requester.status === 400) {
-                        errorPopUp.textContent = requester.responseText;
-                    } else {
-                        errorPopUp.textContent = 'Unexpected server error';
-                    }
-                }
-            }
+    HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
+        () => {
+            document.getElementById('startPage').style.display = 'none';
+            document.getElementById('playersBeforeGame').style.display = 'block';
+            void preloadImagesAndInfo();
+            openWebsocket(playerName);
         },
-        function (requester) {
-            httpError('errorMessage');
-        }
-    );
+        (responseMessage) => Utils.displayError(responseMessage));
 }
 
 function openWebsocket(username) {
-    webSocket = new WebSocket(`${getBaseWebsocketUrl()}/${username}`);
+    webSocket = new WebSocket(`${HttpUtils.getBaseWebsocketUrl()}/${username}`);
     webSocket.onclose = (event) => {
-        console.log('websocket connection is closed');
+        console.debug('websocket connection is closed');
         if (event.code === 3000) {
             reloadPageOnGameOver();
         } else {
@@ -113,7 +88,7 @@ function openWebsocket(username) {
     webSocket.onmessage = (message) => {
         const socketMessage = JSON.parse(message.data);
         const socketMessageCode = socketMessage.code;
-        console.log(`websocket event code is ${socketMessageCode}`);
+        console.debug(`websocket event code is ${socketMessageCode}`);
         if (socketMessageCode === 101) {
             onPlayerConnected(socketMessage);
         } else if (socketMessageCode === 102) {
@@ -137,7 +112,7 @@ function openWebsocket(username) {
         } else if (socketMessageCode === 306) {
             onBuyProposal(socketMessage);
         } else if (socketMessageCode === 307) {
-            renderFieldViews(socketMessage.changes);
+            MapFields.renderFieldViews(socketMessage.changes);
         } else if (socketMessageCode === 308) {
             onJailReleaseProcess(socketMessage);
         } else if (socketMessageCode === 309) {
@@ -151,13 +126,15 @@ function openWebsocket(username) {
         } else if (socketMessageCode === 313) {
             onMortgageChange(socketMessage);
         } else if (socketMessageCode === 314) {
-            renderHouses(socketMessage.field, socketMessage.amount);
+            MapFields.renderHouses(socketMessage.field, socketMessage.amount);
         } else if (socketMessageCode === 315) {
             onGameOver(socketMessage);
         } else if (socketMessageCode === 316) {
-            onDealOffer(socketMessage);
+            Offers.renderOfferProposal(socketMessage);
         } else if (socketMessageCode === 317) {
-            onOfferProcessed();
+            Offers.removeReplyWaitingScreen();
+        } else if (socketMessageCode === 318) {
+            Offers.renderReplyWaitingScreen();
         }
     };
 }
@@ -178,36 +155,12 @@ function getPlayerIdFromCookie() {
 
 function startGame() {
     gameInProgress = true;
-    sendPostHttpRequest(getBaseGameUrl(), true,
-        function (requester) {
-            if (requester.readyState === XMLHttpRequest.DONE) {
-                if (requester.status !== 200) {
-                    console.error('Unexpected server response');
-                    httpError('errorMessage');
-                } else {
-                    // TODO: catch exceptions
-                }
-            }
-        },
-        function (requester) {
-            console.error('Server not responding');
-            httpError('errorMessage');
-        }
-    );
-}
-
-function httpError(errorHtmlElementId) {
-    const errorPopUp = document.getElementById(errorHtmlElementId);
-    if (errorPopUp) {
-        errorPopUp.style.display = 'block';
-        errorPopUp.textContent = 'Unexpected server error';
-    } else {
-        console.error(`cannot find html element with id ${errorHtmlElementId}`);
-    }
+    HttpUtils.post(HttpUtils.baseGameUrl());
 }
 
 function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     hideStartElements();
+    Dice.preloadDice();
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
 
@@ -216,12 +169,12 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     document.getElementById('mapTable').style.backgroundSize = '658px';
 
     const players = gameMapRefreshEvent.players;
-    addPlayers(players);
+    PlayerService.addPlayers(players);
 
     outlinePlayer(gameMapRefreshEvent.current_player);
 
     const fieldViews = gameMapRefreshEvent.fields;
-    renderFieldViews(fieldViews);
+    MapFields.renderFieldViews(fieldViews);
     for (let fieldView of fieldViews) {
         applyFieldManagementEvents(fieldView.id);
     }
@@ -234,8 +187,6 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
             document.getElementById('player-message-button').click();
         }
     });
-
-    preloadDice();
 }
 
 function onPlayerConnected(playerConnectedEvent) {
@@ -252,7 +203,7 @@ function onPlayerConnected(playerConnectedEvent) {
 }
 
 function onPlayerDisconnected(playerDisconnectedEvent) {
-    let playerName = playerDisconnectedEvent.player_name;
+    const playerName = playerDisconnectedEvent.player_name;
     for (let i = 0; i < 5; i++) {
         const playerField = document.getElementById(`player${i}`);
         if (playerField.textContent === playerName) {
@@ -268,9 +219,9 @@ function onChatMessage(chatMessageEvent) {
     const messageElement = messageDiv();
 
     const nameText = document.createElement('span');
-    nameText.style.color = getPlayerColorById(playerId);
+    nameText.style.color = PlayerService.getPlayerColorById(playerId);
     nameText.style.fontWeight = 'bold';
-    nameText.innerText = getPlayerNameById(playerId);
+    nameText.innerText = PlayerService.getPlayerNameById(playerId);
 
     const messageText = document.createElement('span');
     messageText.textContent = `: ${chatMessageEvent.message}`;
@@ -305,7 +256,7 @@ function onTurnStart(turnStartEvent) {
     const playerToGo = turnStartEvent.player_id;
     outlinePlayer(playerToGo);
     if (getThisPlayerId() === playerToGo) {
-        renderThrowDiceButton();
+        Buttons.renderThrowDiceButton();
     }
 }
 
@@ -322,7 +273,7 @@ function processPlayerMessage() {
 }
 
 function outlinePlayer(playerId) {
-    const playerIndex = getPlayerIndexById(playerId);
+    const playerIndex = PlayerService.getPlayerIndexById(playerId);
     const runningCircle = document.createElement('div');
     runningCircle.className = RUNNING_CIRCLE_OUTLINE_CLASSNAME;
     runningCircle.id = RUNNING_CIRCLE_OUTLINE_ID;
@@ -330,44 +281,43 @@ function outlinePlayer(playerId) {
 }
 
 function removePlayersOutline() {
-    const runningCircle = document.getElementById(RUNNING_CIRCLE_OUTLINE_ID);
-    if (runningCircle) {
-        runningCircle.remove();
-    }
+    Utils.removeElementsIfPresent(RUNNING_CIRCLE_OUTLINE_ID);
 }
 
 function onDiceStartRolling(diceRollingStartEvent) {
-    renderDiceGifs();
+    Dice.renderDiceGifs();
     if (getThisPlayerId() === diceRollingStartEvent.player_id) {
-        setTimeout(() => {
-            sendGetHttpRequest(`${getBaseGameUrl()}/dice/result`, true)
-        }, 1500);
+        setTimeout(
+            () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/dice/result`),
+            1500);
     }
 }
 
 function onDiceResult(diceResultEvent) {
-    renderDiceResult(diceResultEvent.first_dice, diceResultEvent.second_dice);
-    setTimeout(() => {
-        hideDice();
-        if (getThisPlayerId() === diceResultEvent.player_id) {
-            sendGetHttpRequest(`${getBaseGameUrl()}/dice/after`, true);
-        }
-    }, 2000);
+    Dice.renderDiceResult(diceResultEvent.first_dice, diceResultEvent.second_dice);
+    setTimeout(
+        () => {
+            Dice.hideDice();
+            if (getThisPlayerId() === diceResultEvent.player_id) {
+                HttpUtils.get(`${HttpUtils.baseGameUrl()}/dice/after`);
+            }
+        },
+        2000);
 }
 
 function onPlayerChipMove(chipMoveEvent) {
     const playerId = chipMoveEvent.player_id;
-    movePlayerChip(playerId, chipMoveEvent.field);
+    PlayerService.movePlayerChip(playerId, chipMoveEvent.field);
     if (chipMoveEvent.need_after_move_call && getThisPlayerId() === playerId) {
-        setTimeout(() => {
-            sendGetHttpRequest(`${getBaseGameUrl()}/after_move`, true);
-        }, 500);
+        setTimeout(
+            () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/after_move`),
+            500);
     }
 }
 
 function onMoneyChange(moneyChangeEvent) {
     for (let change of moneyChangeEvent.changes) {
-        changePlayerMoney(change.player_id, change.money);
+        PlayerService.changePlayerMoney(change.player_id, change.money);
     }
 }
 
@@ -376,10 +326,10 @@ function onBuyProposal(buyProposalEvent) {
     const price = buyProposalEvent.price;
     const fieldName = buyProposalEvent.field_name;
     if (getThisPlayerId() === playerId) {
-        removeOldActionContainer();
-        let acceptButton = createActionButton('Buy', `${getBaseGameUrl()}/buy?action=ACCEPT`, !buyProposalEvent.payable);
-        let auctionButton = createActionButton('Auction', `${getBaseGameUrl()}/buy?action=DECLINE`, false);
-        renderActionContainer(`Do you like to buy ${fieldName} for $${price}?`, acceptButton, auctionButton);
+        Buttons.removeOldActionContainer();
+        let acceptButton = Buttons.createActionButton('Buy', `${HttpUtils.baseGameUrl()}/buy?action=ACCEPT`, !buyProposalEvent.payable);
+        let auctionButton = Buttons.createActionButton('Auction', `${HttpUtils.baseGameUrl()}/buy?action=DECLINE`, false);
+        Buttons.renderActionContainer(`Do you like to buy ${fieldName} for $${price}?`, acceptButton, auctionButton);
     }
 }
 
@@ -388,48 +338,54 @@ function onJailReleaseProcess(jailReleaseProcessEvent) {
     const imprisonedPlayerId = jailReleaseProcessEvent.player_id;
     outlinePlayer(imprisonedPlayerId);
     if (getThisPlayerId() === imprisonedPlayerId) {
-        removeOldActionContainer();
-        const payButton = createActionButton(`Pay $${jailReleaseProcessEvent.bail}`, `${getBaseGameUrl()}/jail?action=PAY`,
+        Buttons.removeOldActionContainer();
+        const payButton = Buttons.createActionButton(`Pay $${jailReleaseProcessEvent.bail}`,
+            `${HttpUtils.baseGameUrl()}/jail?action=PAY`,
             !jailReleaseProcessEvent.bail_available);
-        const luckButton = createActionButton('Try luck', `${getBaseGameUrl()}/jail?action=LUCK`, false);
-        renderActionContainer('Chose a way out:', payButton, luckButton);
+        const luckButton = Buttons.createActionButton('Try luck',
+            `${HttpUtils.baseGameUrl()}/jail?action=LUCK`, false);
+        Buttons.renderActionContainer('Chose a way out:', payButton, luckButton);
     }
 }
 
 function onAuctionBuyProposal(auctionBuyProposalEvent) {
-    const buyButton = createActionButton('Buy', `${getBaseGameUrl()}/auction/buy?action=ACCEPT`, false);
-    const declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/buy?action=DECLINE`, false);
-    renderActionContainer(
+    const buyButton = Buttons.createActionButton('Buy',
+        `${HttpUtils.baseGameUrl()}/auction/buy?action=ACCEPT`, false);
+    const declineButton = Buttons.createActionButton('Decline',
+        `${HttpUtils.baseGameUrl()}/auction/buy?action=DECLINE`, false);
+    Buttons.renderActionContainer(
         `Do you want to buy ${auctionBuyProposalEvent.field_name} for $${auctionBuyProposalEvent.proposal}?`,
         buyButton, declineButton);
 }
 
 function onAuctionRaiseProposal(auctionRaiseProposalEvent) {
-    const raiseButton = createActionButton('Raise', `${getBaseGameUrl()}/auction/raise?action=ACCEPT`, false);
-    const declineButton = createActionButton('Decline', `${getBaseGameUrl()}/auction/raise?action=DECLINE`, false);
-    renderActionContainer(
+    const raiseButton = Buttons.createActionButton('Raise',
+        `${HttpUtils.baseGameUrl()}/auction/raise?action=ACCEPT`, false);
+    const declineButton = Buttons.createActionButton('Decline',
+        `${HttpUtils.baseGameUrl()}/auction/raise?action=DECLINE`, false);
+    Buttons.renderActionContainer(
         `Do you want to raise ${auctionRaiseProposalEvent.field_name} price to $${auctionRaiseProposalEvent.proposal}?`,
         raiseButton, declineButton);
 }
 
 function onPayCommand(payCommandEvent) {
-    removeOldActionContainer();
+    Buttons.removeOldActionContainer();
     const sum = payCommandEvent.sum;
     const payable = payCommandEvent.payable;
     const wiseToGiveUp = payCommandEvent.wise_to_give_up;
-    const payButton = createActionButton('Pay', `${getBaseGameUrl()}/pay`, !payable);
+    const payButton = Buttons.createActionButton('Pay', `${HttpUtils.baseGameUrl()}/pay`, !payable);
     let giveUpButton = null;
     if (wiseToGiveUp) {
-        giveUpButton = createActionButton('Give up');
-        addClickEvent(giveUpButton, () => renderGiveUpConfirmation());
+        giveUpButton = Buttons.createActionButton('Give up');
+        Buttons.addClickEvent(giveUpButton, Buttons.renderGiveUpConfirmation);
     }
-    renderActionContainer(`Pay $${sum}`, payButton, giveUpButton);
+    Buttons.renderActionContainer(`Pay $${sum}`, payButton, giveUpButton);
 }
 
 function onMortgageChange(mortgageChangeEvent) {
     const changes = mortgageChangeEvent.changes;
     for (let change of changes) {
-        renderMortgageState(change.field, change.turns);
+        MapFields.renderMortgageState(change.field, change.turns);
     }
 }
 
@@ -438,7 +394,7 @@ function onGameOver(gameOverEvent) {
 
     const winnerInfoContainer = document.createElement('div');
     winnerInfoContainer.className = 'fullscreen-shadow-container';
-    winnerInfoContainer.id = 'winner-info-container'
+    winnerInfoContainer.id = WINNER_INFO_CONTAINER_ID;
 
     const winnerInfo = document.createElement('div');
     winnerInfo.className = 'center-screen-container';
@@ -451,17 +407,16 @@ function onGameOver(gameOverEvent) {
 }
 
 function reloadPageOnGameOver() {
-    setTimeout(() => {
-        const winnerInfoContainer = document.getElementById('winner-info-container');
-        if (winnerInfoContainer) {
-            winnerInfoContainer.remove();
-        }
-        if (webSocket != null && webSocket.readyState !== WebSocket.OPEN) {
-            webSocket.close();
-            webSocket = null;
-        }
-        location.reload();
-    }, 5000);
+    setTimeout(
+        () => {
+            Utils.removeElementsIfPresent(WINNER_INFO_CONTAINER_ID);
+            if (webSocket != null && webSocket.readyState !== WebSocket.OPEN) {
+                webSocket.close();
+                webSocket = null;
+            }
+            location.reload();
+        },
+        5000);
 }
 
 function applyFieldManagementEvents(fieldIndex) {
@@ -471,39 +426,27 @@ function applyFieldManagementEvents(fieldIndex) {
         return;
     }
     htmlField.addEventListener('click', (event) => {
-        if (event.target.id.startsWith(PROPERTY_MANAGEMENT_PREFIX)) {
+        if (event.target.id.startsWith(Buttons.PROPERTY_MANAGEMENT_PREFIX)) {
             return;
         }
-        sendGetHttpRequest(`${getBaseGameUrl()}/field/${fieldIndex}/management`, true,
-            function (requester) {
-                if (requester.readyState === XMLHttpRequest.DONE && requester.status === 200) {
-                    renderPropertyManagementContainer(htmlField, fieldIndex, JSON.parse(requester.response));
-                } else {
-                    console.error('failed to load available management actions');
-                    console.log(requester.response);
-                }
-            });
+        HttpUtils.get(`${HttpUtils.baseGameUrl()}/field/${fieldIndex}/management`,
+            (responseBody) => {
+                Buttons.renderPropertyManagementContainer(htmlField, fieldIndex, responseBody);
+            }
+        )
     });
-}
-
-function onDealOffer(offerProposal) {
-    renderOfferProposal(offerProposal);
-}
-
-function onOfferProcessed() {
-    removeReplyWaitingScreen();
 }
 
 function onPlayerBankrupt(socketMessage) {
     const bankruptPlayerId = socketMessage.player_id;
-    bankruptPlayer(bankruptPlayerId);
+    PlayerService.bankruptPlayer(bankruptPlayerId);
     if (getThisPlayerId() === bankruptPlayerId) {
-        removeOldActionContainer();
+        Buttons.removeOldActionContainer();
     }
 }
 
 function getThisPlayerId() {
-    if (typeof thisPlayerId === undefined || thisPlayerId === null) {
+    if (thisPlayerId === undefined || thisPlayerId === null) {
         thisPlayerId = getPlayerIdFromCookie();
     }
     return thisPlayerId;
@@ -521,7 +464,7 @@ function resizeBackgroundImage() {
     let backgroundImageDiv = document.getElementById('backgroundImageDiv');
     let windowWidth = window.innerWidth;
     let windowHeight = window.innerHeight;
-    let proportion = Math.max(windowWidth/startBackgroundImageWidth, windowHeight/startBackgroundImageHeight);
+    let proportion = Math.max(windowWidth / startBackgroundImageWidth, windowHeight / startBackgroundImageHeight);
 
     backgroundImageDiv.style.backgroundSize =
         `${Math.ceil(proportion * startBackgroundImageWidth)}px ${Math.ceil(proportion * startBackgroundImageHeight)}px`;
@@ -529,13 +472,15 @@ function resizeBackgroundImage() {
 }
 
 function hideStartElements() {
-    let playersBeforeGamePage = document.getElementById('playersBeforeGame');
-    if (playersBeforeGamePage) {
-        playersBeforeGamePage.remove();
-    }
-    let backgroundImageDiv = document.getElementById('backgroundImageDiv');
-    if (backgroundImageDiv) {
-        backgroundImageDiv.remove();
-    }
+    Utils.removeElementsIfPresent('playersBeforeGame', 'backgroundImageDiv');
     window.removeEventListener('resize', resizeBackgroundImage);
+}
+
+function preloadImagesAndInfo() {
+    Promise.allSettled([
+        fetch('/images/map-back.png'),
+        initialiseChipParams(),
+        Dice.preloadDice()
+    ])
+        .catch(error => console.log('failed to load some resources or data: ' + error));
 }

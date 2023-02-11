@@ -3,6 +3,7 @@ package com.monopolynew.service.impl;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
+import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
@@ -64,6 +65,10 @@ public class GameMapRefresherImpl implements GameMapRefresher {
                     var lastDice = game.getLastDice();
                     gameEventSender.sendToAllPlayers(
                             new DiceResultEvent(playerId, lastDice.getFirstDice(), lastDice.getSecondDice()));
+                    break;
+                }
+                case DEAL_OFFER: {
+                    gameEventSender.sendToPlayer(currentPlayerId, new OfferSentEvent());
                     break;
                 }
                 default: break;
