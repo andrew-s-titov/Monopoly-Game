@@ -5,6 +5,8 @@ import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
+import com.monopolynew.exception.ClientBadRequestException;
+import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.service.GameEventGenerator;
@@ -65,7 +67,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         var payer = checkToPay.getPlayer();
         int sum = checkToPay.getSum();
         if (payer.getMoney() < sum) {
-            throw new IllegalStateException("Player doesn't have enough money - payment is impossible");
+            throw new ClientBadRequestException("Player doesn't have enough money - payment is impossible");
         }
         payer.takeMoney(sum);
         List<MoneyState> moneyStates = new ArrayList<>(2);
@@ -94,13 +96,13 @@ public class PaymentProcessorImpl implements PaymentProcessor {
 
     private void verifyCheckCreationAvailable(GameStage currentGameStage) {
         if (!GameStage.ROLLED_FOR_TURN.equals(currentGameStage) && !GameStage.ROLLED_FOR_JAIL.equals(currentGameStage)) {
-            throw new IllegalStateException("Cannot create a check - wrong game stage");
+            throw new WrongGameStageException("Cannot create a check - wrong game stage");
         }
     }
 
     private void verifyPaymentProcessingAvailable(GameStage currentGameStage) {
         if (!GameStage.AWAITING_PAYMENT.equals(currentGameStage) && !GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
-            throw new IllegalStateException("Cannot process payment - wrong game stage");
+            throw new WrongGameStageException("Cannot process payment - wrong game stage");
         }
     }
 }

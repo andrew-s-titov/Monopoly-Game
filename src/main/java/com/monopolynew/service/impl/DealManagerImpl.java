@@ -13,6 +13,9 @@ import com.monopolynew.event.OfferProcessedEvent;
 import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
+import com.monopolynew.exception.ClientBadRequestException;
+import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
@@ -43,8 +46,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DealManagerImpl implements DealManager {
 
-    // TODO: exception handling, status codes to identify error
-
     private final GameEventGenerator gameEventGenerator;
     private final GameFieldConverter gameFieldConverter;
     private final GameEventSender gameEventSender;
@@ -70,8 +71,8 @@ public class DealManagerImpl implements DealManager {
         checkOfferNotEmpty(offer);
         var moneyToGive = offer.getMoneyToGive();
         var moneyToReceive = offer.getMoneyToReceive();
-        checkPlayerSolvency(currentPlayer, moneyToGive);
-        checkPlayerSolvency(offerAddressee, moneyToReceive);
+        checkPlayerSolvency(currentPlayer, moneyToGive, true);
+        checkPlayerSolvency(offerAddressee, moneyToReceive, false);
         var fieldsToBuy = getFieldsByIndexes(game, offer.getFieldsToBuy());
         var fieldsToSell = getFieldsByIndexes(game, offer.getFieldsToSell());
         checkFieldsOwner(fieldsToBuy, offerAddressee);
@@ -99,13 +100,13 @@ public class DealManagerImpl implements DealManager {
     public void processOfferAnswer(Game game, String callerId, ProposalAction proposalAction) {
         var currentGameStage = game.getStage();
         if (!GameStage.DEAL_OFFER.equals(currentGameStage)) {
-            throw new IllegalStateException("cannot process offer - wrong game stage");
+            throw new WrongGameStageException("cannot process offer - wrong game stage");
         }
         var offer = game.getOffer();
         var offerAddressee = offer.getAddressee();
         if (!offerAddressee.getId().equals(callerId)) {
             // for security reasons
-            throw new IllegalStateException("only offer addressee can process offer");
+            throw new ClientBadRequestException("only offer addressee can process offer");
         }
         var offerInitiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {
@@ -146,20 +147,20 @@ public class DealManagerImpl implements DealManager {
     private void checkCanCreateOffer(Game game) {
         var currentGameStage = game.getStage();
         if (!currentGameStage.equals(GameStage.TURN_START) && !currentGameStage.equals(GameStage.JAIL_RELEASE_START)) {
-            throw new IllegalStateException("cannot start deal process - wrong game stage");
+            throw new WrongGameStageException("cannot start deal process - wrong game stage");
         }
     }
 
     private void checkOfferInitiator(Game game, String offerInitiatorId) {
         if (!game.getCurrentPlayer().getId().equals(offerInitiatorId)) {
-            throw new IllegalStateException("only current player can initiate deal process");
+            throw new ClientBadRequestException("only current player can initiate deal process");
         }
     }
 
     private Player getOfferAddressee(Game game, String offerAddresseeId) {
         var offerAddressee = game.getPlayerById(offerAddresseeId);
         if (offerAddressee == null) {
-            throw new IllegalArgumentException(String.format("player with id %s doesn't exist", offerAddresseeId));
+            throw new ClientBadRequestException(String.format("player with id %s doesn't exist", offerAddresseeId));
         }
         return offerAddressee;
     }
@@ -177,25 +178,26 @@ public class DealManagerImpl implements DealManager {
 
     private PurchasableField safeGetFieldByIndex(GameMap gameMap, Integer index) {
         if (index < 0 || index > Rules.LAST_FIELD_INDEX) {
-            throw new IllegalArgumentException("Field index must be from 0 to " + Rules.LAST_FIELD_INDEX);
+            throw new ClientBadRequestException("Field index must be from 0 to " + Rules.LAST_FIELD_INDEX);
         }
         var gameField = gameMap.getField(index);
         if (!(gameField instanceof PurchasableField)) {
-            throw new IllegalArgumentException("Field with index " + index + " cannot be a subject for a deal");
+            throw new ClientBadRequestException("Field with index " + index + " cannot be a subject for a deal");
         }
         return (PurchasableField) gameField;
     }
 
-    private void checkPlayerSolvency(Player player, Integer money) {
+    private void checkPlayerSolvency(Player player, Integer money, boolean initiator) {
         if (money != null && player.getMoney() < money) {
-            throw new IllegalArgumentException(String.format("player %s cannot afford this deal", player.getName()));
+            var message = String.format("%s cannot afford this deal", initiator ? "You" : player.getName());
+            throw new PlayerInvalidInputException(message);
         }
     }
 
     private void checkFieldsOwner(List<PurchasableField> fields, Player owner) {
         for (PurchasableField field : fields) {
             if (!owner.equals(field.getOwner())) {
-                throw new IllegalArgumentException(
+                throw new ClientBadRequestException(
                         String.format("field %s doesn't belong to the player %s", field.getId(), owner.getId()));
             }
         }
@@ -304,7 +306,7 @@ public class DealManagerImpl implements DealManager {
                 && (moneyToReceive == null || moneyToReceive == 0)
                 && CollectionUtils.isEmpty(offer.getFieldsToBuy())
                 && CollectionUtils.isEmpty(offer.getFieldsToSell())) {
-            throw new IllegalArgumentException("Cannot send an empty offer");
+            throw new PlayerInvalidInputException("Cannot send an empty offer");
         }
     }
 }

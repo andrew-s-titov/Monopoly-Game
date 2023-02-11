@@ -27,19 +27,19 @@ export function getBaseWebsocketUrl() {
     return _WEBSOCKET_BASE_URL;
 }
 
-export function get(url, on2xx, on400) {
+export function get(url, onSuccess) {
     fetch(url, fetchParams('GET'))
-        .then(response => processResponse(response, on2xx, on400))
+        .then(response => processResponse(response, onSuccess))
         .catch(error => processError(error));
 }
 
-export function post(url, body, on2xx, on400) {
+export function post(url, body, onSuccess) {
     fetch(url, fetchParams('POST', body))
-        .then(response => processResponse(response, on2xx, on400))
+        .then(response => processResponse(response, onSuccess))
         .catch(error => processError(error));
 }
 
-function processResponse(response, on2xx, on400) {
+function processResponse(response, on2xx) {
     const responseStatus = response.status;
     if (responseStatus >= 200 && responseStatus < 300 && on2xx !== undefined && on2xx !== null) {
         const contentType = response.headers.get('Content-Type');
@@ -53,19 +53,22 @@ function processResponse(response, on2xx, on400) {
             response.json()
                 .then(responseBody => on2xx(responseBody));
         }
-    } else if (responseStatus === 400 && on400 !== undefined && on400 !== null) {
+    } else if (responseStatus === 400) {
         const contentType = response.headers.get('Content-Type');
-        let responseMessagePromise;
         if (contentType === 'application/json') {
-            responseMessagePromise = response.json()
-                .then(json => json.message);
-        } else if (contentType.startsWith('text/plain')) {
-            responseMessagePromise = response.text();
+            response.json()
+                .then(json => {
+                    const code = json.code;
+                    const message = json.message;
+                    if (code === 401) {
+                        displayError(message);
+                    } else if (code === 402) {
+                        console.error(message);
+                    }
+                });
         } else {
-            responseMessagePromise = Promise.resolve('Bad request');
+            displayError('Bad request');
         }
-        responseMessagePromise.then(responseMessage => on400(responseMessage));
-
     } else if (responseStatus >= 500) {
         console.log('Unexpected server error');
         displayError('Unexpected server error. Please, reload the page');
@@ -73,8 +76,8 @@ function processResponse(response, on2xx, on400) {
 }
 
 function processError(error) {
-    console.log(error);
-    displayError('Internet connection problem. Please, reload the page');
+    console.error(error);
+    displayError('Internet connection problem. Please, try again');
 }
 
 function fetchParams(method, body) {

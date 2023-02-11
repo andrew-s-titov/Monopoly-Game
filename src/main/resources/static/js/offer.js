@@ -34,7 +34,7 @@ export function startOfferProcess(addresseeId) {
                     }
                 );
             });
-            renderRightButton(offerInfoBox, 'Cancel', () => offerInfoBox.remove);
+            renderRightButton(offerInfoBox, 'Cancel', () => offerInfoBox.remove());
         });
 }
 

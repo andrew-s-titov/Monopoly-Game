@@ -32,7 +32,7 @@ window.onload = () => {
     if (reconnect) {
         if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
             document.getElementById('startPage').style.display = 'none';
-            void preloadImagesAndInfo();
+            preloadImagesAndInfo();
             openWebsocket(reconnect.innerText);
         } else {
             console.warn('websocket is not closed!')
@@ -71,8 +71,7 @@ function joinGameRoom() {
             document.getElementById('playersBeforeGame').style.display = 'block';
             void preloadImagesAndInfo();
             openWebsocket(playerName);
-        },
-        (responseMessage) => Utils.displayError(responseMessage));
+        });
 }
 
 function openWebsocket(username) {
@@ -160,7 +159,6 @@ function startGame() {
 
 function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     hideStartElements();
-    Dice.preloadDice();
     document.getElementById('map').style.display = 'block';
     document.body.style.backgroundColor = 'darkslategray';
 
@@ -478,9 +476,16 @@ function hideStartElements() {
 
 function preloadImagesAndInfo() {
     Promise.allSettled([
-        fetch('/images/map-back.png'),
+        imagePreload('images/map-back.png'),
         initialiseChipParams(),
         Dice.preloadDice()
     ])
         .catch(error => console.log('failed to load some resources or data: ' + error));
+}
+
+async function imagePreload() {
+    let amount = arguments.length;
+    for (let i = 0; i < amount; i++) {
+        new Image().src = arguments[i];
+    }
 }

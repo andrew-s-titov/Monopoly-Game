@@ -27,13 +27,12 @@ export function renderDiceResult(left, right) {
     }
 }
 
-export function preloadDice() {
-    const fetchPromisesArray = [];
-    fetchPromisesArray.push(fetch(LEFT_DICE_GIF_SRC), fetch(RIGHT_DICE_GIF_SRC));
+export async function preloadDice() {
+    new Image().src = LEFT_DICE_GIF_SRC;
+    new Image().src = RIGHT_DICE_GIF_SRC;
     for (let i = 1; i <= 6; i++) {
-        fetchPromisesArray.push(fetch(`images/dice${i}.png`));
+        new Image().src = `images/dice${i}.png`;
     }
-    return Promise.allSettled(fetchPromisesArray);
 }
 
 function renderDiceView(leftDiceImage, rightDiceImage) {

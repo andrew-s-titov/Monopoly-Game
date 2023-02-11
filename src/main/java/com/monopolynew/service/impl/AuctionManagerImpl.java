@@ -3,6 +3,7 @@ package com.monopolynew.service.impl;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.SystemMessageEvent;
+import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
@@ -110,7 +111,7 @@ public class AuctionManagerImpl implements AuctionManager {
 
     private void checkAuctionAvailability(Game game, GameStage expectedGameStage, Auction auction) {
         if (!expectedGameStage.equals(game.getStage())) {
-            throw new IllegalStateException("can't process auction - wrong game stage");
+            throw new WrongGameStageException("can't process auction - wrong game stage");
         }
         if (auction == null) {
             throw new IllegalStateException("no active auction found");

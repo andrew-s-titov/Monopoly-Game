@@ -15,6 +15,9 @@ import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
+import com.monopolynew.exception.ClientBadRequestException;
+import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Dice;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -80,8 +83,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         Collection<Player> players = game.getPlayers();
         if (players.size() < 2) {
-            // TODO: conflict? not ready? what status to return?
-            throw new IllegalStateException("Cannot start a game without at least 2 players");
+            throw new PlayerInvalidInputException("Cannot start a game without at least 2 players");
         }
         game.startGame();
         gameEventSender.sendToAllPlayers(gameEventGenerator.newMapRefreshEvent(game));
@@ -128,7 +130,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         DiceResult lastDice = game.getLastDice();
         if (lastDice == null) {
-            throw new IllegalStateException("throw dice must be called first");
+            throw new ClientBadRequestException("throw dice must be called first");
         }
         Player currentPlayer = game.getCurrentPlayer();
         GameStage stage = game.getStage();
@@ -157,7 +159,7 @@ public class GameServiceImpl implements GameService {
                 }
             }
         } else {
-            throw new IllegalStateException("Cannot process dice - wrong game stage (roll must be called first)");
+            throw new WrongGameStageException("Cannot process dice - wrong game stage (roll must be called first)");
         }
     }
 
@@ -165,7 +167,7 @@ public class GameServiceImpl implements GameService {
     public void afterPlayerMoveAction() {
         Game game = gameRepository.getGame();
         if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
-            throw new IllegalStateException("Cannot define after player move action - wrong game stage");
+            throw new WrongGameStageException("Cannot define after player move action - wrong game stage");
         }
         int playerPosition = game.getCurrentPlayer().getPosition();
         GameField currentField = game.getGameMap().getField(playerPosition);
@@ -177,7 +179,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         BuyProposal buyProposal = game.getBuyProposal();
         if (!GameStage.BUY_PROPOSAL.equals(game.getStage()) || buyProposal == null) {
-            throw new IllegalStateException("Cannot call buy proposal endpoint when there's no proposal");
+            throw new WrongGameStageException("Cannot call buy proposal endpoint when there's no proposal");
         }
         Assert.notNull(action, NULL_ARG_MESSAGE);
         // TODO: 'security' risk: check if player id matches the proposal id
@@ -209,13 +211,13 @@ public class GameServiceImpl implements GameService {
     public void processJailAction(JailAction jailAction) {
         Game game = gameRepository.getGame();
         if (!GameStage.JAIL_RELEASE_START.equals(game.getStage())) {
-            throw new IllegalStateException("Cannot process jail action - wrong game stage");
+            throw new WrongGameStageException("Cannot process jail action - wrong game stage");
         }
         Assert.notNull(jailAction, NULL_ARG_MESSAGE);
         Player currentPlayer = game.getCurrentPlayer();
         if (jailAction.equals(JailAction.PAY)) {
             if (currentPlayer.getMoney() < Rules.JAIL_BAIL) {
-                throw new IllegalStateException("Not enough money to pay jail bail");
+                throw new ClientBadRequestException("Not enough money to pay jail bail");
             }
             currentPlayer.takeMoney(Rules.JAIL_BAIL);
             currentPlayer.releaseFromJail();
@@ -317,7 +319,7 @@ public class GameServiceImpl implements GameService {
 
     private void doRegularMove(Game game) {
         if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
-            throw new IllegalStateException("cannot make move - wrong game stage");
+            throw new WrongGameStageException("cannot make move - wrong game stage");
         }
         var lastDice = game.getLastDice();
         var currentPlayer = game.getCurrentPlayer();
@@ -328,10 +330,10 @@ public class GameServiceImpl implements GameService {
 
     private void checkPlayerCanMakeMove(Player player) {
         if (player.isSkipping()) {
-            throw new IllegalStateException("skipping player cannot do regular turn");
+            throw new ClientBadRequestException("skipping player cannot do regular turn");
         }
         if (player.isImprisoned()) {
-            throw new IllegalStateException("imprisoned player cannot do regular turn");
+            throw new ClientBadRequestException("imprisoned player cannot do regular turn");
         }
     }
 
@@ -377,7 +379,7 @@ public class GameServiceImpl implements GameService {
         if (GameStage.TURN_START.equals(currentStage) || GameStage.JAIL_RELEASE_START.equals(currentStage)) {
             game.setStage(GameStage.TURN_START.equals(currentStage) ? GameStage.ROLLED_FOR_TURN : GameStage.ROLLED_FOR_JAIL);
         } else {
-            throw new IllegalStateException("cannot roll the dice - wrong game stage");
+            throw new WrongGameStageException("cannot roll the dice - wrong game stage");
         }
         gameEventSender.sendToAllPlayers(new DiceRollingStartEvent(game.getCurrentPlayer().getId()));
     }

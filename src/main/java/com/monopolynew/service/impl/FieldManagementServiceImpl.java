@@ -8,6 +8,8 @@ import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.MortgageChangeEvent;
 import com.monopolynew.event.StreetHouseAmountEvent;
+import com.monopolynew.exception.ClientBadRequestException;
+import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
@@ -78,7 +80,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                         Collections.singletonList(new MortgageChange(f.getId(), f.getMortgageTurnsLeft()))));
                 return;
             }
-            throw new IllegalStateException("Cannot mortgage street with houses");
+            throw new ClientBadRequestException("Cannot mortgage street with houses");
         });
     }
 
@@ -97,7 +99,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                         Collections.singletonList(gameFieldConverter.toView(f))));
                 return;
             }
-            throw new IllegalStateException("Cannot redeem property - not enough money");
+            throw new ClientBadRequestException("Cannot redeem property - not enough money");
         });
     }
 
@@ -116,7 +118,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     return;
                 }
             }
-            throw new IllegalStateException("Cannot buy a house for this property field");
+            throw new ClientBadRequestException("Cannot buy a house for this property field");
         });
     }
 
@@ -134,7 +136,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     return;
                 }
             }
-            throw new IllegalStateException("Cannot sell a house on this property field");
+            throw new ClientBadRequestException("Cannot sell a house on this property field");
         });
     }
 
@@ -212,7 +214,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
             var purchasableField = (PurchasableField) field;
             action.accept(game, purchasableField);
         } else {
-            throw new IllegalStateException("Cannot manage field - it doesn't belong to the current player");
+            throw new ClientBadRequestException("Cannot manage field - it doesn't belong to the current player");
         }
         return Pair.of(beforeManagementMoneyAmount, currentPlayer.getMoney());
     }
@@ -220,10 +222,10 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     private void checkFieldManagementAvailability(Game game, String playerId) {
         GameStage stage = game.getStage();
         if (managementNotAvailable(stage)) {
-            throw new IllegalStateException("Cannot perform field management - wrong game stage");
+            throw new WrongGameStageException("Cannot perform field management - wrong game stage");
         }
         if (!game.getCurrentPlayer().getId().equals(playerId)) {
-            throw new IllegalStateException("Only current player can manage fields");
+            throw new ClientBadRequestException("Only current player can manage fields");
         }
     }
 
@@ -237,7 +239,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
 
     private void checkFieldExists(int fieldIndex) {
         if (fieldIndex < 0 || fieldIndex > Rules.LAST_FIELD_INDEX) {
-            throw new IllegalArgumentException(String.format("Field with index %s don't exist", fieldIndex));
+            throw new ClientBadRequestException(String.format("Field with index %s don't exist", fieldIndex));
         }
     }
 

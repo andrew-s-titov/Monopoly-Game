@@ -1,3 +1,4 @@
+Websocket codes:
 101 - player connected
 102 - player disconnected
 200 - chat message
@@ -22,4 +23,6 @@
 317 - offer processed
 318 - offer sent
 
-500 - error with message
+Http error code:
+401 - wrong player input
+402 - client bad request
