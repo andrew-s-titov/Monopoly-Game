@@ -283,7 +283,7 @@ function removePlayersOutline() {
 }
 
 function onDiceStartRolling(diceRollingStartEvent) {
-    Dice.renderDiceGifs();
+    Dice.renderRollingDice();
     if (getThisPlayerId() === diceRollingStartEvent.player_id) {
         setTimeout(
             () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/dice/result`),

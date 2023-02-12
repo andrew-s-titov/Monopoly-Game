@@ -8,23 +8,22 @@ const RIGHT_DICE_GIF_SRC = 'images/dice-right.gif';
 const LEFT_DICE_ALT_TAG = 'left dice';
 const RIGHT_DICE_ALT_TAG = 'right dice';
 
-export function renderDiceGifs() {
+let _DICE_CONTAINER = null;
+let _LEFT_DICE = null;
+let _RIGHT_DICE = null;
+
+export function renderRollingDice() {
     renderDiceView(LEFT_DICE_GIF_SRC, RIGHT_DICE_GIF_SRC);
 }
 
-export function hideDice() {
-    Utils.removeElementsIfPresent(DICE_CONTAINER_ID);
+export function renderDiceResult(left, right) {
+    const leftImageSrc = `images/dice${left}.png`;
+    const rightImageSrc = `images/dice${right}.png`;
+    renderDiceView(leftImageSrc, rightImageSrc);
 }
 
-export function renderDiceResult(left, right) {
-    const leftImage = `images/dice${left}.png`;
-    const rightImage = `images/dice${right}.png`;
-    if (!document.getElementById(DICE_CONTAINER_ID)) {
-        renderDiceView(leftImage, rightImage);
-    } else {
-        document.getElementById(DICE_LEFT_ID).src = leftImage;
-        document.getElementById(DICE_RIGHT_ID).src = rightImage;
-    }
+export function hideDice() {
+    getDiceContainer().style.display = 'none';
 }
 
 export async function preloadDice() {
@@ -35,20 +34,28 @@ export async function preloadDice() {
     }
 }
 
-function renderDiceView(leftDiceImage, rightDiceImage) {
-    const diceContainer = document.createElement('div');
-    diceContainer.id = DICE_CONTAINER_ID;
-    diceContainer.className = 'dice-container';
-    document.getElementById('message-container').appendChild(diceContainer);
+function renderDiceView(leftDiceImageSrc, rightDiceImageSrc) {
+    const diceContainer = getDiceContainer();
+    _LEFT_DICE.src = leftDiceImageSrc;
+    _RIGHT_DICE.src = rightDiceImageSrc;
+    diceContainer.style.display = 'block';
+}
 
-    const diceLeft = Utils.createImage(leftDiceImage, LEFT_DICE_ALT_TAG);
-    diceLeft.id = DICE_LEFT_ID;
-    diceLeft.style.float = 'left';
+function getDiceContainer() {
+    if (_DICE_CONTAINER === null) {
+        _DICE_CONTAINER = document.createElement('div');
+        _DICE_CONTAINER.id = DICE_CONTAINER_ID;
+        _DICE_CONTAINER.className = 'dice-container';
+        document.getElementById('message-container').appendChild(_DICE_CONTAINER);
 
-    const diceRight = Utils.createImage(rightDiceImage, RIGHT_DICE_ALT_TAG);
-    diceRight.id = DICE_RIGHT_ID;
-    diceRight.style.float = 'right';
+        _LEFT_DICE = Utils.createImage(LEFT_DICE_GIF_SRC, LEFT_DICE_ALT_TAG);
+        _LEFT_DICE.id = DICE_LEFT_ID;
+        _LEFT_DICE.style.float = 'left';
+        _RIGHT_DICE = Utils.createImage(RIGHT_DICE_GIF_SRC, RIGHT_DICE_ALT_TAG);
+        _RIGHT_DICE.id = DICE_RIGHT_ID;
+        _RIGHT_DICE.style.float = 'right';
 
-    diceContainer.appendChild(diceLeft);
-    diceContainer.appendChild(diceRight);
+        _DICE_CONTAINER.append(_LEFT_DICE, _RIGHT_DICE);
+    }
+    return _DICE_CONTAINER;
 }
