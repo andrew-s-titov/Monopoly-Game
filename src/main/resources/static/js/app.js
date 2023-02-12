@@ -19,6 +19,10 @@ let thisPlayerId;
 let webSocket = null;
 let gameInProgress = false;
 
+let _START_PAGE = null;
+let _GAME_ROOM = null;
+let _BACKGROUND_DIV = null;
+
 let startBackgroundImageWidth = 0;
 let startBackgroundImageHeight = 0;
 
@@ -31,7 +35,7 @@ window.onload = () => {
     const reconnect = document.getElementById('reconnect');
     if (reconnect) {
         if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
-            document.getElementById('startPage').style.display = 'none';
+            getStartPageElement().style.display = 'none';
             openWebsocket(reconnect.innerText);
         } else {
             console.warn('websocket is not closed!')
@@ -68,8 +72,8 @@ function joinGameRoom() {
     HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
         () => {
             playerNameInput.value = '';
-            document.getElementById('startPage').style.display = 'none';
-            document.getElementById('playersBeforeGame').style.display = 'block';
+            getStartPageElement().style.display = 'none';
+            getGameRoomElement().style.display = 'block';
             openWebsocket(playerName);
         });
 }
@@ -147,8 +151,8 @@ function disconnectPlayer() {
         webSocket.close(1000, 'GOING_AWAY');
     }
     webSocket = null;
-    document.getElementById('playersBeforeGame').style.display = 'none';
-    document.getElementById('startPage').style.display = 'block';
+    getGameRoomElement().style.display = 'none';
+    getStartPageElement().style.display = 'block';
     GameRoom.clearGameRoomView();
 }
 
@@ -418,7 +422,7 @@ function initialStartPageBackgroundSet() {
 }
 
 function resizeBackgroundImage() {
-    let backgroundImageDiv = document.getElementById('backgroundImageDiv');
+    let backgroundImageDiv = getBackgroundImageDiv();
     let windowWidth = window.innerWidth;
     let windowHeight = window.innerHeight;
     let proportion = Math.max(windowWidth / startBackgroundImageWidth, windowHeight / startBackgroundImageHeight);
@@ -429,8 +433,30 @@ function resizeBackgroundImage() {
 }
 
 function hideStartElements() {
-    Utils.removeElementsIfPresent('playersBeforeGame', 'backgroundImageDiv');
+    getGameRoomElement().style.display = 'none';
     window.removeEventListener('resize', resizeBackgroundImage);
+    getBackgroundImageDiv().remove();
+}
+
+function getStartPageElement() {
+    if (_START_PAGE === null) {
+        _START_PAGE = document.getElementById('startPage');
+    }
+    return _START_PAGE;
+}
+
+function getGameRoomElement() {
+    if (_GAME_ROOM === null) {
+        _GAME_ROOM = document.getElementById('playersBeforeGame');
+    }
+    return _GAME_ROOM;
+}
+
+function getBackgroundImageDiv() {
+    if (_BACKGROUND_DIV === null) {
+        _BACKGROUND_DIV = document.getElementById('backgroundImageDiv');
+    }
+    return _BACKGROUND_DIV;
 }
 
 function preloadImagesAndInfo() {
