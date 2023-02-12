@@ -124,7 +124,7 @@ function renderPlayerManagementContainer(playerIndex, playerId, availableActions
             addClickEvent(button, renderGiveUpConfirmation);
         } else if (action === 'OFFER') {
             button.textContent = 'Offer a contract';
-            addClickEvent(button, () => startOfferProcess(playerId));
+            addClickEvent(button, () => startOfferProcess(playerId, getPlayerNameById(playerId)));
         } else {
             finishPlayerAction(managementContainer, closeOnClickOutsideListener);
             console.error('unknown action type');

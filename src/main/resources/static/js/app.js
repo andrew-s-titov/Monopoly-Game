@@ -476,7 +476,7 @@ function hideStartElements() {
 
 function preloadImagesAndInfo() {
     Promise.allSettled([
-        imagePreload('images/map-back.png'),
+        imagePreload('images/map-back.png', 'images/loading-bubbles.gif'),
         initialiseChipParams(),
         Dice.preloadDice()
     ])

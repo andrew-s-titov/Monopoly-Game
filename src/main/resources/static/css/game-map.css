@@ -11,6 +11,8 @@
     --running-circle-size: 6px;
     --running-circle-translate: calc(var(--player-icon-size) / 2 - var(--running-circle-size) / 2);
     --message-input-height: 45px;
+    --waiting-screen-size: calc(var(--message-container-width) / 2);
+    --waiting-animation-size: 150px;
 }
 
 .map-table {
@@ -309,7 +311,7 @@ div::-webkit-scrollbar-thumb:hover {
     width: 50%;
 }
 
-.offer-fields-checkbox-container, .offer-proposal-item {
+.offer-item-list {
     text-align: left;
     padding-left: 30px;
 }
@@ -334,10 +336,26 @@ div::-webkit-scrollbar-thumb:hover {
     top: 0;
     bottom: var(--message-input-height);
     margin: auto;
-    width: calc(var(--message-container-width) / 2);
-    height: calc(var(--message-container-width) / 2);
+    width: var(--waiting-screen-size);
+    height: var(--waiting-screen-size);
     z-index: 3;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.offer-waiting-description {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.offer-waiting-animation {
+    background-image: url('/images/loading-bubbles.gif');
+    background-size: 100%;
+    background-repeat: no-repeat no-repeat;
+    width: var(--waiting-animation-size);
+    height: var(--waiting-animation-size);
+    margin: auto;
+    border-radius: var(--waiting-animation-size);
+    border: 2px dashed black;
 }
 
 .house-container {
@@ -348,14 +366,14 @@ div::-webkit-scrollbar-thumb:hover {
     width: 10px;
     height: 10px;
     background-image: url('/images/house.png');
-    background-size: 10px;
+    background-size: 100%;
 }
 
 .hotel-pic {
     width: 20px;
     height: 20px;
     background-image: url('/images/hotel.png');
-    background-size: 20px;
+    background-size: 100%;
 }
 
 .running-circle {
