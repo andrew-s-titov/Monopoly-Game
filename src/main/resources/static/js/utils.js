@@ -1,4 +1,5 @@
-let errorTimeoutId = 0;
+let _ERROR_TIMEOUT_ID = 0;
+let _ERROR_POP_UP = null;
 
 export function removeElementsIfPresent(...elementIDs) {
     for (let elementId of elementIDs) {
@@ -21,16 +22,23 @@ export function createImage(srcTag, altTag) {
 }
 
 export function displayError(errorMessage) {
-    if (errorTimeoutId !== 0) {
-        clearTimeout(errorTimeoutId)
+    if (_ERROR_TIMEOUT_ID !== 0) {
+        clearTimeout(_ERROR_TIMEOUT_ID)
     }
-    const errorPopUp = document.getElementById('errorMessage');
+    const errorPopUp = getErrorPopUpElement();
     errorPopUp.style.transition = 'none';
     errorPopUp.textContent = errorMessage;
     errorPopUp.style.opacity = '1';
-    errorTimeoutId = setTimeout(() => {
+    _ERROR_TIMEOUT_ID = setTimeout(() => {
             errorPopUp.style.transition = 'opacity 1s ease';
             errorPopUp.style.opacity = '0'
         },
         2000);
+}
+
+function getErrorPopUpElement() {
+    if (_ERROR_POP_UP === null) {
+        _ERROR_POP_UP = document.getElementById('errorMessage');
+    }
+    return _ERROR_POP_UP;
 }

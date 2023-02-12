@@ -7,6 +7,7 @@ import * as MapFields from './field-view.js';
 import * as PlayerService from './players.js';
 import * as Utils from './utils.js';
 import * as Offers from './offer.js';
+import * as GameRoom from './game-room.js';
 import {initialiseChipParams} from './chip-movement.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
@@ -25,14 +26,12 @@ window.onload = () => {
     const host = document.getElementById('proxy-host').innerText;
     HttpUtils.setHost(host);
 
-    const playerMessageButton = document.getElementById('player-message-button');
-    if (playerMessageButton) Buttons.addClickEvent(playerMessageButton, processPlayerMessage);
+    preloadImagesAndInfo();
 
     const reconnect = document.getElementById('reconnect');
     if (reconnect) {
         if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
             document.getElementById('startPage').style.display = 'none';
-            preloadImagesAndInfo();
             openWebsocket(reconnect.innerText);
         } else {
             console.warn('websocket is not closed!')
@@ -64,22 +63,26 @@ window.onload = () => {
 };
 
 function joinGameRoom() {
-    const playerName = document.getElementById('playerNameInput').value;
+    const playerNameInput = document.getElementById('playerNameInput');
+    const playerName = playerNameInput.value;
     HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
         () => {
+            playerNameInput.value = '';
             document.getElementById('startPage').style.display = 'none';
             document.getElementById('playersBeforeGame').style.display = 'block';
-            void preloadImagesAndInfo();
             openWebsocket(playerName);
         });
 }
 
 function openWebsocket(username) {
     webSocket = new WebSocket(`${HttpUtils.getBaseWebsocketUrl()}/${username}`);
-    webSocket.onclose = (event) => {
+    webSocket.onclose = (closeEvent) => {
         console.debug('websocket connection is closed');
-        if (event.code === 3000) {
+        const eventCode = closeEvent.code;
+        if (eventCode === 3000) {
             reloadPageOnGameOver();
+        } else if (eventCode === 1000) {
+            // TODO: check in-game logic
         } else {
             location.reload();
         }
@@ -89,9 +92,9 @@ function openWebsocket(username) {
         const socketMessageCode = socketMessage.code;
         console.debug(`websocket event code is ${socketMessageCode}`);
         if (socketMessageCode === 101) {
-            onPlayerConnected(socketMessage);
+            GameRoom.addToGameRoom(socketMessage.player_name);
         } else if (socketMessageCode === 102) {
-            onPlayerDisconnected(socketMessage);
+            GameRoom.removeFromGameRoom(socketMessage.player_name);
         } else if (socketMessageCode === 200) {
             onChatMessage(socketMessage);
         } else if (socketMessageCode === 201) {
@@ -144,7 +147,9 @@ function disconnectPlayer() {
         webSocket.close(1000, 'GOING_AWAY');
     }
     webSocket = null;
-    location.reload();
+    document.getElementById('playersBeforeGame').style.display = 'none';
+    document.getElementById('startPage').style.display = 'block';
+    GameRoom.clearGameRoomView();
 }
 
 function getPlayerIdFromCookie() {
@@ -176,40 +181,7 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     for (let fieldView of fieldViews) {
         applyFieldManagementEvents(fieldView.id);
     }
-
-    // auto-click 'send' button in message box if input is active
-    const playerMessageInput = document.getElementById('player-message-input');
-    playerMessageInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            document.getElementById('player-message-button').click();
-        }
-    });
-}
-
-function onPlayerConnected(playerConnectedEvent) {
-    const playerName = playerConnectedEvent.player_name;
-    for (let i = 0; i < 5; i++) {
-        const playerField = document.getElementById(`player${i}`);
-        if (playerField.textContent.trim() === '') {
-            playerField.textContent = playerName;
-            playerField.style.textAlign = 'center';
-            document.getElementById(`player${i}-image`).style.display = 'block';
-            break;
-        }
-    }
-}
-
-function onPlayerDisconnected(playerDisconnectedEvent) {
-    const playerName = playerDisconnectedEvent.player_name;
-    for (let i = 0; i < 5; i++) {
-        const playerField = document.getElementById(`player${i}`);
-        if (playerField.textContent === playerName) {
-            playerField.textContent = '';
-            document.getElementById(`player${i}-image`).style.display = 'none';
-            break;
-        }
-    }
+    Buttons.configureMessageSendButton(webSocket, getThisPlayerId());
 }
 
 function onChatMessage(chatMessageEvent) {
@@ -224,8 +196,7 @@ function onChatMessage(chatMessageEvent) {
     const messageText = document.createElement('span');
     messageText.textContent = `: ${chatMessageEvent.message}`;
 
-    messageElement.appendChild(nameText);
-    messageElement.appendChild(messageText);
+    messageElement.append(nameText, messageText);
     sendMessageToChat(messageElement);
 }
 
@@ -255,18 +226,6 @@ function onTurnStart(turnStartEvent) {
     outlinePlayer(playerToGo);
     if (getThisPlayerId() === playerToGo) {
         Buttons.renderThrowDiceButton();
-    }
-}
-
-function processPlayerMessage() {
-    const playerMessageInput = document.getElementById('player-message-input');
-    if (playerMessageInput) {
-        const text = playerMessageInput.value;
-        if (text.trim() !== '' && webSocket != null) {
-            const playerMessage = {playerId: getThisPlayerId(), message: text};
-            webSocket.send(JSON.stringify(playerMessage));
-            playerMessageInput.value = '';
-        }
     }
 }
 
@@ -476,6 +435,7 @@ function hideStartElements() {
 
 function preloadImagesAndInfo() {
     Promise.allSettled([
+        GameRoom.initializeGameRoom(),
         imagePreload('images/map-back.png', 'images/loading-bubbles.gif'),
         initialiseChipParams(),
         Dice.preloadDice()
