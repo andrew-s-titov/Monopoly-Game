@@ -447,7 +447,7 @@ function getStartPageElement() {
 
 function getGameRoomElement() {
     if (_GAME_ROOM === null) {
-        _GAME_ROOM = document.getElementById('playersBeforeGame');
+        _GAME_ROOM = document.getElementById('gameRoom');
     }
     return _GAME_ROOM;
 }
