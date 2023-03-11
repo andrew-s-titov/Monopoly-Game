@@ -1,4 +1,4 @@
-'strict mode'
+'strict mode';
 
 import * as Buttons from './buttons.js';
 import * as Dice from './dice.js';
@@ -9,11 +9,11 @@ import * as Utils from './utils.js';
 import * as Offers from './offer.js';
 import * as GameRoom from './game-room.js';
 import {initialiseChipParams} from './chip-movement.js';
+import {displayAtopMapMessage, hideAtopMapMessage} from "./game-map.js";
 
 const PLAYER_ID_COOKIE = 'player_id';
 const RUNNING_CIRCLE_OUTLINE_CLASSNAME = 'running-circle';
 const RUNNING_CIRCLE_OUTLINE_ID = 'running-circle';
-const WINNER_INFO_CONTAINER_ID = 'winner-info-container';
 
 let thisPlayerId;
 let webSocket = null;
@@ -23,8 +23,8 @@ let _START_PAGE = null;
 let _GAME_ROOM = null;
 let _BACKGROUND_DIV = null;
 
-let startBackgroundImageWidth = 0;
-let startBackgroundImageHeight = 0;
+let initialBackgroundImageWidth = 0;
+let initialBackgroundImageHeight = 0;
 
 window.onload = () => {
     const host = document.getElementById('proxy-host').innerText;
@@ -352,25 +352,15 @@ function onMortgageChange(mortgageChangeEvent) {
 
 function onGameOver(gameOverEvent) {
     const winnerName = gameOverEvent.player_name;
-
-    const winnerInfoContainer = document.createElement('div');
-    winnerInfoContainer.className = 'fullscreen-shadow-container';
-    winnerInfoContainer.id = WINNER_INFO_CONTAINER_ID;
-
-    const winnerInfo = document.createElement('div');
-    winnerInfo.className = 'center-screen-container';
-    winnerInfo.innerText = `${winnerName} is the winner!`;
-
-    winnerInfoContainer.appendChild(winnerInfo);
-    document.body.appendChild(winnerInfoContainer);
-
+    const text = `${winnerName} is the winner!`;
+    displayAtopMapMessage(text);
     reloadPageOnGameOver();
 }
 
 function reloadPageOnGameOver() {
     setTimeout(
         () => {
-            Utils.removeElementsIfPresent(WINNER_INFO_CONTAINER_ID);
+            hideAtopMapMessage();
             if (webSocket != null && webSocket.readyState !== WebSocket.OPEN) {
                 webSocket.close();
                 webSocket = null;
@@ -415,8 +405,8 @@ function getThisPlayerId() {
 
 function initialStartPageBackgroundSet() {
     let backgroundImage = document.getElementById('startPageBackgroundImage');
-    startBackgroundImageWidth = backgroundImage.width;
-    startBackgroundImageHeight = backgroundImage.height;
+    initialBackgroundImageWidth = backgroundImage.width;
+    initialBackgroundImageHeight = backgroundImage.height;
     backgroundImage.remove();
     resizeBackgroundImage();
 }
@@ -425,10 +415,9 @@ function resizeBackgroundImage() {
     let backgroundImageDiv = getBackgroundImageDiv();
     let windowWidth = window.innerWidth;
     let windowHeight = window.innerHeight;
-    let proportion = Math.max(windowWidth / startBackgroundImageWidth, windowHeight / startBackgroundImageHeight);
-
-    backgroundImageDiv.style.backgroundSize =
-        `${Math.ceil(proportion * startBackgroundImageWidth)}px ${Math.ceil(proportion * startBackgroundImageHeight)}px`;
+    let widthProportion = windowWidth / initialBackgroundImageWidth;
+    let heightProportion = windowHeight / initialBackgroundImageHeight;
+    backgroundImageDiv.style.backgroundSize = heightProportion > widthProportion ? `auto 100vh` : `100vw`;
     backgroundImageDiv.style.display = 'block';
 }
 

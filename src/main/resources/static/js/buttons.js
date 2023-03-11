@@ -1,5 +1,6 @@
 import * as HttpUtils from './http.js';
 import {removeElementsIfPresent} from './utils.js';
+import {displayAtopMapMessage, hideAtopMapMessage} from "./game-map.js";
 
 export const PROPERTY_MANAGEMENT_PREFIX = 'management';
 
@@ -130,12 +131,7 @@ export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex,
 }
 
 export function renderGiveUpConfirmation() {
-    const confirmationShadow = document.createElement('div');
-    confirmationShadow.className = 'fullscreen-shadow-container';
-    document.body.appendChild(confirmationShadow);
     const confirmContent = document.createElement('div');
-    confirmContent.className = 'center-screen-container';
-    confirmationShadow.appendChild(confirmContent);
     const confirmTextElement = document.createElement('p');
     confirmTextElement.innerText = 'Do you really want to give up?';
     confirmContent.appendChild(confirmTextElement);
@@ -146,8 +142,9 @@ export function renderGiveUpConfirmation() {
     const cancelGiveUpButton = createActionButton('Cancel');
     for (let button of [confirmGiveUpButton, cancelGiveUpButton]) {
         confirmContent.appendChild(button);
-        addClickEvent(button, () => confirmationShadow.remove);
+        addClickEvent(button, hideAtopMapMessage);
     }
+    displayAtopMapMessage(confirmContent);
 }
 
 function createManagementButton(managementContainer, buttonText, idPostfix, onclickFunction) {
