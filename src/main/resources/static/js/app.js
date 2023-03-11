@@ -404,10 +404,10 @@ function getThisPlayerId() {
 }
 
 function initialStartPageBackgroundSet() {
-    let backgroundImage = document.getElementById('startPageBackgroundImage');
-    initialBackgroundImageWidth = backgroundImage.width;
-    initialBackgroundImageHeight = backgroundImage.height;
-    backgroundImage.remove();
+    const background = new Image();
+    background.src = '/images/start-background.jpg';
+    initialBackgroundImageWidth = background.naturalWidth;
+    initialBackgroundImageHeight = background.naturalHeight;
     resizeBackgroundImage();
 }
 

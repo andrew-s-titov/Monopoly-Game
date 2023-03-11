@@ -46,7 +46,7 @@ export function renderThrowDiceButton() {
     if (_THROW_DICE_BUTTON === null) {
         _THROW_DICE_BUTTON = createActionButton('Roll the dice!', `${HttpUtils.baseGameUrl()}/dice/roll`, false);
         _THROW_DICE_BUTTON.classList.add('roll-the-dice-button', 'flashing');
-        addClickEvent(_THROW_DICE_BUTTON, _THROW_DICE_BUTTON.remove);
+        addClickEvent(_THROW_DICE_BUTTON, hideThrowDiceButton);
         document.getElementById('message-container').appendChild(_THROW_DICE_BUTTON);
     }
     _THROW_DICE_BUTTON.style.display = 'block';
