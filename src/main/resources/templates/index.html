@@ -7,68 +7,32 @@
     <link rel="stylesheet" href="/css/buttons.css">
     <link rel="stylesheet" href="/css/game-map.css">
     <link rel="stylesheet" href="/css/game-room.css">
+    <link rel="stylesheet" href="/css/start-page.css">
 </header>
 <title>Monopoly Game</title>
 
 <body>
 <div style="display: none" id="proxy-host" th:text="${proxyHost}"></div>
-<div id="backgroundImageDiv" class="full-size-background"></div>
-<div id="startPage">
-    <div id="welcome" class="welcome-message">Welcome to the Monopoly game!</div>
-    <div th:if="${gameStarted}" style="text-align:center">
-        <div th:if="${needToReconnect != null}">
-            <div id="reconnect" th:text="${needToReconnect}" style="display: block"></div>
-        </div>
-        <div th:if="${needToReconnect == null}">Sorry, but the game already started. Please, try to join later.</div>
-    </div>
-    <div th:if="!${gameStarted}" style="text-align:center">
-        <label for="playerNameInput" class="enter-nickname-phrase">Enter your nickname:</label>
-        <br>
-        <input id="playerNameInput" class="player-name-input" type="text" autocomplete="off" autofocus/>
-        <br>
-        <button id="submitPlayerName" class="start-page-button, join-game-button">Join the game</button>
-    </div>
+<div id="mainContainer">
+    <div id="backgroundImageDiv" class="full-size-background"></div>
+<!--    <div id="startPage">-->
+<!--        <div id="welcome" class="welcome-message">Welcome to the Monopoly game!</div>-->
+<!--        <div th:if="${gameStarted}" style="text-align:center">-->
+<!--            <div th:if="${needToReconnect != null}">-->
+<!--                <div id="reconnect" th:text="${needToReconnect}" style="display: block"></div>-->
+<!--            </div>-->
+<!--            <div th:if="${needToReconnect == null}">Sorry, but the game already started. Please, try to join later.-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div th:if="!${gameStarted}" style="text-align:center">-->
+<!--            <label for="playerNameInput" class="enter-nickname-phrase">Enter your nickname:</label>-->
+<!--            <br>-->
+<!--            <input id="playerNameInput" class="player-name-input" type="text" autocomplete="off" autofocus/>-->
+<!--            <br>-->
+<!--            <button id="submitPlayerName" class="start-page-button, join-game-button">Join the game</button>-->
+<!--        </div>-->
+<!--    </div>-->
 </div>
-<div id="gameRoom" style="display: none; text-align:center">
-    <p style="text-align:center; font-weight: bold; font-size: 25px">Registered players:</p>
-    <table style="margin-left:auto; margin-right:auto; border-collapse: collapse">
-        <tr class="image-row">
-            <td style="width: 200px; height: 250px">
-                <img id="player0-image" src="../static/images/user.png" th:src="@{images/user.png}"
-                     style="display: none"/>
-            </td>
-            <td style="width: 200px; height: 250px">
-                <img id="player1-image" src="../static/images/user.png" th:src="@{images/user.png}"
-                     style="display: none"/>
-            </td>
-            <td style="width: 200px; height: 250px">
-                <img id="player2-image" src="../static/images/user.png" th:src="@{images/user.png}"
-                     style="display: none"/>
-            </td>
-            <td style="width: 200px; height: 250px">
-                <img id="player3-image" src="../static/images/user.png" th:src="@{images/user.png}"
-                     style="display: none"/>
-            </td>
-            <td style="width: 200px; height: 250px">
-                <img id="player4-image" src="../static/images/user.png" th:src="@{images/user.png}"
-                     style="display: none"/>
-            </td>
-        </tr>
-        <tr class="name-row">
-            <td id="player0" class="player-name-holder"></td>
-            <td id="player1" class="player-name-holder"></td>
-            <td id="player2" class="player-name-holder"></td>
-            <td id="player3" class="player-name-holder"></td>
-            <td id="player4" class="player-name-holder"></td>
-        </tr>
-    </table>
-    <br>
-    <button id="startGameButton" class="start-page-button" style="margin-bottom: 20px">Start Game!</button>
-    <p id="beforeGameMessage"></p>
-
-    <button id="disconnectPlayerButton" class="start-page-button">Leave</button>
-</div>
-
 <div id="map" style="display: none">
     <table style="margin-left: 300px">
         <tr>
@@ -341,7 +305,8 @@
                         </td>
                         <td colspan="9">
                             <div id="player-message-container">
-                                <input id="player-message-input" autocomplete="false" placeholder="Enter a message..."/>
+                                <input id="player-message-input" autocomplete="false"
+                                       placeholder="Enter a message..."/>
                                 <button id="player-message-button">send</button>
                             </div>
                         </td>
