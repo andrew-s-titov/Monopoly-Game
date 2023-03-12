@@ -82,24 +82,19 @@ function getGameRoomHTMLContent() {
 <table style="margin-left:auto; margin-right:auto; border-collapse: collapse">
     <tr class="image-row">
         <td style="width: 200px; height: 250px">
-            <img id="player0-image" src="/images/user.png" th:src="@{images/user.png}"
-                 style="display: none"/>
+            <img id="player0-image" src="/images/user.png" style="display: none"/>
         </td>
         <td style="width: 200px; height: 250px">
-            <img id="player1-image" src="/images/user.png" th:src="@{images/user.png}"
-                 style="display: none"/>
+            <img id="player1-image" src="/images/user.png" style="display: none"/>
         </td>
         <td style="width: 200px; height: 250px">
-            <img id="player2-image" src="/images/user.png" th:src="@{images/user.png}"
-                 style="display: none"/>
+            <img id="player2-image" src="/images/user.png" style="display: none"/>
         </td>
         <td style="width: 200px; height: 250px">
-            <img id="player3-image" src="/images/user.png" th:src="@{images/user.png}"
-                 style="display: none"/>
+            <img id="player3-image" src="/images/user.png" style="display: none"/>
         </td>
         <td style="width: 200px; height: 250px">
-            <img id="player4-image" src="/images/user.png" th:src="@{images/user.png}"
-                 style="display: none"/>
+            <img id="player4-image" src="/images/user.png" style="display: none"/>
         </td>
     </tr>
     <tr class="name-row">
@@ -111,7 +106,7 @@ function getGameRoomHTMLContent() {
     </tr>
 </table>
 <br>
-<button id="startGameButton" class="start-page-button" style="margin-bottom: 20px">Start Game!</button>
-<button id="disconnectPlayerButton" class="start-page-button">Leave</button>
+<button id="startGameButton" class="game-room-button" style="margin-bottom: 20px">Start Game!</button>
+<button id="disconnectPlayerButton" class="game-room-button">Leave</button>
     `;
 }

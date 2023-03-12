@@ -9,6 +9,7 @@ import * as Utils from './utils.js';
 import * as Offers from './offer.js';
 import * as GameRoom from './game-room.js';
 import * as StartPage from './start-page.js';
+import * as Background from './start-background.js';
 import {initialiseChipParams} from './chip-movement.js';
 import {displayAtopMapMessage, hideAtopMapMessage} from "./game-map.js";
 
@@ -150,6 +151,9 @@ function startGame() {
     HttpUtils.post(HttpUtils.baseGameUrl(), null, () => {
         gameInProgress = true;
         closeGameRoomPage();
+        if (Background.isVisible()) {
+            Background.hide();
+        }
     });
 }
 
@@ -422,18 +426,12 @@ function getMainContainer() {
 }
 
 function renderStartPage() {
+    ensureBackgroundIsVisible();
     const mainContainer = getMainContainer();
     const startPage = StartPage.getStartPageElement();
     mainContainer.innerHTML = '';
     mainContainer.appendChild(startPage);
-    const backgroundImg = document.getElementById('backgroundImg');
-    if (backgroundImg) {
-        backgroundImg.onload = () => {
-            StartPage.initialiseBackground(backgroundImg);
-            StartPage.resizeBackgroundImage();
-        }
-    }
-    window.addEventListener('resize', StartPage.resizeBackgroundImage);
+    StartPage.getPlayerNameInput().focus();
     const submitPlayerNameButton = StartPage.getSubmitPlayerNameButton();
     Buttons.addClickEvent(submitPlayerNameButton, joinGameRoom);
     window.addEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
@@ -441,7 +439,6 @@ function renderStartPage() {
 
 function closeStartPage() {
     StartPage.getSubmitPlayerNameButton().removeEventListener('click', joinGameRoom);
-    window.removeEventListener('resize', StartPage.resizeBackgroundImage);
     window.removeEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
 }
 
@@ -453,6 +450,7 @@ function autoSubmitPlayerNameOnEnterPress(event) {
 }
 
 function renderGameRoomPage() {
+    ensureBackgroundIsVisible();
     const mainContainer = getMainContainer();
     const gameRoomPage = GameRoom.getGameRoomPageElement();
     mainContainer.innerHTML = '';
@@ -471,4 +469,13 @@ function leaveGameRoom() {
     disconnectPlayer();
     closeGameRoomPage();
     renderStartPage();
+}
+
+function ensureBackgroundIsVisible() {
+    if (!Background.isRendered()) {
+        Background.renderBackground(document.body);
+    }
+    if (Background.isRendered() && !Background.isVisible()) {
+        Background.show();
+    }
 }

@@ -26,6 +26,8 @@
     height: 10vh;
     font-size: 4vh;
     line-height: 10vh;
+    border: none;
+    box-shadow: 0 0 3vh 1vh grey;
 }
 
 .full-size-background {
