@@ -2,14 +2,25 @@ let _START_PAGE = null;
 let _SUBMIT_PLAYER_NAME_BUTTON = null;
 let _PLAYER_NAME_INPUT = null;
 
+let _rendered = false;
+
+export function render(parentElement) {
+    parentElement.appendChild(getStartPageContainer());
+    _rendered = true;
+}
+
 export function getPlayerNameFromInput() {
+    if (!_rendered) {
+        console.error('failed to get player name from input - start page is not rendered');
+        return;
+    }
     const playerNameInput = getPlayerNameInput();
     const name = playerNameInput.value;
     playerNameInput.value = '';
     return name;
 }
 
-export function getStartPageElement() {
+export function getStartPageContainer() {
     if (_START_PAGE === null) {
         _START_PAGE = document.createElement('div');
         _START_PAGE.className = "start-page-container";
@@ -19,6 +30,10 @@ export function getStartPageElement() {
 }
 
 export function getSubmitPlayerNameButton() {
+    if (!_rendered) {
+        console.error('failed to get submitPlayerNameButton - start page is not rendered');
+        return;
+    }
     if (_SUBMIT_PLAYER_NAME_BUTTON === null) {
         _SUBMIT_PLAYER_NAME_BUTTON = document.getElementById('submitPlayerName');
     }

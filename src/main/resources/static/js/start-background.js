@@ -47,8 +47,10 @@ function resize() {
     let windowHeight = window.innerHeight;
     let widthProportion = windowWidth / _initialBackgroundImageWidth;
     let heightProportion = windowHeight / _initialBackgroundImageHeight;
-    backgroundImageDiv.style.backgroundSize = heightProportion > widthProportion ? `auto 100vh` : `100vw`;
-    backgroundImageDiv.style.display = 'block';
+    backgroundImageDiv.style.setProperty('background-size',
+        heightProportion > widthProportion ? 'auto 100vh' : '100vw',
+        'important');
+    backgroundImageDiv.style.setProperty('display', 'block', 'important');
 }
 
 export function renderBackground(parentElement) {
@@ -57,6 +59,7 @@ export function renderBackground(parentElement) {
     }
     parentElement.appendChild(getBackgroundContainer());
     _rendered = true;
+    _visible = true;
     const backgroundImg = document.getElementById('backgroundImg');
     backgroundImg.onload = () => {
         _initialBackgroundImageWidth = backgroundImg.naturalWidth;
@@ -64,7 +67,6 @@ export function renderBackground(parentElement) {
         backgroundImg.remove();
         resize();
         window.addEventListener('resize', resize);
-        _visible = true;
     }
 }
 
@@ -85,7 +87,7 @@ function getBackgroundImageDiv() {
 
 function getBackgroundHTMLContent() {
     return `
-<img id="backgroundImg" src="/images/start-background.jpg" style="display: none">
+<img id="backgroundImg" src="/images/start-background.jpg">
 <div id="backgroundImageDiv" class="full-size-background"></div>
     `;
 }

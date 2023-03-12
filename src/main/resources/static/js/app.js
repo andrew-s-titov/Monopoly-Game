@@ -162,12 +162,12 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
         // first game map refresh
         firstMapRefresh = false;
         GameRoom.clear();
+        Background.hide();
         getMainContainer().innerHTML = '';
+        document.getElementById('map').style.display = 'block';
+        document.body.style.backgroundColor = 'darkslategray';
     }
     // TODO: render game map html content
-
-    document.getElementById('map').style.display = 'block';
-    document.body.style.backgroundColor = 'darkslategray';
 
     // TODO: resize image and make grid fit it
     document.getElementById('mapTable').style.backgroundImage = "url('/images/map-back.png')";
@@ -349,6 +349,8 @@ function onMortgageChange(mortgageChangeEvent) {
 }
 
 function onGameOver(gameOverEvent) {
+    gameInProgress = false;
+    firstMapRefresh = true;
     const winnerName = gameOverEvent.player_name;
     const text = `${winnerName} is the winner!`;
     displayAtopMapMessage(text);
@@ -428,12 +430,10 @@ function getMainContainer() {
 function renderStartPage() {
     ensureBackgroundIsVisible();
     const mainContainer = getMainContainer();
-    const startPage = StartPage.getStartPageElement();
     mainContainer.innerHTML = '';
-    mainContainer.appendChild(startPage);
+    StartPage.render(mainContainer);
     StartPage.getPlayerNameInput().focus();
-    const submitPlayerNameButton = StartPage.getSubmitPlayerNameButton();
-    Buttons.addClickEvent(submitPlayerNameButton, joinGameRoom);
+    Buttons.addClickEvent(StartPage.getSubmitPlayerNameButton(), joinGameRoom);
     window.addEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
 }
 
@@ -452,9 +452,8 @@ function autoSubmitPlayerNameOnEnterPress(event) {
 function renderGameRoomPage() {
     ensureBackgroundIsVisible();
     const mainContainer = getMainContainer();
-    const gameRoomPage = GameRoom.getGameRoomPageElement();
     mainContainer.innerHTML = '';
-    mainContainer.appendChild(gameRoomPage);
+    GameRoom.render(mainContainer);
     Buttons.addClickEvent(GameRoom.getStartGameButton(), startGame);
     Buttons.addClickEvent(GameRoom.getLeaveGameRoomButton(), leaveGameRoom);
 }

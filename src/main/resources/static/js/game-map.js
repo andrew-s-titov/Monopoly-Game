@@ -40,3 +40,7 @@ function getFullscreenShadowElement() {
     }
     return _FULLSCREEN_SHADOW;
 }
+
+function gameMapHTMLContent() {
+
+}

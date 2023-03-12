@@ -5,7 +5,14 @@ let _START_GAME_BUTTON = null;
 let _LEAVE_GAME_ROOM_BUTTON = null;
 let _CONNECTED_PLAYERS = null;
 
-export function getGameRoomPageElement() {
+let _rendered = false;
+
+export function render(parentElement) {
+    parentElement.appendChild(getGameRoomPageContainer());
+    _rendered = true;
+}
+
+export function getGameRoomPageContainer() {
     if (_GAME_ROOM_PAGE === null) {
         _GAME_ROOM_PAGE = document.createElement('div');
         _GAME_ROOM_PAGE.className = 'game-room-container';
@@ -15,6 +22,10 @@ export function getGameRoomPageElement() {
 }
 
 export function getStartGameButton() {
+    if (!_rendered) {
+        console.error('failed to get startGame button - game room page is not rendered');
+        return;
+    }
     if (_START_GAME_BUTTON === null) {
         _START_GAME_BUTTON = document.getElementById('startGameButton');
     }
@@ -22,6 +33,10 @@ export function getStartGameButton() {
 }
 
 export function getLeaveGameRoomButton() {
+    if (!_rendered) {
+        console.error('failed to get leaveGameRoom button - game room page is not rendered');
+        return;
+    }
     if (_LEAVE_GAME_ROOM_BUTTON === null) {
         _LEAVE_GAME_ROOM_BUTTON = document.getElementById('disconnectPlayerButton');
     }
