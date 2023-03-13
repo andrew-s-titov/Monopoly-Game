@@ -1,18 +1,18 @@
 import {displayError} from './utils.js';
 
 let _HOST = null;
-let _SCHEME = null;
+let _PROTOCOL = null;
 let _BASE_GAME_URL = null;
-let _WEBSOCKET_SCHEME = null;
+let _WEBSOCKET_PROTOCOL = null;
 let _WEBSOCKET_BASE_URL = null;
 
-export function setHost(host) {
+export function setConnectionData(protocol, host) {
+    _PROTOCOL = protocol;
     _HOST = host;
     const localhost = _HOST.includes('localhost', 0);
-    _SCHEME = localhost ? 'http' : 'https';
-    _WEBSOCKET_SCHEME = localhost ? 'ws' : 'wss';
-    _BASE_GAME_URL = `${_SCHEME}://${_HOST}/game`;
-    _WEBSOCKET_BASE_URL = `${_WEBSOCKET_SCHEME}://${_HOST}/connect`;
+    _WEBSOCKET_PROTOCOL = localhost ? 'ws:' : 'wss:';
+    _BASE_GAME_URL = `${_PROTOCOL}//${_HOST}/game`;
+    _WEBSOCKET_BASE_URL = `${_WEBSOCKET_PROTOCOL}//${_HOST}/connect`;
 }
 
 export function getHost() {

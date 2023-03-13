@@ -1,11 +1,9 @@
 package com.monopolynew.controller;
 
 import com.monopolynew.config.GlobalConfig;
-import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,16 +17,9 @@ import java.util.UUID;
 @RequestMapping("/")
 public class IndexController {
 
-    private final GameService gameService;
-
-    @Value("${proxy.host}")
-    private String proxyHost;
-
-    @GetMapping
-    public String homePage(Model model, HttpServletResponse response,
+    @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
+    public String homePage(HttpServletResponse response,
                            @CookieValue(value = GlobalConfig.PLAYER_ID_KEY, required = false) String playerIdCookie) {
-        model.addAttribute("gameStarted", gameService.isGameStarted());
-        model.addAttribute("proxyHost", proxyHost);
         if (playerIdCookie == null || playerIdCookie.equalsIgnoreCase("null")) {
             // TODO: remove upon login feature implementation
             Cookie cookie = new Cookie(GlobalConfig.PLAYER_ID_KEY, UUID.randomUUID().toString());
