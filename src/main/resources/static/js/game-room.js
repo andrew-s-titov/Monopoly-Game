@@ -1,18 +1,82 @@
-const CONNECTED_PLAYERS = [];
 const MAX_PLAYERS = 5;
 
-export async function initializeGameRoom() {
-    for (let i = 0; i < MAX_PLAYERS; i++) {
-        const playerNameField = document.getElementById(`player${i}`);
-        playerNameField.style.textAlign = 'center';
-        const playerImage = document.getElementById(`player${i}-image`);
-        CONNECTED_PLAYERS.push([playerNameField, playerImage]);
+let _GAME_ROOM_PAGE = null;
+let _START_GAME_BUTTON = null;
+let _LEAVE_GAME_ROOM_BUTTON = null;
+let _CONNECTED_PLAYERS = null;
+
+let _rendered = false;
+
+export function isRendered() {
+    return _rendered;
+}
+
+export function render(parentContainer) {
+    if (_rendered) {
+        return;
     }
+    parentContainer.innerHTML = '';
+    parentContainer.appendChild(getGameRoomPageContainer());
+    _rendered = true;
+}
+
+export function hide(parentContainer) {
+    if (!_rendered) {
+        return;
+    }
+    parentContainer.innerHTML = '';
+    clear();
+    _rendered = false;
+}
+
+export function getGameRoomPageContainer() {
+    if (_GAME_ROOM_PAGE === null) {
+        _GAME_ROOM_PAGE = document.createElement('div');
+        _GAME_ROOM_PAGE.className = 'game-room-container';
+        _GAME_ROOM_PAGE.innerHTML = getGameRoomHTMLContent();
+    }
+    return _GAME_ROOM_PAGE;
+}
+
+export function getStartGameButton() {
+    if (!_rendered) {
+        console.error('failed to get startGame button - game room page is not rendered');
+        return;
+    }
+    if (_START_GAME_BUTTON === null) {
+        _START_GAME_BUTTON = document.getElementById('startGameButton');
+    }
+    return _START_GAME_BUTTON;
+}
+
+export function getLeaveGameRoomButton() {
+    if (!_rendered) {
+        console.error('failed to get leaveGameRoom button - game room page is not rendered');
+        return;
+    }
+    if (_LEAVE_GAME_ROOM_BUTTON === null) {
+        _LEAVE_GAME_ROOM_BUTTON = document.getElementById('disconnectPlayerButton');
+    }
+    return _LEAVE_GAME_ROOM_BUTTON;
+}
+
+function getConnectedPlayers() {
+    if (_CONNECTED_PLAYERS === null) {
+        _CONNECTED_PLAYERS = [];
+        for (let i = 0; i < MAX_PLAYERS; i++) {
+            const playerNameField = document.getElementById(`player${i}`);
+            playerNameField.style.textAlign = 'center';
+            const playerImage = document.getElementById(`player${i}-image`);
+            _CONNECTED_PLAYERS.push([playerNameField, playerImage]);
+        }
+    }
+    return _CONNECTED_PLAYERS;
 }
 
 export function addToGameRoom(playerName) {
+    const connectedPlayers = getConnectedPlayers();
     for (let i = 0; i < MAX_PLAYERS; i++) {
-        const player = CONNECTED_PLAYERS[i];
+        const player = connectedPlayers[i];
         const playerNameField = player[0];
         const playerImage = player[1];
         if (playerNameField.textContent.trim() === '') {
@@ -24,21 +88,57 @@ export function addToGameRoom(playerName) {
 }
 
 export function removeFromGameRoom(playerName) {
+    const connectedPlayers = getConnectedPlayers();
     for (let i = 0; i < MAX_PLAYERS; i++) {
-        const player = CONNECTED_PLAYERS[i];
+        const player = connectedPlayers[i];
         const playerNameField = player[0];
-        const playerImage = player[1];
         if (playerNameField.textContent === playerName) {
             playerNameField.textContent = '';
-            playerImage.style.display = 'none';
+            player[1].style.display = 'none';
             break;
         }
     }
 }
 
-export function clearGameRoomView() {
-    for (let player of CONNECTED_PLAYERS) {
+export function clear() {
+    const connectedPlayers = getConnectedPlayers();
+    for (let player of connectedPlayers) {
         player[0].textContent = '';
         player[1].style.display = 'none';
     }
+}
+
+function getGameRoomHTMLContent() {
+    return `
+    <p style="text-align:center; font-weight: bold; font-size: 25px">Registered players:</p>
+<table style="margin-left:auto; margin-right:auto; border-collapse: collapse">
+    <tr class="image-row">
+        <td style="width: 200px; height: 250px">
+            <img id="player0-image" src="/images/user.png" style="display: none"/>
+        </td>
+        <td style="width: 200px; height: 250px">
+            <img id="player1-image" src="/images/user.png" style="display: none"/>
+        </td>
+        <td style="width: 200px; height: 250px">
+            <img id="player2-image" src="/images/user.png" style="display: none"/>
+        </td>
+        <td style="width: 200px; height: 250px">
+            <img id="player3-image" src="/images/user.png" style="display: none"/>
+        </td>
+        <td style="width: 200px; height: 250px">
+            <img id="player4-image" src="/images/user.png" style="display: none"/>
+        </td>
+    </tr>
+    <tr class="name-row">
+        <td id="player0" class="player-name-holder"></td>
+        <td id="player1" class="player-name-holder"></td>
+        <td id="player2" class="player-name-holder"></td>
+        <td id="player3" class="player-name-holder"></td>
+        <td id="player4" class="player-name-holder"></td>
+    </tr>
+</table>
+<br>
+<button id="startGameButton" class="game-room-button" style="margin-bottom: 20px">Start Game!</button>
+<button id="disconnectPlayerButton" class="game-room-button">Leave</button>
+    `;
 }

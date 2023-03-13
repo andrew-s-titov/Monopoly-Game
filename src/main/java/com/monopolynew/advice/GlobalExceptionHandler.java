@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO resolveServerError(Exception exception) {
-        log.error(UNEXPECTED + exception);
+        log.error(UNEXPECTED, exception);
         return ErrorDTO.builder()
                 .message(UNEXPECTED + exception.getMessage())
                 .build();

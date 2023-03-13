@@ -36,6 +36,29 @@ export function displayError(errorMessage) {
         2000);
 }
 
+export async function loadHtmlPage(url, containerClassName) {
+    if (url === undefined || url === null || typeof url !== 'string') {
+        console.error("cannot load html content with empty URL");
+        return;
+    }
+    const element = document.createElement('div');
+    element.className = containerClassName;
+    element.innerHTML = await fetch(url)
+        .then(response => {
+            if (response.status !== 200) {
+                console.error('');
+                return null;
+            }
+            return response;
+        })
+        .then(response => response.text())
+        .catch(error => {
+            displayError('Something went wrong. Please, reload the page');
+            console.log(error)
+        });
+    return element;
+}
+
 function getErrorPopUpElement() {
     if (_ERROR_POP_UP === null) {
         _ERROR_POP_UP = document.getElementById('errorMessage');

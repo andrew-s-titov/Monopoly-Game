@@ -1,26 +1,5 @@
-.welcome-message {
+.game-room-container {
     text-align: center;
-    font-weight: bold;
-    margin-bottom: 10vh;
-}
-
-.player-name-input {
-    text-align: center;
-    font-size: 4vh;
-    line-height: 4vh;
-    border: none;
-    box-shadow: 0 0 1vh 0.5vh grey;
-}
-
-.player-name-input:focus {
-    outline: none;
-}
-
-.join-game-button {
-    margin-top: 10vh;
-    height: 10vh;
-    font-size: 4vh;
-    line-height: 10vh;
 }
 
 .image-row td {
@@ -40,46 +19,9 @@
     padding: 8px;
 }
 
-.full-size-background {
-    display: none;
-    position: absolute;
-    z-index: -10;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-repeat: no-repeat no-repeat;
-    background-position: center center;
-    background-image: url('/images/start-background.jpg')!important;
-}
-
-.start-page-button {
+.game-room-button {
     border: none;
     box-shadow: 0 0 10px 2px grey;
     width: 200px;
     line-height: 40px;
-}
-
-@media (orientation: landscape) {
-    .player-name-input, .join-game-button {
-        width: 30vw;
-    }
-    .welcome-message {
-        font-size: 4vw;
-    }
-    .enter-nickname-phrase {
-        font-size: 2vw;
-    }
-}
-
-@media (orientation: portrait) {
-    .player-name-input, .join-game-button {
-        width: 80vw;
-    }
-    .welcome-message {
-        font-size: 4vh;
-    }
-    .enter-nickname-phrase {
-        font-size: 2vh;
-    }
 }

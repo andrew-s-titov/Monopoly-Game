@@ -27,9 +27,14 @@ export function moveChip(chip, fieldIndex) {
     chip.style.left = defineChipLeft(fieldIndex);
 }
 
+export function moveToStart(chip) {
+    chip.style.top = getStartTop() + PX_POSTFIX;
+    chip.style.left = getStartLeft() + PX_POSTFIX;
+}
+
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let top = _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT; // adding body default margin;
+    let top = getStartTop();
     if (fieldIndex >= 20 && fieldIndex <= 30) {
         top += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 10 && fieldIndex < 20) {
@@ -42,7 +47,7 @@ function defineChipTop(fieldIndex) {
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let left = _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
+    let left = getStartLeft();
     if (fieldIndex >= 10 && fieldIndex <= 20) {
         left += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 0 && fieldIndex < 10) {
@@ -55,4 +60,12 @@ function defineChipLeft(fieldIndex) {
 
 function getStylePropertyNumber(computedStyle, propertyName) {
     return Number.parseFloat(computedStyle.getPropertyValue(propertyName).trim().replace(PX_POSTFIX, ''));
+}
+
+function getStartTop() {
+    return _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT; // adding body default margin;
+}
+
+function getStartLeft() {
+    return _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
 }

@@ -7,26 +7,8 @@ export const PROPERTY_MANAGEMENT_PREFIX = 'management';
 const ACTION_CONTAINER_ID = 'action_container';
 const PROPERTY_MANAGEMENT_CONTAINER_ID = `${PROPERTY_MANAGEMENT_PREFIX}_${ACTION_CONTAINER_ID}`;
 
-let _MESSAGE_SEND_BUTTON = null;
-let _MESSAGE_INPUT_FIELD = null;
-let _THROW_DICE_BUTTON = null;
-
 export function addClickEvent(button, listenerFunction) {
     button.addEventListener('click', listenerFunction);
-}
-
-export function configureMessageSendButton(websocket, senderId) {
-    if (_MESSAGE_SEND_BUTTON === null) {
-        _MESSAGE_SEND_BUTTON = document.getElementById('player-message-button');
-        _MESSAGE_INPUT_FIELD = document.getElementById('player-message-input');
-        addClickEvent(_MESSAGE_SEND_BUTTON, () => processMessageSendButtonClick(websocket, senderId));
-        _MESSAGE_INPUT_FIELD.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                _MESSAGE_SEND_BUTTON.click();
-            }
-        });
-    }
 }
 
 export function createActionButton(text, url, disabled) {
@@ -40,22 +22,6 @@ export function createActionButton(text, url, disabled) {
         actionButton.disabled = true;
     }
     return actionButton;
-}
-
-export function renderThrowDiceButton() {
-    if (_THROW_DICE_BUTTON === null) {
-        _THROW_DICE_BUTTON = createActionButton('Roll the dice!', `${HttpUtils.baseGameUrl()}/dice/roll`, false);
-        _THROW_DICE_BUTTON.classList.add('roll-the-dice-button', 'flashing');
-        addClickEvent(_THROW_DICE_BUTTON, hideThrowDiceButton);
-        document.getElementById('message-container').appendChild(_THROW_DICE_BUTTON);
-    }
-    _THROW_DICE_BUTTON.style.display = 'block';
-}
-
-export function hideThrowDiceButton() {
-    if (_THROW_DICE_BUTTON !== null) {
-        _THROW_DICE_BUTTON.style.display = 'none';
-    }
 }
 
 export function removeOldActionContainer() {
@@ -160,13 +126,4 @@ function createManagementButton(managementContainer, buttonText, idPostfix, oncl
 function finishPropertyManagement(managementContainer, closeOnClickListener) {
     managementContainer.remove();
     document.removeEventListener('click', closeOnClickListener);
-}
-
-function processMessageSendButtonClick(websocket, senderId) {
-    const text = _MESSAGE_INPUT_FIELD.value;
-    if (text.trim() !== '' && websocket != null) {
-        const playerMessage = {playerId: senderId, message: text};
-        _MESSAGE_INPUT_FIELD.value = '';
-        websocket.send(JSON.stringify(playerMessage));
-    }
 }
