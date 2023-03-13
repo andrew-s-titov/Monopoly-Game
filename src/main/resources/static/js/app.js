@@ -25,10 +25,7 @@ let firstMapRefresh = true;
 let _MAIN_CONTAINER = null;
 
 window.onload = () => {
-    const hostInfoHolder = document.getElementById('proxy-host');
-    const host = hostInfoHolder.innerText;
-    hostInfoHolder.remove();
-    HttpUtils.setHost(host);
+    HttpUtils.setConnectionData(location.protocol, location.host);
 
     preloadImagesAndInfo();
     prepareMainPage();

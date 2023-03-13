@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <header>
-    <link rel="icon" type="image/ico" th:href="@{/favicon.ico}" href="/favicon.ico"/>
+    <link rel="icon" type="image/ico" href="/favicon.ico"/>
     <link rel="stylesheet" href="/css/general.css">
     <link rel="stylesheet" href="/css/buttons.css">
     <link rel="stylesheet" href="/css/game-map.css">
@@ -12,7 +11,6 @@
 <title>Monopoly Game</title>
 
 <body>
-<div style="display: none" id="proxy-host" th:text="${proxyHost}"></div>
 <div id="mainContainer"></div>
 
 <div id="errorMessage" class="error-box"></div>
@@ -20,7 +18,7 @@
     <div id="atopMapContainer" class="center-screen-container"></div>
 </div>
 
-<script type="module" th:src="@{/js/app.js}" src="/js/app.js"></script>
+<script type="module" src="/js/app.js"></script>
 
 </body>
 </html>
