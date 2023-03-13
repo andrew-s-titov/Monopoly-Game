@@ -1,10 +1,12 @@
-import {moveChip} from './chip-movement.js';
+import {moveChip, moveToStart} from './chip-movement.js';
 import {addClickEvent, renderGiveUpConfirmation} from './buttons.js';
 import {get, baseGameUrl} from './http.js';
 import {startOfferProcess} from './offer.js';
 
+const MAX_PLAYERS = 5;
 const PLAYER_MAP = new Map();
-const CHIP_MAP = new Map();
+const PLAYER_INFO_HTML_FIELDS = [];
+const CHIPS = [];
 const PLAYER_COLORS = [
     'cornflowerblue',
     'crimson',
@@ -12,6 +14,23 @@ const PLAYER_COLORS = [
     'purple',
     'orange'
 ];
+
+export function clearPlayerInfo() {
+    if (PLAYER_INFO_HTML_FIELDS.length !== 0) {
+        for (let playerHtmlInfo of PLAYER_INFO_HTML_FIELDS) {
+            playerHtmlInfo.iconField.className = '';
+            playerHtmlInfo.iconField.style.boxShadow = 'none';
+            playerHtmlInfo.nameField.textContent = '';
+            playerHtmlInfo.moneyField.textContent = '';
+        }
+    }
+    if (CHIPS.length !== 0) {
+        for (let chip of CHIPS) {
+            moveToStart(chip);
+            chip.style.display = 'none';
+        }
+    }
+}
 
 export function addPlayers(jsonPlayerArray) {
     const arrayLength = jsonPlayerArray.length;
@@ -23,28 +42,33 @@ export function addPlayers(jsonPlayerArray) {
         const playerObject = new Player(index, playerName, playerColor);
         PLAYER_MAP.set(playerId, playerObject);
 
-        document.getElementById(`player${index}-name`).textContent = playerName;
-        document.getElementById(`player${index}-money`).textContent = `$ ${jsonPlayer.money}`;
+        const playerInfoHTMLFields = getPlayerInfoHTMLFields(index);
+        playerInfoHTMLFields.nameField.textContent = playerName;
+        playerInfoHTMLFields.moneyField.textContent = `$ ${jsonPlayer.money}`;
         renderPlayerPicture(index, playerId, playerColor);
         if (jsonPlayer.hasOwnProperty('bankrupt') && !jsonPlayer.bankrupt) {
-            renderPlayerChip(index, playerColor, jsonPlayer.position);
+            renderPlayerChip(index, jsonPlayer.position);
+            playerInfoHTMLFields.nameField.style.color = 'white';
+            playerInfoHTMLFields.moneyField.style.color = 'white';
         } else {
-            document.getElementById(`player${index}-money`).style.color = 'grey';
-            document.getElementById(`player${index}-name`).style.color = 'grey';
+            playerInfoHTMLFields.nameField.style.color = 'grey';
+            playerInfoHTMLFields.moneyField.style.color = 'grey';
         }
     }
 }
 
 export function bankruptPlayer(playerId) {
     const playerIndex = getPlayerIndexById(playerId);
-    document.getElementById(`player${playerIndex}-icon`).style.boxShadow = 'none';
-    document.getElementById(`player${playerIndex}-money`).style.color = 'grey';
-    document.getElementById(`player${playerIndex}-name`).style.color = 'grey';
-    CHIP_MAP.get(playerIndex).remove();
+    const playerInfoHTMLFields = getPlayerInfoHTMLFields(playerIndex);
+    playerInfoHTMLFields.iconField.style.boxShadow = 'none';
+    playerInfoHTMLFields.nameField.style.color = 'grey';
+    playerInfoHTMLFields.moneyField.style.color = 'grey';
+    getChip(playerIndex).style.display = 'none';
 }
 
 export function changePlayerMoney(playerId, money) {
-    document.getElementById(`player${getPlayerIndexById(playerId)}-money`).textContent = `$ ${money}`;
+    const playerIndex = getPlayerIndexById(playerId);
+    getPlayerInfoHTMLFields(playerIndex).moneyField.textContent = `$ ${money}`;
 }
 
 export function getPlayerIndexById(playerId) {
@@ -60,29 +84,51 @@ export function getPlayerNameById(playerId) {
 }
 
 export function movePlayerChip(playerId, fieldIndex) {
-    const chip = CHIP_MAP.get(getPlayerIndexById(playerId));
-    moveChip(chip, fieldIndex);
+    moveChip(getChip(getPlayerIndexById(playerId)), fieldIndex);
+}
+
+function initialisePlayers() {
+    for (let i = 0; i < MAX_PLAYERS; i++) {
+        PLAYER_INFO_HTML_FIELDS.push(new PlayerInfoHTMLFields(
+            document.getElementById(`player${i}-icon`),
+            document.getElementById(`player${i}-name`),
+            document.getElementById(`player${i}-money`)
+        ));
+    }
+}
+
+function getPlayerInfoHTMLFields(index) {
+    if (PLAYER_INFO_HTML_FIELDS.length === 0) {
+        initialisePlayers();
+    }
+    return PLAYER_INFO_HTML_FIELDS[index];
+}
+
+function initialiseChips() {
+    for (let index = 0; index < MAX_PLAYERS; index++) {
+        const chip = document.getElementById(`chip${index}`);
+        chip.getElementsByClassName('chip-inner')[0].style.background = PLAYER_COLORS[index];
+        CHIPS.push(chip);
+    }
+}
+
+function getChip(index) {
+    if (CHIPS.length === 0) {
+        initialiseChips();
+    }
+    return CHIPS[index];
 }
 
 function renderPlayerPicture(playerIndex, playerId, playerColor) {
-    const playerIconField = document.getElementById(`player${playerIndex}-icon`);
+    const playerIconField = getPlayerInfoHTMLFields(playerIndex).iconField;
     playerIconField.classList.add('player-icon');
     playerIconField.style.boxShadow = `0 0 0px 5px ${playerColor}`;
-
     applyPlayerManagementEvents(playerIconField, playerIndex, playerId);
 }
 
-function renderPlayerChip(index, color, position) {
-    const chip = document.createElement('div');
-    chip.id = `chip${index}`;
-    chip.className = 'chip-outer';
-    const chipInnerCircle = document.createElement('div');
-    chipInnerCircle.className = 'chip-inner';
-    chipInnerCircle.style.background = color;
-
-    chip.appendChild(chipInnerCircle);
-    CHIP_MAP.set(index, chip);
-    document.getElementById('mapTable').appendChild(chip);
+function renderPlayerChip(index, position) {
+    const chip = getChip(index);
+    chip.style.display = 'block';
     moveChip(chip, position);
 }
 
@@ -107,7 +153,7 @@ function renderPlayerManagementContainer(playerIndex, playerId, availableActions
     managementContainer.className = 'management-container';
     managementContainer.id = containerId;
 
-    const closeOnClickOutsideListener = function(event) {
+    const closeOnClickOutsideListener = function (event) {
         if (event.target.id !== containerId) {
             finishPlayerAction(managementContainer, closeOnClickOutsideListener);
         }
@@ -150,5 +196,17 @@ class Player {
         this.index = index;
         this.name = name;
         this.color = color;
+    }
+}
+
+class PlayerInfoHTMLFields {
+    iconField;
+    nameField;
+    moneyField;
+
+    constructor(iconField, nameField, moneyField) {
+        this.iconField = iconField;
+        this.nameField = nameField;
+        this.moneyField = moneyField;
     }
 }

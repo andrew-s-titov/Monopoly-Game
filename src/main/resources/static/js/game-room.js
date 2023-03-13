@@ -7,9 +7,26 @@ let _CONNECTED_PLAYERS = null;
 
 let _rendered = false;
 
-export function render(parentElement) {
-    parentElement.appendChild(getGameRoomPageContainer());
+export function isRendered() {
+    return _rendered;
+}
+
+export function render(parentContainer) {
+    if (_rendered) {
+        return;
+    }
+    parentContainer.innerHTML = '';
+    parentContainer.appendChild(getGameRoomPageContainer());
     _rendered = true;
+}
+
+export function hide(parentContainer) {
+    if (!_rendered) {
+        return;
+    }
+    parentContainer.innerHTML = '';
+    clear();
+    _rendered = false;
 }
 
 export function getGameRoomPageContainer() {

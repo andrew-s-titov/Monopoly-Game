@@ -5,15 +5,15 @@ let _initialBackgroundImageWidth = 0;
 let _initialBackgroundImageHeight = 0;
 
 let _visible = false;
-let _rendered = false;
+let _created = false;
 
-export function isRendered() {
-    return _rendered;
+export function isCreated() {
+    return _created;
 }
 
 export function show() {
-    if (!_rendered) {
-        console.error('failed to show background - it is not rendered');
+    if (!_created) {
+        console.error('failed to show background - it is not created');
         return;
     }
     if (_visible) {
@@ -25,8 +25,8 @@ export function show() {
 }
 
 export function hide() {
-    if (!_rendered) {
-        console.error('failed to hide background - it is not rendered');
+    if (!_created) {
+        console.error('failed to hide background - it is not created');
         return;
     }
     if (!_visible) {
@@ -54,11 +54,11 @@ function resize() {
 }
 
 export function renderBackground(parentElement) {
-    if (_rendered) {
+    if (_created) {
         return;
     }
     parentElement.appendChild(getBackgroundContainer());
-    _rendered = true;
+    _created = true;
     _visible = true;
     const backgroundImg = document.getElementById('backgroundImg');
     backgroundImg.onload = () => {

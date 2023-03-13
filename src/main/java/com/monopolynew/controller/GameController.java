@@ -1,5 +1,7 @@
 package com.monopolynew.controller;
 
+import com.monopolynew.config.GlobalConfig;
+import com.monopolynew.dto.PlayerStatusDTO;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -7,6 +9,7 @@ import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +40,15 @@ public class GameController {
             throw new PlayerInvalidInputException(message);
         }
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/status")
+    public PlayerStatusDTO status(@CookieValue(value = GlobalConfig.PLAYER_ID_KEY) String playerIdCookie) {
+        if (gameService.isGameStarted()) {
+            var playerName = gameService.getPlayerName(playerIdCookie);
+            return new PlayerStatusDTO(playerName);
+        }
+        return new PlayerStatusDTO(null);
     }
 
     @GetMapping("/dice/roll")

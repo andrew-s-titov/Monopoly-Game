@@ -11,7 +11,7 @@ import * as GameRoom from './game-room.js';
 import * as StartPage from './start-page.js';
 import * as Background from './start-background.js';
 import {initialiseChipParams} from './chip-movement.js';
-import {displayAtopMapMessage, hideAtopMapMessage} from "./game-map.js";
+import * as GameMap from "./game-map.js";
 
 const PLAYER_ID_COOKIE = 'player_id';
 const RUNNING_CIRCLE_OUTLINE_CLASSNAME = 'running-circle';
@@ -32,29 +32,20 @@ window.onload = () => {
 
     preloadImagesAndInfo();
     prepareMainPage();
-
-    /*const reconnect = document.getElementById('reconnect');
-    if (reconnect) {
-        if (webSocket == null || webSocket.readyState === WebSocket.CLOSED) {
-            getStartPageElement().style.display = 'none';
-            openWebsocket(reconnect.innerText);
-        } else {
-            console.warn('websocket is not closed!')
-        }
-        return;
-    }
-     */
 };
 
 function prepareMainPage() {
-    const mainContainer = getMainContainer();
-
-    // TODO: call BE endpoint to check game status for a player, reconnect or show start page
-    if (true) {
-        renderStartPage();
-    } else {
-        reconnectToGame();
-    }
+    HttpUtils.get(`${HttpUtils.baseGameUrl()}/status`,
+        (responseBody) => {
+            const name = responseBody.name;
+            if (name !== undefined && name !== null) {
+                renderGameMap();
+                openWebsocket(name);
+            } else {
+                renderStartPage();
+            }
+        }
+    );
 }
 
 function joinGameRoom() {
@@ -73,7 +64,10 @@ function openWebsocket(username) {
         console.debug('websocket connection is closed');
         const eventCode = closeEvent.code;
         if (eventCode === 3000) {
-            returnToStartPageWithDelay();
+            if (gameInProgress) {
+                markGameAsFinished();
+                returnToStartPage();
+            }
         } else if (eventCode === 1000) {
             // TODO: check in-game logic
         } else {
@@ -151,9 +145,7 @@ function startGame() {
     HttpUtils.post(HttpUtils.baseGameUrl(), null, () => {
         gameInProgress = true;
         closeGameRoomPage();
-        if (Background.isVisible()) {
-            Background.hide();
-        }
+        Background.hide();
     });
 }
 
@@ -161,17 +153,11 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     if (firstMapRefresh) {
         // first game map refresh
         firstMapRefresh = false;
-        GameRoom.clear();
+        closeGameRoomPage();
         Background.hide();
-        getMainContainer().innerHTML = '';
-        document.getElementById('map').style.display = 'block';
+        renderGameMap();
         document.body.style.backgroundColor = 'darkslategray';
     }
-    // TODO: render game map html content
-
-    // TODO: resize image and make grid fit it
-    document.getElementById('mapTable').style.backgroundImage = "url('/images/map-back.png')";
-    document.getElementById('mapTable').style.backgroundSize = '658px';
 
     const players = gameMapRefreshEvent.players;
     PlayerService.addPlayers(players);
@@ -183,7 +169,6 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     for (let fieldView of fieldViews) {
         applyFieldManagementEvents(fieldView.id);
     }
-    Buttons.configureMessageSendButton(webSocket, getThisPlayerId());
 }
 
 function onChatMessage(chatMessageEvent) {
@@ -199,7 +184,7 @@ function onChatMessage(chatMessageEvent) {
     messageText.textContent = `: ${chatMessageEvent.message}`;
 
     messageElement.append(nameText, messageText);
-    sendMessageToChat(messageElement);
+    GameMap.addMessageToChat(messageElement);
 }
 
 function onSystemMessage(systemMessageEvent) {
@@ -207,7 +192,7 @@ function onSystemMessage(systemMessageEvent) {
     const messageElement = messageDiv();
     messageElement.textContent = message;
     messageElement.style.fontStyle = 'italic';
-    sendMessageToChat(messageElement);
+    GameMap.addMessageToChat(messageElement);
 }
 
 function messageDiv() {
@@ -216,22 +201,16 @@ function messageDiv() {
     return messageElement;
 }
 
-function sendMessageToChat(htmlDivMessage) {
-    const messageContainer = document.getElementById('message-container');
-    messageContainer.appendChild(htmlDivMessage);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
-}
-
 function onTurnStart(turnStartEvent) {
-    removePlayersOutline();
     const playerToGo = turnStartEvent.player_id;
     outlinePlayer(playerToGo);
     if (getThisPlayerId() === playerToGo) {
-        Buttons.renderThrowDiceButton();
+        GameMap.renderThrowDiceButton();
     }
 }
 
 function outlinePlayer(playerId) {
+    removePlayersOutline()
     const playerIndex = PlayerService.getPlayerIndexById(playerId);
     const runningCircle = document.createElement('div');
     runningCircle.className = RUNNING_CIRCLE_OUTLINE_CLASSNAME;
@@ -293,7 +272,6 @@ function onBuyProposal(buyProposalEvent) {
 }
 
 function onJailReleaseProcess(jailReleaseProcessEvent) {
-    removePlayersOutline();
     const imprisonedPlayerId = jailReleaseProcessEvent.player_id;
     outlinePlayer(imprisonedPlayerId);
     if (getThisPlayerId() === imprisonedPlayerId) {
@@ -349,26 +327,32 @@ function onMortgageChange(mortgageChangeEvent) {
 }
 
 function onGameOver(gameOverEvent) {
-    gameInProgress = false;
-    firstMapRefresh = true;
+    markGameAsFinished();
     const winnerName = gameOverEvent.player_name;
     const text = `${winnerName} is the winner!`;
-    displayAtopMapMessage(text);
-    returnToStartPageWithDelay();
-}
-
-function returnToStartPageWithDelay() {
+    GameMap.displayAtopMapMessage(text);
     setTimeout(
         () => {
-            hideAtopMapMessage();
+            GameMap.hideAtopMapMessage();
             if (webSocket != null && webSocket.readyState === WebSocket.OPEN) {
                 webSocket.close();
                 webSocket = null;
             }
-            document.getElementById('map').style.display = 'none';
-            renderStartPage();
+            GameMap.clearMessages();
+            PlayerService.clearPlayerInfo();
+            returnToStartPage();
         },
         5000);
+}
+
+function markGameAsFinished() {
+    gameInProgress = false;
+    firstMapRefresh = true;
+}
+
+function returnToStartPage() {
+    closeGameMap();
+    renderStartPage();
 }
 
 function applyFieldManagementEvents(fieldIndex) {
@@ -429,9 +413,7 @@ function getMainContainer() {
 
 function renderStartPage() {
     ensureBackgroundIsVisible();
-    const mainContainer = getMainContainer();
-    mainContainer.innerHTML = '';
-    StartPage.render(mainContainer);
+    StartPage.render(getMainContainer());
     StartPage.getPlayerNameInput().focus();
     Buttons.addClickEvent(StartPage.getSubmitPlayerNameButton(), joinGameRoom);
     window.addEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
@@ -440,6 +422,7 @@ function renderStartPage() {
 function closeStartPage() {
     StartPage.getSubmitPlayerNameButton().removeEventListener('click', joinGameRoom);
     window.removeEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
+    StartPage.hide(getMainContainer());
 }
 
 function autoSubmitPlayerNameOnEnterPress(event) {
@@ -451,17 +434,17 @@ function autoSubmitPlayerNameOnEnterPress(event) {
 
 function renderGameRoomPage() {
     ensureBackgroundIsVisible();
-    const mainContainer = getMainContainer();
-    mainContainer.innerHTML = '';
-    GameRoom.render(mainContainer);
+    GameRoom.render(getMainContainer());
     Buttons.addClickEvent(GameRoom.getStartGameButton(), startGame);
     Buttons.addClickEvent(GameRoom.getLeaveGameRoomButton(), leaveGameRoom);
 }
 
 function closeGameRoomPage() {
-    GameRoom.clear();
-    GameRoom.getStartGameButton().removeEventListener('click', startGame);
-    GameRoom.getLeaveGameRoomButton().removeEventListener('click', leaveGameRoom);
+    if (GameRoom.isRendered()) {
+        GameRoom.getStartGameButton().removeEventListener('click', startGame);
+        GameRoom.getLeaveGameRoomButton().removeEventListener('click', leaveGameRoom);
+        GameRoom.hide(getMainContainer());
+    }
 }
 
 function leaveGameRoom() {
@@ -471,10 +454,41 @@ function leaveGameRoom() {
 }
 
 function ensureBackgroundIsVisible() {
-    if (!Background.isRendered()) {
+    if (!Background.isCreated()) {
         Background.renderBackground(document.body);
     }
-    if (Background.isRendered() && !Background.isVisible()) {
+    if (Background.isCreated() && !Background.isVisible()) {
         Background.show();
+    }
+}
+
+function renderGameMap() {
+    GameMap.render(getMainContainer());
+    let playerMessageButton = GameMap.getSendPlayerMessageButton();
+    Buttons.addClickEvent(playerMessageButton, sendInGamePlayerMessage);
+    window.addEventListener('keypress', autoSendMessageOnEnterPress);
+}
+
+function closeGameMap() {
+    if (!GameMap.isRendered) {
+        return;
+    }
+    GameMap.getSendPlayerMessageButton().removeEventListener('click', sendInGamePlayerMessage);
+    window.removeEventListener('keypress', autoSendMessageOnEnterPress);
+    GameMap.hide(getMainContainer());
+}
+
+function sendInGamePlayerMessage() {
+    const message = GameMap.getPlayerMessage();
+    if (message.trim() !== '' && webSocket != null) {
+        const playerMessage = {playerId: getThisPlayerId(), message: message};
+        webSocket.send(JSON.stringify(playerMessage));
+    }
+}
+
+function autoSendMessageOnEnterPress(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        sendInGamePlayerMessage();
     }
 }

@@ -19,6 +19,8 @@
     margin-right: auto;
     margin-left: auto;
     position: relative;
+    background-image: url('/images/map-back.png');
+    background-size: 658px;
 }
 
 .corner-field {
@@ -189,6 +191,7 @@ div::-webkit-scrollbar-thumb:hover {
 }
 
 .chip-outer {
+    display: none;
     width: var(--chip-width);
     height: var(--chip-width);
     border-radius: 15px;

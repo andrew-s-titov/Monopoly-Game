@@ -4,9 +4,21 @@ let _PLAYER_NAME_INPUT = null;
 
 let _rendered = false;
 
-export function render(parentElement) {
-    parentElement.appendChild(getStartPageContainer());
+export function render(parentContainer) {
+    if (_rendered) {
+        return;
+    }
+    parentContainer.innerHTML = '';
+    parentContainer.appendChild(getStartPageContainer());
     _rendered = true;
+}
+
+export function hide(parentContainer) {
+    if (!_rendered) {
+        return;
+    }
+    parentContainer.innerHTML = '';
+    _rendered = false;
 }
 
 export function getPlayerNameFromInput() {

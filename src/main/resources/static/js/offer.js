@@ -1,5 +1,6 @@
 import * as Buttons from './buttons.js';
 import * as HttpUtils from './http.js';
+import * as GameMap from './game-map.js';
 
 const OFFER_INITIATOR_CHECKBOX_GROUP_NAME = 'initiator-checkboxes';
 const OFFER_ADDRESSEE_CHECKBOX_GROUP_NAME = 'addressee-checkboxes';
@@ -122,7 +123,7 @@ function renderLeftOfferButton(addresseeId) {
     _LEFT_OFFER_BUTTON.onclick = () => {
         HttpUtils.post(`${HttpUtils.baseGameUrl()}/offer/${addresseeId}/send`, createOfferBody(),
             () => {
-                Buttons.hideThrowDiceButton();
+                GameMap.hideThrowDiceButton();
                 Buttons.removeOldActionContainer();
                 hideOfferInfoBox();
             }
