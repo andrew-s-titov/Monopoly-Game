@@ -43,7 +43,7 @@ export function renderActionContainer(text, button1, button2) {
             actionContainer.appendChild(button);
         }
     }
-    document.getElementById('message-container').appendChild(actionContainer);
+    document.getElementById('chat-message-container').appendChild(actionContainer);
 }
 
 export function renderPropertyManagementContainer(htmlPropertyField, fieldIndex, availableActions) {

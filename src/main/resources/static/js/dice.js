@@ -46,7 +46,7 @@ function getDiceContainer() {
         _DICE_CONTAINER = document.createElement('div');
         _DICE_CONTAINER.id = DICE_CONTAINER_ID;
         _DICE_CONTAINER.className = 'dice-container';
-        document.getElementById('message-container').appendChild(_DICE_CONTAINER);
+        document.getElementById('chat-message-container').appendChild(_DICE_CONTAINER);
 
         _LEFT_DICE = Utils.createImage(LEFT_DICE_GIF_SRC, LEFT_DICE_ALT_TAG);
         _LEFT_DICE.id = DICE_LEFT_ID;

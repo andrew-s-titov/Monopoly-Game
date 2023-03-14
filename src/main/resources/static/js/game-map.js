@@ -1,26 +1,26 @@
 import * as HttpUtils from './http.js';
 import * as Buttons from './buttons.js';
-
-const _ATOP_MAP_CONTAINER_ID = 'atopMapContainer';
-const _FULLSCREEN_SHADOW_ID = 'fullscreenShadow';
+import * as PlayerService from './players.js';
+import * as Dice from './dice.js';
 
 let _ATOP_MAP_CONTAINER = null;
 let _FULLSCREEN_SHADOW = null;
 let _GAME_MAP_CONTAINER = null;
 let _SEND_PLAYER_MESSAGE_BUTTON = null;
 let _PLAYER_MESSAGE_INPUT = null;
-let _MESSAGE_CONTAINER = null;
+let _CHAT_MESSAGE_CONTAINER = null;
 let _MESSAGE_CONTAINER_HEIGHT_FILLER = null;
 let _THROW_DICE_BUTTON = null;
 
 let _rendered = false;
+let _appended = false;
 
 export function renderThrowDiceButton() {
     if (_THROW_DICE_BUTTON === null) {
         _THROW_DICE_BUTTON = Buttons.createActionButton('Roll the dice!', `${HttpUtils.baseGameUrl()}/dice/roll`, false);
         _THROW_DICE_BUTTON.classList.add('roll-the-dice-button', 'flashing');
         Buttons.addClickEvent(_THROW_DICE_BUTTON, hideThrowDiceButton);
-        document.getElementById('message-container').appendChild(_THROW_DICE_BUTTON);
+        getChatMessageContainer().appendChild(_THROW_DICE_BUTTON);
     }
     _THROW_DICE_BUTTON.style.display = 'block';
 }
@@ -52,24 +52,20 @@ export function hideAtopMapMessage() {
 
 function getAtopMapContainer() {
     if (_ATOP_MAP_CONTAINER === null) {
-        _ATOP_MAP_CONTAINER = document.getElementById(_ATOP_MAP_CONTAINER_ID);
+        _ATOP_MAP_CONTAINER = getFullscreenShadowElement().firstElementChild;
     }
     return _ATOP_MAP_CONTAINER;
 }
 
 function getFullscreenShadowElement() {
     if (_FULLSCREEN_SHADOW === null) {
-        if (_ATOP_MAP_CONTAINER === null) {
-            _FULLSCREEN_SHADOW = document.getElementById(_FULLSCREEN_SHADOW_ID);
-        } else {
-            _FULLSCREEN_SHADOW = _ATOP_MAP_CONTAINER.parentElement;
-        }
+        _FULLSCREEN_SHADOW = document.getElementById('fullscreenShadow');
     }
     return _FULLSCREEN_SHADOW;
 }
 
 export function clearMessages() {
-    const messageContainer = getMessageContainer();
+    const messageContainer = getChatMessageContainer();
     messageContainer.innerHTML = '';
     if (_MESSAGE_CONTAINER_HEIGHT_FILLER === null) {
         _MESSAGE_CONTAINER_HEIGHT_FILLER = document.createElement('div');
@@ -79,7 +75,7 @@ export function clearMessages() {
 }
 
 export function addMessageToChat(htmlDivMessage) {
-    const messageContainer = getMessageContainer();
+    const messageContainer = getChatMessageContainer();
     messageContainer.appendChild(htmlDivMessage);
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
@@ -93,6 +89,17 @@ export function render(parentElement) {
         return;
     }
     parentElement.appendChild(getGameMapContainer());
+    if (!_appended) {
+        _appended = true;
+        Promise.allSettled([
+            initialisePlayerMessageInputAsync(),
+            initialiseChatMessageContainerAsync(),
+            PlayerService.initialisePlayerChipsAsync(),
+            PlayerService.initialisePlayerInfoAsync(),
+            Dice.preloadDice()
+        ])
+            .catch(error => console.error(`failed to asynchronously initialise game-map fata: ${error}`));
+    }
     _rendered = true;
 }
 
@@ -102,7 +109,6 @@ export function hide(parentContainer) {
     }
     parentContainer.innerHTML = '';
     clearMessages();
-    // TODO: clear messages content, clear players
     _rendered = false;
 }
 
@@ -112,7 +118,7 @@ export function getSendPlayerMessageButton() {
         return;
     }
     if (_SEND_PLAYER_MESSAGE_BUTTON === null) {
-        _SEND_PLAYER_MESSAGE_BUTTON = document.getElementById('player-message-button');
+        _SEND_PLAYER_MESSAGE_BUTTON = getPlayerMessageInput().nextElementSibling;
     }
     return _SEND_PLAYER_MESSAGE_BUTTON;
 }
@@ -130,20 +136,40 @@ function getPlayerMessageInput() {
         return;
     }
     if (_PLAYER_MESSAGE_INPUT === null) {
-        _PLAYER_MESSAGE_INPUT = document.getElementById('player-message-input');
+        initialisePlayerMessageInput();
     }
     return _PLAYER_MESSAGE_INPUT;
 }
 
-function getMessageContainer() {
+async function initialisePlayerMessageInputAsync() {
+    initialisePlayerMessageInput();
+}
+
+function initialisePlayerMessageInput() {
+    if (_PLAYER_MESSAGE_INPUT === null) {
+        _PLAYER_MESSAGE_INPUT = document.getElementById('player-message-input');
+    }
+}
+
+function getChatMessageContainer() {
     if (!_rendered) {
         console.error('failed to get messageContainer - game map is not rendered');
         return;
     }
-    if (_MESSAGE_CONTAINER === null) {
-        _MESSAGE_CONTAINER = document.getElementById('message-container');
+    if (_CHAT_MESSAGE_CONTAINER === null) {
+        initialiseChatMessageContainer();
     }
-    return _MESSAGE_CONTAINER;
+    return _CHAT_MESSAGE_CONTAINER;
+}
+
+async function initialiseChatMessageContainerAsync() {
+    initialiseChatMessageContainer();
+}
+
+function initialiseChatMessageContainer() {
+    if (_CHAT_MESSAGE_CONTAINER === null) {
+        _CHAT_MESSAGE_CONTAINER = document.getElementById('chat-message-container');
+    }
 }
 
 function getGameMapContainer() {
@@ -164,7 +190,7 @@ function getGameMapHTMLContent() {
                     <tbody>
                         <tr>
                             <td>
-                                <div id="player0-group" class="player-group">
+                                <div id="player0-info-container" class="player-info-container">
                                     <div id="player0-icon"></div>
                                     <div id="player0-name" class="player-name"></div>
                                     <div id="player0-money" class="player-money"></div>
@@ -173,7 +199,7 @@ function getGameMapHTMLContent() {
                         </tr>
                         <tr>
                             <td>
-                                <div id="player1-group" class="player-group">
+                                <div id="player1-info-container" class="player-info-container">
                                     <div id="player1-icon"></div>
                                     <div id="player1-name" class="player-name"></div>
                                     <div id="player1-money" class="player-money"></div>
@@ -182,7 +208,7 @@ function getGameMapHTMLContent() {
                         </tr>
                         <tr>
                             <td>
-                                <div id="player2-group" class="player-group">
+                                <div id="player2-info-container" class="player-info-container">
                                     <div id="player2-icon"></div>
                                     <div id="player2-name" class="player-name"></div>
                                     <div id="player2-money" class="player-money"></div>
@@ -191,7 +217,7 @@ function getGameMapHTMLContent() {
                         </tr>
                         <tr>
                             <td>
-                                <div id="player3-group" class="player-group">
+                                <div id="player3-info-container" class="player-info-container">
                                     <div id="player3-icon"></div>
                                     <div id="player3-name" class="player-name"></div>
                                     <div id="player3-money" class="player-money"></div>
@@ -200,7 +226,7 @@ function getGameMapHTMLContent() {
                         </tr>
                         <tr>
                             <td>
-                                <div id="player4-group" class="player-group">
+                                <div id="player4-info-container" class="player-info-container">
                                     <div id="player4-icon"></div>
                                     <div id="player4-name" class="player-name"></div>
                                     <div id="player4-money" class="player-money"></div>
@@ -297,7 +323,7 @@ function getGameMapHTMLContent() {
                                 </div>
                             </td>
                             <td colspan="9" rowspan="8">
-                                <div id="message-container">
+                                <div id="chat-message-container">
                                     <div id="height-filler" style="height: 100%"></div>
                                 </div>
                             </td>
@@ -521,11 +547,23 @@ function getGameMapHTMLContent() {
                         </tr>
                     </tbody>
                 </table>
-                <div id="chip0" class="chip-outer"><div class="chip-inner"></div></div>
-                <div id="chip1" class="chip-outer"><div class="chip-inner"></div></div>
-                <div id="chip2" class="chip-outer"><div class="chip-inner"></div></div>
-                <div id="chip3" class="chip-outer"><div class="chip-inner"></div></div>
-                <div id="chip4" class="chip-outer"><div class="chip-inner"></div></div>
+                <div id="chips">
+                    <div id="chip0" class="chip-outer">
+                        <div class="chip-inner"></div>
+                    </div>
+                    <div id="chip1" class="chip-outer">
+                        <div class="chip-inner"></div>
+                    </div>
+                    <div id="chip2" class="chip-outer">
+                        <div class="chip-inner"></div>
+                    </div>
+                    <div id="chip3" class="chip-outer">
+                        <div class="chip-inner"></div>
+                    </div>
+                    <div id="chip4" class="chip-outer">
+                        <div class="chip-inner"></div>
+                    </div>
+                </div>
             </td>
         </tr>
     </table>

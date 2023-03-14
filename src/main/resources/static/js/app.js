@@ -5,17 +5,14 @@ import * as Dice from './dice.js';
 import * as HttpUtils from './http.js';
 import * as MapFields from './field-view.js';
 import * as PlayerService from './players.js';
-import * as Utils from './utils.js';
 import * as Offers from './offer.js';
 import * as GameRoom from './game-room.js';
 import * as StartPage from './start-page.js';
 import * as Background from './start-background.js';
-import {initialiseChipParams} from './chip-movement.js';
 import * as GameMap from "./game-map.js";
+import {initialiseChipParams} from './chip-movement.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
-const RUNNING_CIRCLE_OUTLINE_CLASSNAME = 'running-circle';
-const RUNNING_CIRCLE_OUTLINE_ID = 'running-circle';
 
 let thisPlayerId = null;
 let webSocket = null;
@@ -26,8 +23,7 @@ let _MAIN_CONTAINER = null;
 
 window.onload = () => {
     HttpUtils.setConnectionData(location.protocol, location.host);
-
-    preloadImagesAndInfo();
+    preloadImagesAndInfoAsync();
     prepareMainPage();
 };
 
@@ -159,7 +155,7 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
     const players = gameMapRefreshEvent.players;
     PlayerService.addPlayers(players);
 
-    outlinePlayer(gameMapRefreshEvent.current_player);
+    PlayerService.outlinePlayer(gameMapRefreshEvent.current_player);
 
     const fieldViews = gameMapRefreshEvent.fields;
     MapFields.renderFieldViews(fieldViews);
@@ -200,23 +196,10 @@ function messageDiv() {
 
 function onTurnStart(turnStartEvent) {
     const playerToGo = turnStartEvent.player_id;
-    outlinePlayer(playerToGo);
+    PlayerService.outlinePlayer(playerToGo);
     if (getThisPlayerId() === playerToGo) {
         GameMap.renderThrowDiceButton();
     }
-}
-
-function outlinePlayer(playerId) {
-    removePlayersOutline()
-    const playerIndex = PlayerService.getPlayerIndexById(playerId);
-    const runningCircle = document.createElement('div');
-    runningCircle.className = RUNNING_CIRCLE_OUTLINE_CLASSNAME;
-    runningCircle.id = RUNNING_CIRCLE_OUTLINE_ID;
-    document.getElementById(`player${playerIndex}-icon`).appendChild(runningCircle);
-}
-
-function removePlayersOutline() {
-    Utils.removeElementsIfPresent(RUNNING_CIRCLE_OUTLINE_ID);
 }
 
 function onDiceStartRolling(diceRollingStartEvent) {
@@ -270,7 +253,7 @@ function onBuyProposal(buyProposalEvent) {
 
 function onJailReleaseProcess(jailReleaseProcessEvent) {
     const imprisonedPlayerId = jailReleaseProcessEvent.player_id;
-    outlinePlayer(imprisonedPlayerId);
+    PlayerService.outlinePlayer(imprisonedPlayerId);
     if (getThisPlayerId() === imprisonedPlayerId) {
         Buttons.removeOldActionContainer();
         const payButton = Buttons.createActionButton(`Pay $${jailReleaseProcessEvent.bail}`,
@@ -385,13 +368,12 @@ function getThisPlayerId() {
     return thisPlayerId;
 }
 
-function preloadImagesAndInfo() {
+function preloadImagesAndInfoAsync() {
     Promise.allSettled([
         imagePreload('images/map-back.png', 'images/loading-bubbles.gif'),
-        initialiseChipParams(),
-        Dice.preloadDice()
+        initialiseChipParams()
     ])
-        .catch(error => console.log('failed to load some resources or data: ' + error));
+        .catch(error => console.log('failed to load some resources or data asynchronously: ' + error));
 }
 
 async function imagePreload() {

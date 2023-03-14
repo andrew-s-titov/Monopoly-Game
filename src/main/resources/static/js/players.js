@@ -6,6 +6,7 @@ import {startOfferProcess} from './offer.js';
 const MAX_PLAYERS = 5;
 const PLAYER_MAP = new Map();
 const PLAYER_INFO_HTML_FIELDS = [];
+const PLAYER_INFO_CONTAINERS = [];
 const CHIPS = [];
 const PLAYER_COLORS = [
     'cornflowerblue',
@@ -15,20 +16,20 @@ const PLAYER_COLORS = [
     'orange'
 ];
 
+let runningCircle = null;
+
 export function clearPlayerInfo() {
-    if (PLAYER_INFO_HTML_FIELDS.length !== 0) {
-        for (let playerHtmlInfo of PLAYER_INFO_HTML_FIELDS) {
-            playerHtmlInfo.iconField.className = '';
-            playerHtmlInfo.iconField.style.boxShadow = 'none';
-            playerHtmlInfo.nameField.textContent = '';
-            playerHtmlInfo.moneyField.textContent = '';
-        }
+    const allPlayerInfoHtmlFields = getAllPlayerInfoHTMLFields();
+    for (let playerHtmlInfo of allPlayerInfoHtmlFields) {
+        playerHtmlInfo.iconField.className = '';
+        playerHtmlInfo.iconField.style.boxShadow = 'none';
+        playerHtmlInfo.nameField.textContent = '';
+        playerHtmlInfo.moneyField.textContent = '';
     }
-    if (CHIPS.length !== 0) {
-        for (let chip of CHIPS) {
-            moveToStart(chip);
-            chip.style.display = 'none';
-        }
+    const chips = getChips();
+    for (let chip of chips) {
+        moveToStart(chip);
+        chip.style.display = 'none';
     }
 }
 
@@ -53,6 +54,21 @@ export function addPlayers(jsonPlayerArray) {
         } else {
             renderPlayerAsBankrupt(playerInfoHTMLFields);
         }
+    }
+}
+
+export function outlinePlayer(playerId) {
+    removePlayersOutline();
+    const playerIndex = getPlayerIndexById(playerId);
+    runningCircle = document.createElement('div');
+    runningCircle.className = 'running-circle';
+    getPlayerInfoHTMLFields(playerIndex).iconField.appendChild(runningCircle);
+}
+
+function removePlayersOutline() {
+    if (runningCircle != null) {
+        runningCircle.remove();
+        runningCircle = null;
     }
 }
 
@@ -84,42 +100,77 @@ export function movePlayerChip(playerId, fieldIndex) {
     moveChip(getChip(getPlayerIndexById(playerId)), fieldIndex);
 }
 
+export async function initialisePlayerInfoAsync() {
+    initialisePlayerInfo();
+}
+
+export async function initialisePlayerChipsAsync() {
+    initialiseChips();
+}
+
 function renderPlayerAsBankrupt(playerInfoHTMLFields) {
     playerInfoHTMLFields.nameField.style.color = 'grey';
     playerInfoHTMLFields.moneyField.style.color = 'grey';
     playerInfoHTMLFields.iconField.style.boxShadow = 'none';
 }
 
-function initialisePlayers() {
-    for (let i = 0; i < MAX_PLAYERS; i++) {
-        PLAYER_INFO_HTML_FIELDS.push(new PlayerInfoHTMLFields(
-            document.getElementById(`player${i}-icon`),
-            document.getElementById(`player${i}-name`),
-            document.getElementById(`player${i}-money`)
-        ));
+function initialisePlayerInfo() {
+    if (PLAYER_INFO_CONTAINERS.length === 0) {
+        for (let index = 0; index < MAX_PLAYERS; index++) {
+            const playerInfoContainer = document.getElementById(`player${index}-info-container`);
+            PLAYER_INFO_CONTAINERS.push(playerInfoContainer);
+            const containerChildren = playerInfoContainer.children;
+            PLAYER_INFO_HTML_FIELDS.push(new PlayerInfoHTMLFields(
+                containerChildren[0],
+                containerChildren[1],
+                containerChildren[2]
+            ));
+        }
     }
+}
+
+function getPlayerInfoContainer(playerIndex) {
+    return getPlayerInfoContainers()[playerIndex];
+}
+
+function getPlayerInfoContainers() {
+    if (PLAYER_INFO_CONTAINERS.length === 0) {
+        initialisePlayerInfo();
+    }
+    return PLAYER_INFO_CONTAINERS;
+}
+
+function getAllPlayerInfoHTMLFields() {
+    if (PLAYER_INFO_HTML_FIELDS.length === 0) {
+        initialisePlayerInfo();
+    }
+    return PLAYER_INFO_HTML_FIELDS;
 }
 
 function getPlayerInfoHTMLFields(index) {
-    if (PLAYER_INFO_HTML_FIELDS.length === 0) {
-        initialisePlayers();
-    }
-    return PLAYER_INFO_HTML_FIELDS[index];
+    return getAllPlayerInfoHTMLFields()[index];
 }
 
 function initialiseChips() {
-    for (let index = 0; index < MAX_PLAYERS; index++) {
-        const chip = document.getElementById(`chip${index}`);
-        chip.getElementsByClassName('chip-inner')[0].style.background = PLAYER_COLORS[index];
-        CHIPS.push(chip);
+    if (CHIPS.length === 0) {
+        const chips = document.getElementById('chips').children;
+        for (let index = 0; index < MAX_PLAYERS; index++) {
+            const chip = chips[index];
+            chip.firstElementChild.style.background = PLAYER_COLORS[index];
+            CHIPS.push(chip);
+        }
     }
 }
 
-function getChip(index) {
+function getChips() {
     if (CHIPS.length === 0) {
         initialiseChips();
     }
-    return CHIPS[index];
+    return CHIPS;
+}
+
+function getChip(index) {
+    return getChips()[index];
 }
 
 function renderPlayerPicture(playerIndex, playerId, playerColor) {
@@ -182,7 +233,7 @@ function renderPlayerManagementContainer(playerIndex, playerId, availableActions
         addClickEvent(button, () => finishPlayerAction(managementContainer, closeOnClickOutsideListener));
         managementContainer.appendChild(button);
     }
-    document.getElementById(`player${playerIndex}-group`).appendChild(managementContainer);
+    getPlayerInfoContainer(playerIndex).appendChild(managementContainer);
 }
 
 function finishPlayerAction(managementContainer, closeOnClickListener) {
