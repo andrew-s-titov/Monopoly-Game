@@ -1,4 +1,4 @@
-let _START_PAGE = null;
+let _START_PAGE_CONTAINER = null;
 let _SUBMIT_PLAYER_NAME_BUTTON = null;
 let _PLAYER_NAME_INPUT = null;
 
@@ -32,29 +32,33 @@ export function getPlayerNameFromInput() {
     return name;
 }
 
-export function getStartPageContainer() {
-    if (_START_PAGE === null) {
-        _START_PAGE = document.createElement('div');
-        _START_PAGE.className = "start-page-container";
-        _START_PAGE.innerHTML = getStartPageHTMLContent();
+function getStartPageContainer() {
+    if (_START_PAGE_CONTAINER === null) {
+        _START_PAGE_CONTAINER = document.createElement('div');
+        _START_PAGE_CONTAINER.className = "start-page-container";
+        _START_PAGE_CONTAINER.innerHTML = getStartPageHTMLContent();
     }
-    return _START_PAGE;
+    return _START_PAGE_CONTAINER;
 }
 
 export function getSubmitPlayerNameButton() {
     if (!_rendered) {
-        console.error('failed to get submitPlayerNameButton - start page is not rendered');
+        console.error('failed to get submitPlayerName button - start page is not rendered');
         return;
     }
     if (_SUBMIT_PLAYER_NAME_BUTTON === null) {
-        _SUBMIT_PLAYER_NAME_BUTTON = document.getElementById('submitPlayerName');
+        _SUBMIT_PLAYER_NAME_BUTTON = getStartPageContainer().lastElementChild;
     }
     return _SUBMIT_PLAYER_NAME_BUTTON;
 }
 
 export function getPlayerNameInput() {
+    if (!_rendered) {
+        console.error('failed to get playerName input - start page is not rendered');
+        return;
+    }
     if (_PLAYER_NAME_INPUT === null) {
-        _PLAYER_NAME_INPUT = document.getElementById('playerNameInput');
+        _PLAYER_NAME_INPUT = getSubmitPlayerNameButton().previousElementSibling;
     }
     return _PLAYER_NAME_INPUT;
 }

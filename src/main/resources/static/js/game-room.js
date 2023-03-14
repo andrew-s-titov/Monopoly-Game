@@ -44,7 +44,7 @@ export function getStartGameButton() {
         return;
     }
     if (_START_GAME_BUTTON === null) {
-        _START_GAME_BUTTON = document.getElementById('startGameButton');
+        _START_GAME_BUTTON = getLeaveGameRoomButton().previousElementSibling;
     }
     return _START_GAME_BUTTON;
 }
@@ -55,7 +55,7 @@ export function getLeaveGameRoomButton() {
         return;
     }
     if (_LEAVE_GAME_ROOM_BUTTON === null) {
-        _LEAVE_GAME_ROOM_BUTTON = document.getElementById('disconnectPlayerButton');
+        _LEAVE_GAME_ROOM_BUTTON = getGameRoomPageContainer().lastElementChild;
     }
     return _LEAVE_GAME_ROOM_BUTTON;
 }
@@ -63,10 +63,12 @@ export function getLeaveGameRoomButton() {
 function getConnectedPlayers() {
     if (_CONNECTED_PLAYERS === null) {
         _CONNECTED_PLAYERS = [];
+        const images = document.body.getElementsByClassName('image-row')[0].children;
+        const names = document.body.getElementsByClassName('name-row')[0].children;
         for (let i = 0; i < MAX_PLAYERS; i++) {
-            const playerNameField = document.getElementById(`player${i}`);
+            const playerNameField = names[i];
             playerNameField.style.textAlign = 'center';
-            const playerImage = document.getElementById(`player${i}-image`);
+            const playerImage = images[i].firstElementChild;
             _CONNECTED_PLAYERS.push([playerNameField, playerImage]);
         }
     }

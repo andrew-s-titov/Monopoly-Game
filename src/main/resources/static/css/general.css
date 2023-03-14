@@ -37,7 +37,8 @@ ul {
     padding-left: 40px;
 }
 
-.error-box {
+.error-container {
+    display: none;
     position: fixed;
     bottom: 100px;
     width: 70%;

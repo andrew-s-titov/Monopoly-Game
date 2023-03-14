@@ -51,8 +51,7 @@ export function addPlayers(jsonPlayerArray) {
             playerInfoHTMLFields.nameField.style.color = 'white';
             playerInfoHTMLFields.moneyField.style.color = 'white';
         } else {
-            playerInfoHTMLFields.nameField.style.color = 'grey';
-            playerInfoHTMLFields.moneyField.style.color = 'grey';
+            renderPlayerAsBankrupt(playerInfoHTMLFields);
         }
     }
 }
@@ -60,9 +59,7 @@ export function addPlayers(jsonPlayerArray) {
 export function bankruptPlayer(playerId) {
     const playerIndex = getPlayerIndexById(playerId);
     const playerInfoHTMLFields = getPlayerInfoHTMLFields(playerIndex);
-    playerInfoHTMLFields.iconField.style.boxShadow = 'none';
-    playerInfoHTMLFields.nameField.style.color = 'grey';
-    playerInfoHTMLFields.moneyField.style.color = 'grey';
+    renderPlayerAsBankrupt(playerInfoHTMLFields);
     getChip(playerIndex).style.display = 'none';
 }
 
@@ -85,6 +82,12 @@ export function getPlayerNameById(playerId) {
 
 export function movePlayerChip(playerId, fieldIndex) {
     moveChip(getChip(getPlayerIndexById(playerId)), fieldIndex);
+}
+
+function renderPlayerAsBankrupt(playerInfoHTMLFields) {
+    playerInfoHTMLFields.nameField.style.color = 'grey';
+    playerInfoHTMLFields.moneyField.style.color = 'grey';
+    playerInfoHTMLFields.iconField.style.boxShadow = 'none';
 }
 
 function initialisePlayers() {
