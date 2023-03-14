@@ -57,10 +57,11 @@ export function renderBackground(parentElement) {
     if (_created) {
         return;
     }
-    parentElement.appendChild(getBackgroundContainer());
+    const backGroundContainer = getBackgroundContainer();
+    parentElement.appendChild(backGroundContainer);
     _created = true;
     _visible = true;
-    const backgroundImg = document.getElementById('backgroundImg');
+    const backgroundImg = backGroundContainer.firstElementChild;
     backgroundImg.onload = () => {
         _initialBackgroundImageWidth = backgroundImg.naturalWidth;
         _initialBackgroundImageHeight = backgroundImg.naturalHeight;
@@ -80,7 +81,7 @@ function getBackgroundContainer() {
 
 function getBackgroundImageDiv() {
     if (_BACKGROUND_IMAGE_DIV === null) {
-        _BACKGROUND_IMAGE_DIV = document.getElementById('backgroundImageDiv');
+        _BACKGROUND_IMAGE_DIV = getBackgroundContainer().lastElementChild;;
     }
     return _BACKGROUND_IMAGE_DIV;
 }

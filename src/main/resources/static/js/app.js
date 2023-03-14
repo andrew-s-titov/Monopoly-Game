@@ -425,7 +425,7 @@ function closeStartPage() {
 function autoSubmitPlayerNameOnEnterPress(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
-        StartPage.getSubmitPlayerNameButton().click();
+        joinGameRoom();
     }
 }
 
