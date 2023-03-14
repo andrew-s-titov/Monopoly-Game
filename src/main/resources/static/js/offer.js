@@ -353,7 +353,7 @@ function getReplyWaitingScreen() {
     if (_REPLY_WAITING_SCREEN === null) {
         _REPLY_WAITING_SCREEN = document.createElement('div');
         _REPLY_WAITING_SCREEN.className = 'offer-reply-waiting-screen';
-        document.getElementById('message-container').appendChild(_REPLY_WAITING_SCREEN);
+        document.getElementById('chat-message-container').appendChild(_REPLY_WAITING_SCREEN);
 
         const waitingMessage = document.createElement('p');
         waitingMessage.innerText = 'Waiting for reply...';
@@ -368,7 +368,7 @@ function getReplyWaitingScreen() {
 function createInfoBox() {
     const infoBox = document.createElement('div');
     infoBox.className = 'offer-info-box';
-    document.getElementById('message-container').appendChild(infoBox);
+    document.getElementById('chat-message-container').appendChild(infoBox);
     return infoBox;
 }
 

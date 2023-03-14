@@ -15,10 +15,6 @@ export function setConnectionData(protocol, host) {
     _WEBSOCKET_BASE_URL = `${_WEBSOCKET_PROTOCOL}//${_HOST}/connect`;
 }
 
-export function getHost() {
-    return _HOST;
-}
-
 export function baseGameUrl() {
     return _BASE_GAME_URL;
 }

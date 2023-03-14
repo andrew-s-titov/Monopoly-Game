@@ -89,11 +89,11 @@
     margin-bottom: 7px;
 }
 
-.player-icon, .player-name, .player-group {
+.player-icon, .player-name, .player-info-container {
     margin: 0;
 }
 
-.player-group {
+.player-info-container {
     width: 150px;
     position: relative;
     background-color: darkslategray;
@@ -156,7 +156,7 @@
     padding: 0;
 }
 
-#message-container {
+#chat-message-container {
     background-color: darkslategray;
     width: var(--message-container-width);
     height: var(--message-container-height);
