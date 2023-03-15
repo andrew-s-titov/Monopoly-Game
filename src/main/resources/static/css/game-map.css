@@ -184,10 +184,16 @@ div::-webkit-scrollbar-thumb:hover {
 }
 
 .dice-container {
-    width: calc(var(--dice-image-width) * 2);
-    position: absolute;
-    margin-top: calc((var(--message-container-height) - var(--dice-image-width)) / 2);
-    margin-left: calc((var(--message-container-width) - var(--dice-image-width) * 2) / 2);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 7;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
 }
 
 .chip-outer {
