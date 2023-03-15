@@ -203,7 +203,7 @@ function onTurnStart(turnStartEvent) {
 }
 
 function onDiceStartRolling(diceRollingStartEvent) {
-    Dice.renderRollingDice();
+    Dice.showRollingDice();
     if (getThisPlayerId() === diceRollingStartEvent.player_id) {
         setTimeout(
             () => HttpUtils.get(`${HttpUtils.baseGameUrl()}/dice/result`),
@@ -212,7 +212,7 @@ function onDiceStartRolling(diceRollingStartEvent) {
 }
 
 function onDiceResult(diceResultEvent) {
-    Dice.renderDiceResult(diceResultEvent.first_dice, diceResultEvent.second_dice);
+    Dice.showDiceResult(diceResultEvent.first_dice, diceResultEvent.second_dice);
     setTimeout(
         () => {
             Dice.hideDice();

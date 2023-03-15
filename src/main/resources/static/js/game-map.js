@@ -96,7 +96,8 @@ export function render(parentElement) {
             initialiseChatMessageContainerAsync(),
             PlayerService.initialisePlayerChipsAsync(),
             PlayerService.initialisePlayerInfoAsync(),
-            Dice.preloadDice()
+            Dice.preloadDiceImages(),
+            Dice.initialiseDiceAsync(),
         ])
             .catch(error => console.error(`failed to asynchronously initialise game-map fata: ${error}`));
     }
@@ -567,6 +568,10 @@ function getGameMapHTMLContent() {
             </td>
         </tr>
     </table>
+    <div id="dice-container" class="dice-container">
+        <img src="/images/dice-left.gif" alt="left dice" class="dice">
+        <img src="/images/dice-right.gif" alt="right dice" class="dice">
+    </div>
 </div>
     `;
 }

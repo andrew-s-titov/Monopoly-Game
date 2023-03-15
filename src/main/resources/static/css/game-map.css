@@ -184,10 +184,16 @@ div::-webkit-scrollbar-thumb:hover {
 }
 
 .dice-container {
-    width: calc(var(--dice-image-width) * 2);
-    position: absolute;
-    margin-top: calc((var(--message-container-height) - var(--dice-image-width)) / 2);
-    margin-left: calc((var(--message-container-width) - var(--dice-image-width) * 2) / 2);
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 7;
+}
+
+.dice {
+    width: 18vh;
 }
 
 .chip-outer {
