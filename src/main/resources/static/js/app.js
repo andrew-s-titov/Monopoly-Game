@@ -395,12 +395,12 @@ function renderStartPage() {
     StartPage.render(getMainContainer());
     StartPage.getPlayerNameInput().focus();
     Buttons.addClickEvent(StartPage.getSubmitPlayerNameButton(), joinGameRoom);
-    window.addEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
+    window.addEventListener('keydown', autoSubmitPlayerNameOnEnterPress);
 }
 
 function closeStartPage() {
     StartPage.getSubmitPlayerNameButton().removeEventListener('click', joinGameRoom);
-    window.removeEventListener('keypress', autoSubmitPlayerNameOnEnterPress);
+    window.removeEventListener('keydown', autoSubmitPlayerNameOnEnterPress);
     StartPage.hide(getMainContainer());
 }
 
@@ -445,7 +445,7 @@ function renderGameMap() {
     GameMap.render(getMainContainer());
     let playerMessageButton = GameMap.getSendPlayerMessageButton();
     Buttons.addClickEvent(playerMessageButton, sendInGamePlayerMessage);
-    window.addEventListener('keypress', autoSendMessageOnEnterPress);
+    window.addEventListener('keydown', autoSendMessageOnEnterPress);
 }
 
 function closeGameMap() {
@@ -453,7 +453,7 @@ function closeGameMap() {
         return;
     }
     GameMap.getSendPlayerMessageButton().removeEventListener('click', sendInGamePlayerMessage);
-    window.removeEventListener('keypress', autoSendMessageOnEnterPress);
+    window.removeEventListener('keydown', autoSendMessageOnEnterPress);
     GameMap.hide(getMainContainer());
 }
 
