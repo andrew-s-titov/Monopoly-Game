@@ -25,11 +25,7 @@ export function show() {
 }
 
 export function hide() {
-    if (!_created) {
-        console.error('failed to hide background - it is not created');
-        return;
-    }
-    if (!_visible) {
+    if (!_created || !_visible) {
         return;
     }
     getBackgroundImageDiv().style.display = 'none';

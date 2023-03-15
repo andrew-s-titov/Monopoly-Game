@@ -569,8 +569,8 @@ function getGameMapHTMLContent() {
         </tr>
     </table>
     <div id="dice-container" class="dice-container">
-        <img src="/images/dice-left.gif" alt="left dice" style="float: left">
-        <img src="/images/dice-right.gif" alt="right dice" style="float: right">
+        <img src="/images/dice-left.gif" alt="left dice" class="dice">
+        <img src="/images/dice-right.gif" alt="right dice" class="dice">
     </div>
 </div>
     `;
