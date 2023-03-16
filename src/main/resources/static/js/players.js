@@ -65,7 +65,7 @@ export function outlinePlayer(playerId) {
     getPlayerInfoHTMLFields(playerIndex).iconField.appendChild(runningCircle);
 }
 
-function removePlayersOutline() {
+export function removePlayersOutline() {
     if (runningCircle != null) {
         runningCircle.remove();
         runningCircle = null;

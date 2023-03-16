@@ -16,18 +16,30 @@ let _rendered = false;
 let _appended = false;
 
 export function renderThrowDiceButton() {
+    getThrowDiceButton().style.display = 'block';
+}
+
+export function hideThrowDiceButton() {
+    getThrowDiceButton().style.display = 'none';
+}
+
+function getThrowDiceButton() {
+    if (_THROW_DICE_BUTTON === null) {
+        createThrowDiceButton();
+    }
+    return _THROW_DICE_BUTTON;
+}
+
+async function createThrowDiceButtonAsync() {
+    createThrowDiceButton();
+}
+
+function createThrowDiceButton() {
     if (_THROW_DICE_BUTTON === null) {
         _THROW_DICE_BUTTON = Buttons.createActionButton('Roll the dice!', `${HttpUtils.baseGameUrl()}/dice/roll`, false);
         _THROW_DICE_BUTTON.classList.add('roll-the-dice-button', 'flashing');
         Buttons.addClickEvent(_THROW_DICE_BUTTON, hideThrowDiceButton);
-        getChatMessageContainer().appendChild(_THROW_DICE_BUTTON);
-    }
-    _THROW_DICE_BUTTON.style.display = 'block';
-}
-
-export function hideThrowDiceButton() {
-    if (_THROW_DICE_BUTTON !== null) {
-        _THROW_DICE_BUTTON.style.display = 'none';
+        getGameMapContainer().firstElementChild.appendChild(_THROW_DICE_BUTTON);
     }
 }
 
@@ -92,6 +104,7 @@ export function render(parentElement) {
     if (!_appended) {
         _appended = true;
         Promise.allSettled([
+            createThrowDiceButtonAsync(),
             initialisePlayerMessageInputAsync(),
             initialiseChatMessageContainerAsync(),
             PlayerService.initialisePlayerChipsAsync(),

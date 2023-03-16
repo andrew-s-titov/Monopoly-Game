@@ -316,6 +316,7 @@ function onMortgageChange(mortgageChangeEvent) {
 
 function onGameOver(gameOverEvent) {
     markGameAsFinished();
+    PlayerService.removePlayersOutline();
     const winnerName = gameOverEvent.player_name;
     const text = `${winnerName} is the winner!`;
     GameMap.displayAtopMapMessage(text);
