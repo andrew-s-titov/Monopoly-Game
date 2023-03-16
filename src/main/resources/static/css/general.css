@@ -72,3 +72,10 @@ ul {
     text-align: center;
     padding: 5vh;
 }
+
+.screen-centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

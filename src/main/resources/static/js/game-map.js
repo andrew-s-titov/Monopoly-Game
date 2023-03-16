@@ -37,7 +37,7 @@ async function createThrowDiceButtonAsync() {
 function createThrowDiceButton() {
     if (_THROW_DICE_BUTTON === null) {
         _THROW_DICE_BUTTON = Buttons.createActionButton('Roll the dice!', `${HttpUtils.baseGameUrl()}/dice/roll`, false);
-        _THROW_DICE_BUTTON.classList.add('roll-the-dice-button', 'flashing');
+        _THROW_DICE_BUTTON.classList.add('roll-the-dice-button', 'screen-centered', 'flashing');
         Buttons.addClickEvent(_THROW_DICE_BUTTON, hideThrowDiceButton);
         getGameMapContainer().firstElementChild.appendChild(_THROW_DICE_BUTTON);
     }
@@ -581,7 +581,7 @@ function getGameMapHTMLContent() {
             </td>
         </tr>
     </table>
-    <div id="dice-container" class="dice-container">
+    <div id="dice-container" class="dice-container, screen-centered">
         <img src="/images/dice-left.gif" alt="left dice" class="dice">
         <img src="/images/dice-right.gif" alt="right dice" class="dice">
     </div>
