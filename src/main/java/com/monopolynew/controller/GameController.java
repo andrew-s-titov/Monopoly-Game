@@ -31,8 +31,8 @@ public class GameController {
     @GetMapping
     public ResponseEntity<?> checkName(@RequestParam("name") String playerName) {
         String message = null;
-        if (StringUtils.isBlank(playerName) || playerName.length() < 3) {
-            message = "Player name must be at least 3 character long";
+        if (StringUtils.isBlank(playerName) || playerName.length() < 3 || playerName.length() > 20) {
+            message = "Player name length must be from 3 to 20 characters";
         } else if (gameService.usernameTaken(playerName)) {
             message = "Username '" + playerName + "' is already taken. Please, choose another one.";
         }

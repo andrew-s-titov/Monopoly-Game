@@ -67,7 +67,7 @@ function getStartPageHTMLContent() {
     return `
 <div id="welcome" class="welcome-message">Welcome to the Monopoly game!</div>
 <label for="playerNameInput" class="enter-nickname-phrase">Enter your nickname:</label>
-<input id="playerNameInput" class="player-name-input" type="text" autocomplete="off" autofocus/>
+<input id="playerNameInput" class="player-name-input" type="text" autocomplete="off" autofocus minlength="3" maxLength="20" required/>
 <button id="submitPlayerName" class="join-game-button">Join the game</button>
     `;
 }

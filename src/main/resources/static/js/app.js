@@ -11,6 +11,7 @@ import * as StartPage from './start-page.js';
 import * as Background from './start-background.js';
 import * as GameMap from "./game-map.js";
 import {initialiseChipParams} from './chip-movement.js';
+import {displayError} from './utils.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
 
@@ -42,13 +43,20 @@ function prepareMainPage() {
 }
 
 function joinGameRoom() {
-    const playerName = StartPage.getPlayerNameFromInput();
-    HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
-        () => {
-            closeStartPage();
-            renderGameRoomPage();
-            openWebsocket(playerName);
-        });
+    const playerNameInput = StartPage.getPlayerNameInput();
+    const validityState = playerNameInput.validity;
+    if (validityState.tooLong || validityState.tooShort || validityState.valueMissing) {
+        displayError('Player name length must be from 3 to 20 characters');
+        playerNameInput.focus();
+    } else {
+        const playerName = playerNameInput.value;
+        HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
+            () => {
+                closeStartPage();
+                renderGameRoomPage();
+                openWebsocket(playerName);
+            });
+    }
 }
 
 function openWebsocket(username) {
