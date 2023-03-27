@@ -1,4 +1,5 @@
 const MAX_PLAYERS = 5;
+const PLAYER_IMAGE_URL = "url('/images/user.png')";
 
 let _GAME_ROOM_PAGE = null;
 let _START_GAME_BUTTON = null;
@@ -67,9 +68,8 @@ function getConnectedPlayers() {
         const names = document.body.getElementsByClassName('name-row')[0].children;
         for (let i = 0; i < MAX_PLAYERS; i++) {
             const playerNameField = names[i];
-            playerNameField.style.textAlign = 'center';
-            const playerImage = images[i].firstElementChild;
-            _CONNECTED_PLAYERS.push([playerNameField, playerImage]);
+            const playerImage = images[i];
+            _CONNECTED_PLAYERS.push({name: playerNameField, image: playerImage});
         }
     }
     return _CONNECTED_PLAYERS;
@@ -79,11 +79,11 @@ export function addToGameRoom(playerName) {
     const connectedPlayers = getConnectedPlayers();
     for (let i = 0; i < MAX_PLAYERS; i++) {
         const player = connectedPlayers[i];
-        const playerNameField = player[0];
-        const playerImage = player[1];
+        const playerNameField = player.name;
+        const playerImage = player.image;
         if (playerNameField.textContent.trim() === '') {
             playerNameField.textContent = playerName;
-            playerImage.style.display = 'block';
+            playerImage.style.backgroundImage = PLAYER_IMAGE_URL;
             break;
         }
     }
@@ -93,10 +93,10 @@ export function removeFromGameRoom(playerName) {
     const connectedPlayers = getConnectedPlayers();
     for (let i = 0; i < MAX_PLAYERS; i++) {
         const player = connectedPlayers[i];
-        const playerNameField = player[0];
+        const playerNameField = player.name;
         if (playerNameField.textContent === playerName) {
             playerNameField.textContent = '';
-            player[1].style.display = 'none';
+            player.image.style.backgroundImage = 'none';
             break;
         }
     }
@@ -105,42 +105,29 @@ export function removeFromGameRoom(playerName) {
 export function clear() {
     const connectedPlayers = getConnectedPlayers();
     for (let player of connectedPlayers) {
-        player[0].textContent = '';
-        player[1].style.display = 'none';
+        player.name.textContent = '';
+        player.image.style.backgroundImage = 'none';
     }
 }
 
 function getGameRoomHTMLContent() {
     return `
-    <p style="text-align:center; font-weight: bold; font-size: 25px">Registered players:</p>
-<table style="margin-left:auto; margin-right:auto; border-collapse: collapse">
-    <tr class="image-row">
-        <td style="width: 200px; height: 250px">
-            <img id="player0-image" src="/images/user.png" style="display: none"/>
-        </td>
-        <td style="width: 200px; height: 250px">
-            <img id="player1-image" src="/images/user.png" style="display: none"/>
-        </td>
-        <td style="width: 200px; height: 250px">
-            <img id="player2-image" src="/images/user.png" style="display: none"/>
-        </td>
-        <td style="width: 200px; height: 250px">
-            <img id="player3-image" src="/images/user.png" style="display: none"/>
-        </td>
-        <td style="width: 200px; height: 250px">
-            <img id="player4-image" src="/images/user.png" style="display: none"/>
-        </td>
-    </tr>
-    <tr class="name-row">
-        <td id="player0" class="player-name-holder"></td>
-        <td id="player1" class="player-name-holder"></td>
-        <td id="player2" class="player-name-holder"></td>
-        <td id="player3" class="player-name-holder"></td>
-        <td id="player4" class="player-name-holder"></td>
-    </tr>
-</table>
-<br>
-<button id="startGameButton" class="game-room-button" style="margin-bottom: 20px">Start Game!</button>
-<button id="disconnectPlayerButton" class="game-room-button">Leave</button>
+    <p class="gr-header">Registered players:</p>
+    <div class="image-row">
+        <div class="player-image"></div>
+        <div class="player-image"></div>
+        <div class="player-image"></div>
+        <div class="player-image"></div>
+        <div class="player-image"></div>
+    </div>
+    <div class="name-row">
+        <div class="player-name"></div>
+        <div class="player-name"></div>
+        <div class="player-name"></div>
+        <div class="player-name"></div>
+        <div class="player-name"></div>
+    </div>
+<button class="gr-button">Start Game!</button>
+<button class="gr-button">Leave</button>
     `;
 }
