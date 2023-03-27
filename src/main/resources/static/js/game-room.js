@@ -114,18 +114,18 @@ function getGameRoomHTMLContent() {
     return `
     <p class="gr-header">Registered players:</p>
     <div class="image-row">
-        <div class="player-image"></div>
-        <div class="player-image"></div>
-        <div class="player-image"></div>
-        <div class="player-image"></div>
-        <div class="player-image"></div>
+        <div class="gr-player-image"></div>
+        <div class="gr-player-image"></div>
+        <div class="gr-player-image"></div>
+        <div class="gr-player-image"></div>
+        <div class="gr-player-image"></div>
     </div>
     <div class="name-row">
-        <div class="player-name"></div>
-        <div class="player-name"></div>
-        <div class="player-name"></div>
-        <div class="player-name"></div>
-        <div class="player-name"></div>
+        <div class="gr-player-name"></div>
+        <div class="gr-player-name"></div>
+        <div class="gr-player-name"></div>
+        <div class="gr-player-name"></div>
+        <div class="gr-player-name"></div>
     </div>
 <button class="gr-button">Start Game!</button>
 <button class="gr-button">Leave</button>

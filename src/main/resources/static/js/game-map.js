@@ -200,13 +200,13 @@ function getGameMapHTMLContent() {
     <table style="margin-left: 300px">
         <tr>
             <td>
-                <table id="playersTable" style="border-collapse: collapse; margin-right: 10px">
+                <table id="playersTable" style="border-collapse: collapse">
                     <tbody>
                         <tr>
                             <td>
                                 <div id="player0-info-container" class="player-info-container">
                                     <div id="player0-icon"></div>
-                                    <div id="player0-name" class="player-name"></div>
+                                    <div id="player0-name" class="gm-player-name"></div>
                                     <div id="player0-money" class="player-money"></div>
                                 </div>
                             </td>
@@ -215,7 +215,7 @@ function getGameMapHTMLContent() {
                             <td>
                                 <div id="player1-info-container" class="player-info-container">
                                     <div id="player1-icon"></div>
-                                    <div id="player1-name" class="player-name"></div>
+                                    <div id="player1-name" class="gm-player-name"></div>
                                     <div id="player1-money" class="player-money"></div>
                                 </div>
                             </td>
@@ -224,7 +224,7 @@ function getGameMapHTMLContent() {
                             <td>
                                 <div id="player2-info-container" class="player-info-container">
                                     <div id="player2-icon"></div>
-                                    <div id="player2-name" class="player-name"></div>
+                                    <div id="player2-name" class="gm-player-name"></div>
                                     <div id="player2-money" class="player-money"></div>
                                 </div>
                             </td>
@@ -233,7 +233,7 @@ function getGameMapHTMLContent() {
                             <td>
                                 <div id="player3-info-container" class="player-info-container">
                                     <div id="player3-icon"></div>
-                                    <div id="player3-name" class="player-name"></div>
+                                    <div id="player3-name" class="gm-player-name"></div>
                                     <div id="player3-money" class="player-money"></div>
                                 </div>
                             </td>
@@ -242,7 +242,7 @@ function getGameMapHTMLContent() {
                             <td>
                                 <div id="player4-info-container" class="player-info-container">
                                     <div id="player4-icon"></div>
-                                    <div id="player4-name" class="player-name"></div>
+                                    <div id="player4-name" class="gm-player-name"></div>
                                     <div id="player4-money" class="player-money"></div>
                                 </div>
                             </td>
@@ -581,7 +581,7 @@ function getGameMapHTMLContent() {
             </td>
         </tr>
     </table>
-    <div id="dice-container" class="dice-container, screen-centered">
+    <div id="dice-container" class="dice-container screen-centered">
         <img src="/images/dice-left.gif" alt="left dice" class="dice">
         <img src="/images/dice-right.gif" alt="right dice" class="dice">
     </div>

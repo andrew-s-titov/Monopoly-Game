@@ -79,7 +79,7 @@
     font-weight: bold;
 }
 
-.player-name {
+.gm-player-name {
     font-size: 17px;
 }
 
@@ -89,7 +89,7 @@
     margin-bottom: 7px;
 }
 
-.player-icon, .player-name, .player-info-container {
+.player-icon, .gm-player-name, .player-info-container {
     margin: 0;
 }
 
