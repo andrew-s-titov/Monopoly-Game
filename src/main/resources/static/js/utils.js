@@ -11,17 +11,6 @@ export function removeElementsIfPresent(...elementIDs) {
     }
 }
 
-export function createImage(srcTag, altTag) {
-    const image = document.createElement('img');
-    if (srcTag !== undefined && typeof srcTag === 'string') {
-        image.src = srcTag;
-    }
-    if (altTag !== undefined && typeof altTag === 'string') {
-        image.alt = altTag;
-    }
-    return image;
-}
-
 export function displayError(errorMessage) {
     if (_ERROR_OPACITY_TIMEOUT_ID !== 0) {
         clearTimeout(_ERROR_OPACITY_TIMEOUT_ID);

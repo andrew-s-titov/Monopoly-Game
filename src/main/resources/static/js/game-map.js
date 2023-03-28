@@ -200,7 +200,7 @@ function getGameMapHTMLContent() {
     <table style="margin-left: 300px">
         <tr>
             <td>
-                <table id="playersTable" style="border-collapse: collapse">
+                <table style="border-collapse: collapse">
                     <tbody>
                         <tr>
                             <td>
@@ -251,7 +251,7 @@ function getGameMapHTMLContent() {
                 </table>
             </td>
             <td style="position: relative">
-                <table id="mapTable" class="map-table">
+                <table class="map-table">
                     <tbody>
                         <tr>
                             <td class="price-corner-square-field"></td>
