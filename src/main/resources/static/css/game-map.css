@@ -2,11 +2,8 @@
     --price-narrow-side: 14px;
     --field-wide-side: 81px;
     --field-narrow-side: 52px;
-    --chip-width: 24px;
-    --chip-inner-width: 20px;
     --message-container-width: 457px;
     --message-container-height: 410px;
-    --dice-image-width: 126px;
     --player-icon-size: 90px;
     --running-circle-size: 6px;
     --running-circle-translate: calc(var(--player-icon-size) / 2 - var(--running-circle-size) / 2);
@@ -14,15 +11,17 @@
     --waiting-screen-size: calc(var(--message-container-width) / 2);
     --waiting-animation-size: 150px;
 
-    --filler: 92;
     --mount: 3862;
     --map: 3662;
     --gap: 8;
     --narrow: 292;
+    --player-chip: 95;
     --wide: 477;
     --main-field-block: 362;
     --price-block: 107;
     --center: 2692;
+    --chip-vh: calc(100vh * var(--player-chip) / var(--mount));
+    --chip-inner-vh: calc(var(--chip-vh) * 0.8);
     --map-vh: calc(100vh * var(--map) / var(--mount));
     --narrow-vh: calc(100vh * var(--narrow) / var(--mount));
     --wide-vh: calc(100vh * var(--wide) / var(--mount));
@@ -281,24 +280,24 @@ div::-webkit-scrollbar-thumb:hover {
 
 .chip-outer {
     display: none;
-    width: var(--chip-width);
-    height: var(--chip-width);
-    border-radius: 15px;
+    width: var(--chip-vh);
+    height: var(--chip-vh);
+    border-radius: var(--chip-vh);
     position: absolute;
-    box-shadow: 1px 1px 1px 0.8px black;
+    box-shadow: 0.1vh 0.1vh 0.5vh 0.2vh black;
     background: grey;
     opacity: 0.8;
+    z-index: 2;
+    justify-content: center;
+    align-items: center;
     transition: left 0.4s, top 0.4s, right 0.4s, down 0.4s;
     transition-timing-function: linear;
-    z-index: 2;
 }
 
 .chip-inner {
-    position: absolute;
-    width: var(--chip-inner-width);
-    height: var(--chip-inner-width);
-    border-radius: 10px;
-    margin: 2px;
+    width: var(--chip-inner-vh);
+    height: var(--chip-inner-vh);
+    border-radius: var(--chip-inner-vh);
 }
 
 .mortgage-tag {

@@ -182,7 +182,7 @@ function renderPlayerPicture(playerIndex, playerId, playerColor) {
 
 function renderPlayerChip(index, position) {
     const chip = getChip(index);
-    chip.style.display = 'block';
+    chip.style.display = 'flex';
     moveChip(chip, position);
 }
 
