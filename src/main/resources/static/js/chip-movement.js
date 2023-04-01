@@ -4,6 +4,7 @@ let _FIELD_NARROW_SIDE = 0;
 let _STEP_PX = 0;
 let _CORNER_STEP_ADJUSTMENT = 0;
 let _CHIP_WIDTH_ADJUSTMENT = 0;
+let _START_POSITION = 0;
 const _POSTFIX = 'vh';
 
 let paramsSet = false;
@@ -20,6 +21,7 @@ function initialiseChipParams() {
     _STEP_PX = _FIELD_NARROW_SIDE + getNumberProperty(style, '--gap');
     _CORNER_STEP_ADJUSTMENT = (_FIELD_WIDE_SIDE - _FIELD_NARROW_SIDE) / 2;
     _CHIP_WIDTH_ADJUSTMENT = getNumberProperty(style, '--player-chip') / 2;
+    _START_POSITION = _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
     paramsSet = true;
 }
 
@@ -39,13 +41,13 @@ export function moveToStart(chip) {
     if (!paramsSet) {
         initialiseChipParams();
     }
-    chip.style.top = calculateSide(getStartTop());
-    chip.style.left = calculateSide(getStartTop());
+    chip.style.top = calculateSide(_START_POSITION);
+    chip.style.left = calculateSide(_START_POSITION);
 }
 
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let top = getStartTop();
+    let top = _START_POSITION;
     if (fieldIndex >= 20 && fieldIndex <= 30) {
         top += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 10 && fieldIndex < 20) {
@@ -58,7 +60,7 @@ function defineChipTop(fieldIndex) {
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let left = getStartLeft();
+    let left = _START_POSITION;
     if (fieldIndex >= 10 && fieldIndex <= 20) {
         left += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 0 && fieldIndex < 10) {
@@ -69,22 +71,10 @@ function defineChipLeft(fieldIndex) {
     return calculateSide(left);
 }
 
-function extractNumberFromSizeProperty(computedStyle, propertyName) {
-    return Number.parseFloat(computedStyle.getPropertyValue(propertyName).trim().replace(_POSTFIX, ''));
-}
-
 function getNumberProperty(style, propertyName) {
     return Number.parseInt(style.getPropertyValue(propertyName).trim());
 }
 
 function calculateSide(value) {
-    return `calc(100vh * ${value} / ${_WINDOW_SIZE})`;
-}
-
-function getStartTop() {
-    return _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
-}
-
-function getStartLeft() {
-    return _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
+    return `calc(100${_POSTFIX} * ${value} / ${_WINDOW_SIZE})`;
 }
