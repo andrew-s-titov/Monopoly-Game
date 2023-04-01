@@ -10,7 +10,7 @@ import * as GameRoom from './game-room.js';
 import * as StartPage from './start-page.js';
 import * as Background from './start-background.js';
 import * as GameMap from "./game-map.js";
-import {initialiseChipParams} from './chip-movement.js';
+import {initialiseChipParamsAsync} from './chip-movement.js';
 import {displayError} from './utils.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
@@ -157,7 +157,6 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
         closeGameRoomPage();
         Background.hide();
         renderGameMap();
-        document.body.style.backgroundColor = 'darkslategray';
     }
 
     const players = gameMapRefreshEvent.players;
@@ -198,7 +197,7 @@ function onSystemMessage(systemMessageEvent) {
 
 function messageDiv() {
     const messageElement = document.createElement('div');
-    messageElement.className = 'message-body';
+    messageElement.className = 'chat-message';
     return messageElement;
 }
 
@@ -379,8 +378,8 @@ function getThisPlayerId() {
 
 function preloadImagesAndInfoAsync() {
     Promise.allSettled([
-        imagePreload('images/map-back.png', 'images/loading-bubbles.gif'),
-        initialiseChipParams()
+        imagePreload('images/map-back.png', 'images/loading-bubbles.gif', 'images/mortgage-tag.png'),
+        initialiseChipParamsAsync()
     ])
         .catch(error => console.log('failed to load some resources or data asynchronously: ' + error));
 }

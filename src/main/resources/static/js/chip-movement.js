@@ -7,7 +7,13 @@ let _CHIP_WIDTH = 24;
 let _CHIP_WIDTH_ADJUSTMENT = 12;
 const PX_POSTFIX = 'px';
 
-export async function initialiseChipParams() {
+let paramsSet = false;
+
+export async function initialiseChipParamsAsync() {
+    initialiseChipParams();
+}
+
+function initialiseChipParams() {
     const style = getComputedStyle(document.body);
     _PRICE_NARROW_SIDE = getStylePropertyNumber(style, '--price-narrow-side');
     _FIELD_WIDE_SIDE = getStylePropertyNumber(style, '--field-wide-side');
@@ -16,6 +22,7 @@ export async function initialiseChipParams() {
     _CORNER_STEP_ADJUSTMENT = (_FIELD_WIDE_SIDE - _FIELD_NARROW_SIDE) / 2;
     _CHIP_WIDTH = getStylePropertyNumber(style, '--chip-width');
     _CHIP_WIDTH_ADJUSTMENT = _CHIP_WIDTH / 2;
+    paramsSet = true;
 }
 
 export function moveChip(chip, fieldIndex) {

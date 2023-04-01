@@ -4,6 +4,11 @@ table, tr, td {
     border-collapse: collapse;
 }
 
+body {
+    margin: 0;
+    padding: 0;
+}
+
 body, button, input {
     font-family: 'Century Gothic', serif;
     font-size: 20px;

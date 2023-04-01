@@ -59,10 +59,6 @@ export function removeReplyWaitingScreen() {
 }
 
 function renderOfferInfoBox(preDealInfo, addresseeId, contractorName) {
-    if (_OFFER_INFO_BOX === null) {
-        _OFFER_INFO_BOX = createInfoBox();
-    }
-
     renderOfferInfoBoxDescription();
 
     renderLeftContainer();
@@ -75,16 +71,16 @@ function renderOfferInfoBox(preDealInfo, addresseeId, contractorName) {
     renderRightPropertyCheckboxes(preDealInfo.offer_addressee_fields);
     renderRightOfferButton();
 
-    _OFFER_INFO_BOX.style.display = 'block';
+    getOfferInfoBox().style.display = 'block';
 }
 
 function hideOfferInfoBox() {
-    _OFFER_INFO_BOX.style.display = 'none';
+    getOfferInfoBox().style.display = 'none';
 }
 
 function renderOfferInfoBoxDescription() {
     if (_OFFER_INFO_BOX_DESCRIPTION === null) {
-        _OFFER_INFO_BOX_DESCRIPTION = createInfoBoxDescription(_OFFER_INFO_BOX);
+        _OFFER_INFO_BOX_DESCRIPTION = createInfoBoxDescription(getOfferInfoBox());
         _OFFER_INFO_BOX_DESCRIPTION.innerText = 'Choose fields to buy or sell and enter money to exchange';
     }
 }
@@ -94,7 +90,7 @@ function renderLeftContainer() {
         _LEFT_SIDE_CONTAINER = createOfferSideContainer();
         _LEFT_SIDE_CONTAINER.appendChild(createContainerDescription('You:'));
         _LEFT_SIDE_CONTAINER.style.float = 'left';
-        _OFFER_INFO_BOX.appendChild(_LEFT_SIDE_CONTAINER);
+        getOfferInfoBox().appendChild(_LEFT_SIDE_CONTAINER);
     }
 }
 
@@ -136,7 +132,7 @@ function renderRightContainer(contractorName) {
     if (_RIGHT_SIDE_CONTAINER === null) {
         _RIGHT_SIDE_CONTAINER = createOfferSideContainer();
         _RIGHT_SIDE_CONTAINER.style.float = 'right';
-        _OFFER_INFO_BOX.appendChild(_RIGHT_SIDE_CONTAINER);
+        getOfferInfoBox().appendChild(_RIGHT_SIDE_CONTAINER);
         _RIGHT_CONTAINER_NAME_HOLDER = createContainerDescription(containerDescription);
         _RIGHT_SIDE_CONTAINER.appendChild(_RIGHT_CONTAINER_NAME_HOLDER);
     } else {
@@ -251,9 +247,6 @@ function fillCheckboxes(checkboxContainer, fields, groupName) {
 }
 
 function renderProposalInfoBox(offerProposal) {
-    if (_PROPOSAL_INFO_BOX === null) {
-        _PROPOSAL_INFO_BOX = createInfoBox();
-    }
     const initiatorName = offerProposal.initiator_name;
     const fieldsToBuy = offerProposal.fields_to_buy;
     const fieldsToSell = offerProposal.fields_to_sell;
@@ -264,7 +257,7 @@ function renderProposalInfoBox(offerProposal) {
 
     renderLeftProposalContainer(moneyToReceive, fieldsToBuy);
     if (_LEFT_PROPOSAL_BUTTON === null) {
-        _LEFT_PROPOSAL_BUTTON = renderLeftButton(_PROPOSAL_INFO_BOX, 'Accept');
+        _LEFT_PROPOSAL_BUTTON = renderLeftButton(getProposalInfoBox(), 'Accept');
         _LEFT_PROPOSAL_BUTTON.onclick = () => {
             HttpUtils.post(`${HttpUtils.baseGameUrl()}/offer/process?action=ACCEPT`);
             hideProposalInfoBox();
@@ -273,23 +266,23 @@ function renderProposalInfoBox(offerProposal) {
 
     renderRightProposalContainer(initiatorName, moneyToGive, fieldsToSell);
     if (_RIGHT_PROPOSAL_BUTTON === null) {
-        _RIGHT_PROPOSAL_BUTTON = renderRightButton(_PROPOSAL_INFO_BOX, 'Decline');
+        _RIGHT_PROPOSAL_BUTTON = renderRightButton(getProposalInfoBox(), 'Decline');
         _RIGHT_PROPOSAL_BUTTON.onclick = () => {
             HttpUtils.post(`${HttpUtils.baseGameUrl()}/offer/process?action=DECLINE`);
             hideProposalInfoBox();
         }
     }
 
-    _PROPOSAL_INFO_BOX.style.display = 'block';
+    getProposalInfoBox().style.display = 'block';
 }
 
 function hideProposalInfoBox() {
-    _PROPOSAL_INFO_BOX.style.display = 'none';
+    getProposalInfoBox().style.display = 'none';
 }
 
 function renderProposalDescription(initiatorName) {
     if (_PROPOSAL_INFO_BOX_DESCRIPTION === null) {
-        _PROPOSAL_INFO_BOX_DESCRIPTION = createInfoBoxDescription(_PROPOSAL_INFO_BOX);
+        _PROPOSAL_INFO_BOX_DESCRIPTION = createInfoBoxDescription(getProposalInfoBox());
     }
     _PROPOSAL_INFO_BOX_DESCRIPTION.innerText = `${initiatorName} made you an offer:`;
 }
@@ -299,7 +292,7 @@ function renderLeftProposalContainer(moneyToReceive, fieldsToBuy) {
         _LEFT_PROPOSAL_CONTAINER = createOfferSideContainer();
         _LEFT_PROPOSAL_CONTAINER.appendChild(createContainerDescription('You give:'));
         _LEFT_PROPOSAL_CONTAINER.style.float = 'left';
-        _PROPOSAL_INFO_BOX.appendChild(_LEFT_PROPOSAL_CONTAINER);
+        getProposalInfoBox().appendChild(_LEFT_PROPOSAL_CONTAINER);
         _PROPOSAL_LEFT_SIDE_LIST = createSideListContainer();
         _LEFT_PROPOSAL_CONTAINER.appendChild(_PROPOSAL_LEFT_SIDE_LIST);
     }
@@ -311,7 +304,7 @@ function renderRightProposalContainer(initiatorName, moneyToGive, fieldsToSell) 
     if (_RIGHT_PROPOSAL_CONTAINER === null) {
         _RIGHT_PROPOSAL_CONTAINER = createOfferSideContainer();
         _RIGHT_PROPOSAL_CONTAINER.style.float = 'right';
-        _PROPOSAL_INFO_BOX.appendChild(_RIGHT_PROPOSAL_CONTAINER);
+        getProposalInfoBox().appendChild(_RIGHT_PROPOSAL_CONTAINER);
         _PROPOSAL_RIGHT_NAME_HOLDER = createContainerDescription(containerDescription);
         _PROPOSAL_RIGHT_SIDE_LIST = createSideListContainer();
         _RIGHT_PROPOSAL_CONTAINER.append(_PROPOSAL_RIGHT_NAME_HOLDER, _PROPOSAL_RIGHT_SIDE_LIST);
@@ -365,11 +358,18 @@ function getReplyWaitingScreen() {
     return _REPLY_WAITING_SCREEN;
 }
 
-function createInfoBox() {
-    const infoBox = document.createElement('div');
-    infoBox.className = 'offer-info-box';
-    document.getElementById('chat-message-container').appendChild(infoBox);
-    return infoBox;
+function getOfferInfoBox() {
+    if (_OFFER_INFO_BOX === null) {
+        _OFFER_INFO_BOX = document.getElementById('offer-info-box');
+    }
+    return _OFFER_INFO_BOX;
+}
+
+function getProposalInfoBox() {
+    if (_PROPOSAL_INFO_BOX === null) {
+        _PROPOSAL_INFO_BOX = document.getElementById('proposal-info-box');
+    }
+    return _PROPOSAL_INFO_BOX;
 }
 
 function createInfoBoxDescription(infoBox) {

@@ -196,391 +196,323 @@ function getGameMapContainer() {
 
 function getGameMapHTMLContent() {
     return `
-<div id="map">
-    <table style="margin-left: 300px">
-        <tr>
-            <td>
-                <table style="border-collapse: collapse">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div id="player0-info-container" class="player-info-container">
-                                    <div id="player0-icon"></div>
-                                    <div id="player0-name" class="gm-player-name"></div>
-                                    <div id="player0-money" class="player-money"></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div id="player1-info-container" class="player-info-container">
-                                    <div id="player1-icon"></div>
-                                    <div id="player1-name" class="gm-player-name"></div>
-                                    <div id="player1-money" class="player-money"></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div id="player2-info-container" class="player-info-container">
-                                    <div id="player2-icon"></div>
-                                    <div id="player2-name" class="gm-player-name"></div>
-                                    <div id="player2-money" class="player-money"></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div id="player3-info-container" class="player-info-container">
-                                    <div id="player3-icon"></div>
-                                    <div id="player3-name" class="gm-player-name"></div>
-                                    <div id="player3-money" class="player-money"></div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div id="player4-info-container" class="player-info-container">
-                                    <div id="player4-icon"></div>
-                                    <div id="player4-name" class="gm-player-name"></div>
-                                    <div id="player4-money" class="player-money"></div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </td>
-            <td style="position: relative">
-                <table class="map-table">
-                    <tbody>
-                        <tr>
-                            <td class="price-corner-square-field"></td>
-                            <td id="field0-price" class="price-corner-horizontal-field"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="price-corner-horizontal-field"></td>
-                            <td class="price-corner-square-field"></td>
-                        </tr>
-                        <tr>
-                            <td class="price-corner-vertical-field"></td>
-                            <td id="field0" class="corner-field"></td>
-                            <td>
-                                <div id="field1" class="vertical-field">
-                                    <div id='field1-name' class="name-holder"></div>
-                                    <div id="field1-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field2" class="vertical-field">
-                                    <div id='field2-name' class="name-holder"></div>
-                                    <div id="field2-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field3" class="vertical-field">
-                                    <div id='field3-name' class="name-holder"></div>
-                                    <div id="field3-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field4" class="vertical-field">
-                                    <div id='field4-name' class="name-holder"></div>
-                                    <div id="field4-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field5" class="vertical-field">
-                                    <div id='field5-name' class="name-holder"></div>
-                                    <div id="field5-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field6" class="vertical-field">
-                                    <div id='field6-name' class="name-holder"></div>
-                                    <div id="field6-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field7" class="vertical-field">
-                                    <div id='field7-name' class="name-holder"></div>
-                                    <div id="field7-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field8" class="vertical-field">
-                                    <div id='field8-name' class="name-holder"></div>
-                                    <div id="field8-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field9" class="vertical-field">
-                                    <div id='field9-name' class="name-holder"></div>
-                                    <div id="field9-price" class="price-tag price-straight stick-bottom"></div>
-                                </div>
-                            </td>
-                            <td id="field10" class="corner-field"></td>
-                            <td class="price-corner-vertical-field"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field39" class="horizontal-field">
-                                    <div id='field39-name' class="name-holder"></div>
-                                    <div id="field39-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td colspan="9" rowspan="8">
-                                <div id="chat-message-container">
-                                    <div id="height-filler" style="height: 100%"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field11" class="horizontal-field">
-                                    <div id='field11-name' class="name-holder"></div>
-                                    <div id="field11-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field38" class="horizontal-field">
-                                    <div id='field38-name' class="name-holder"></div>
-                                    <div id="field38-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field12" class="horizontal-field">
-                                    <div id='field12-name' class="name-holder"></div>
-                                    <div id="field12-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field37" class="horizontal-field">
-                                    <div id='field37-name' class="name-holder"></div>
-                                    <div id="field37-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field13" class="horizontal-field">
-                                    <div id='field13-name' class="name-holder"></div>
-                                    <div id="field13-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field36" class="horizontal-field">
-                                    <div id='field36-name' class="name-holder"></div>
-                                    <div id="field36-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field14" class="horizontal-field">
-                                    <div id='field14-name' class="name-holder"></div>
-                                    <div id="field14-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field35" class="horizontal-field">
-                                    <div id='field35-name' class="name-holder"></div>
-                                    <div id="field35-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field15" class="horizontal-field">
-                                    <div id='field15-name' class="name-holder"></div>
-                                    <div id="field15-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field34" class="horizontal-field">
-                                    <div id='field34-name' class="name-holder"></div>
-                                    <div id="field34-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field16" class="horizontal-field">
-                                    <div id='field16-name' class="name-holder"></div>
-                                    <div id="field16-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field33" class="horizontal-field">
-                                    <div id='field33-name' class="name-holder"></div>
-                                    <div id="field33-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field17" class="horizontal-field">
-                                    <div id='field17-name' class="name-holder"></div>
-                                    <div id="field17-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field32" class="horizontal-field">
-                                    <div id='field32-name' class="name-holder"></div>
-                                    <div id="field32-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field18" class="horizontal-field">
-                                    <div id='field18-name' class="name-holder"></div>
-                                    <div id="field18-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="vertical-premap-filler"></td>
-                            <td>
-                                <div id="field31" class="horizontal-field">
-                                    <div id='field31-name' class="name-holder"></div>
-                                    <div id="field31-price" class="price-tag text-left stick-right"></div>
-                                </div>
-                            </td>
-                            <td colspan="9">
-                                <div id="player-message-container">
-                                    <input id="player-message-input" autocomplete="false"
-                                           placeholder="Enter a message..."/>
-                                    <button id="player-message-button">send</button>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field19" class="horizontal-field">
-                                    <div id='field19-name' class="name-holder"></div>
-                                    <div id="field19-price" class="price-tag text-right stick-left"></div>
-                                </div>
-                            </td>
-                            <td class="vertical-premap-filler"></td>
-                        </tr>
-                        <tr>
-                            <td class="price-corner-vertical-field"></td>
-                            <td id="field30" class="corner-field"></td>
-                            <td>
-                                <div id="field29" class="vertical-field">
-                                    <div id='field29-name' class="name-holder"></div>
-                                    <div id="field29-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field28" class="vertical-field">
-                                    <div id='field28-name' class="name-holder"></div>
-                                    <div id="field28-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field27" class="vertical-field">
-                                    <div id='field27-name' class="name-holder"></div>
-                                    <div id="field27-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field26" class="vertical-field">
-                                    <div id='field26-name' class="name-holder"></div>
-                                    <div id="field26-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field25" class="vertical-field">
-                                    <div id='field25-name' class="name-holder"></div>
-                                    <div id="field25-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field24" class="vertical-field">
-                                    <div id='field24-name' class="name-holder"></div>
-                                    <div id="field24-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field23" class="vertical-field">
-                                    <div id='field23-name' class="name-holder"></div>
-                                    <div id="field23-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field22" class="vertical-field">
-                                    <div id='field22-name' class="name-holder"></div>
-                                    <div id="field22-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="field21" class="vertical-field">
-                                    <div id='field21-name' class="name-holder"></div>
-                                    <div id="field21-price" class="price-tag price-straight stick-top"></div>
-                                </div>
-                            </td>
-                            <td id="field20" class="corner-field"></td>
-                            <td class="price-corner-vertical-field"></td>
-                        </tr>
-                        <tr>
-                            <td class="price-corner-square-field"></td>
-                            <td id="field30-price" class="price-corner-horizontal-field"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td class="horizontal-premap-filler"></td>
-                            <td id="field20-price" class="price-corner-horizontal-field"></td>
-                            <td class="price-corner-square-field"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div id="chips">
-                    <div id="chip0" class="chip-outer">
-                        <div class="chip-inner"></div>
+<div class="map-parts">
+    <div class="gm-players-container">
+        <table style="border-collapse: collapse">
+            <tbody>
+                <tr>
+                    <td>
+                        <div id="player0-info-container" class="player-info-container">
+                            <div id="player0-icon"></div>
+                            <div id="player0-name" class="gm-player-name"></div>
+                            <div id="player0-money" class="player-money"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="player1-info-container" class="player-info-container">
+                            <div id="player1-icon"></div>
+                            <div id="player1-name" class="gm-player-name"></div>
+                            <div id="player1-money" class="player-money"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="player2-info-container" class="player-info-container">
+                            <div id="player2-icon"></div>
+                            <div id="player2-name" class="gm-player-name"></div>
+                            <div id="player2-money" class="player-money"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="player3-info-container" class="player-info-container">
+                            <div id="player3-icon"></div>
+                            <div id="player3-name" class="gm-player-name"></div>
+                            <div id="player3-money" class="player-money"></div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="player4-info-container" class="player-info-container">
+                            <div id="player4-icon"></div>
+                            <div id="player4-name" class="gm-player-name"></div>
+                            <div id="player4-money" class="player-money"></div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="map-container">
+        <div class="map">
+            <div class="gm-map-row">
+                <div id="field0" class="gm-field gm-corner"></div>
+                <div class="vertical-gap"></div>
+                <div id="field1" class="gm-field vertical-field">
+                    <div id="field1-mortgage" class="mortgage-tag stick-top"></div>
+                    <div id="field1-houses" class="house-container stick-top stick-right"></div>
+                    <div id="field1-cover" class="vertical-cover stick-top"></div>
+                    <div id="field1-price" class="price-tag price-straight stick-bottom"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field2" class="gm-field vertical-field"></div>
+                <div class="vertical-gap"></div>
+                <div id="field3" class="gm-field vertical-field">
+                    <div id="field3-mortgage" class="mortgage-tag stick-top"></div>
+                    <div id="field3-houses" class="house-container stick-top stick-right"></div>
+                    <div id="field3-cover" class="vertical-cover stick-top"></div>
+                    <div id="field3-price" class="price-tag price-straight stick-bottom"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field4" class="gm-field vertical-field"></div>
+                <div class="vertical-gap"></div>
+                <div id="field5" class="gm-field vertical-field">
+                    <div id="field5-mortgage" class="mortgage-tag stick-top"></div>
+                    <div id="field5-houses" class="house-container stick-top stick-right"></div>
+                    <div id="field5-cover" class="vertical-cover stick-top"></div>
+                    <div id="field5-price" class="price-tag price-straight stick-bottom"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field6" class="gm-field vertical-field">
+                    <div id="field6-mortgage" class="mortgage-tag stick-top"></div>
+                    <div id="field6-houses" class="house-container stick-top stick-right"></div>
+                    <div id="field6-cover" class="vertical-cover stick-top"></div>
+                    <div id="field6-price" class="price-tag price-straight stick-bottom"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field7" class="gm-field vertical-field"></div>
+                <div class="vertical-gap"></div>
+                <div id="field8" class="gm-field vertical-field">
+                    <div id="field8-mortgage" class="mortgage-tag stick-top"></div>
+                    <div id="field8-houses" class="house-container stick-top stick-right"></div>
+                    <div id="field8-cover" class="vertical-cover stick-top"></div>
+                    <div id="field8-price" class="price-tag price-straight stick-bottom"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field9" class="gm-field vertical-field">
+                    <div id="field9-mortgage" class="mortgage-tag stick-top"></div>
+                    <div id="field9-houses" class="house-container stick-top stick-right"></div>
+                    <div id="field9-cover" class="vertical-cover stick-top"></div>
+                    <div id="field9-price" class="price-tag price-straight stick-bottom"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field10" class="gm-field gm-corner"></div>
+            </div>
+            <div class="horizontal-gap"></div>
+            <div class="gm-center-row">
+                <div class="gm-column">
+                    <div id="field39" class="gm-field horizontal-field">
+                        <div id="field39-mortgage" class="mortgage-tag stick-left"></div>
+                        <div id="field39-houses" class="house-container stick-bottom stick-left"></div>
+                        <div id="field39-cover" class="horizontal-cover stick-left"></div>
+                        <div id="field39-price" class="price-tag price-side stick-right"></div>
                     </div>
-                    <div id="chip1" class="chip-outer">
-                        <div class="chip-inner"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field38" class="gm-field horizontal-field"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field37" class="gm-field horizontal-field">
+                        <div id="field37-mortgage" class="mortgage-tag stick-left"></div>
+                        <div id="field37-houses" class="house-container stick-bottom stick-left"></div>
+                        <div id="field37-cover" class="horizontal-cover stick-left"></div>
+                        <div id="field37-price" class="price-tag price-side stick-right"></div>
                     </div>
-                    <div id="chip2" class="chip-outer">
-                        <div class="chip-inner"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field36" class="gm-field horizontal-field"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field35" class="gm-field horizontal-field">
+                        <div id="field35-mortgage" class="mortgage-tag stick-left"></div>
+                        <div id="field35-houses" class="house-container stick-bottom stick-left"></div>
+                        <div id="field35-cover" class="horizontal-cover stick-left"></div>
+                        <div id="field35-price" class="price-tag price-side stick-right"></div>
                     </div>
-                    <div id="chip3" class="chip-outer">
-                        <div class="chip-inner"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field34" class="gm-field horizontal-field">
+                        <div id="field34-mortgage" class="mortgage-tag stick-left"></div>
+                        <div id="field34-houses" class="house-container stick-bottom stick-left"></div>
+                        <div id="field34-cover" class="horizontal-cover stick-left"></div>
+                        <div id="field34-price" class="price-tag price-side stick-right"></div>
                     </div>
-                    <div id="chip4" class="chip-outer">
-                        <div class="chip-inner"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field33" class="gm-field horizontal-field"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field32" class="gm-field horizontal-field">
+                        <div id="field32-mortgage" class="mortgage-tag stick-left"></div>
+                        <div id="field32-houses" class="house-container stick-bottom stick-left"></div>
+                        <div id="field32-cover" class="horizontal-cover stick-left"></div>
+                        <div id="field32-price" class="price-tag price-side stick-right"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field31" class="gm-field horizontal-field">
+                        <div id="field31-mortgage" class="mortgage-tag stick-left"></div>
+                        <div id="field31-houses" class="house-container stick-bottom stick-left"></div>
+                        <div id="field31-cover" class="horizontal-cover stick-left"></div>
+                        <div id="field31-price" class="price-tag price-side stick-right"></div>
                     </div>
                 </div>
-            </td>
-        </tr>
-    </table>
+                <div class="vertical-gap"></div>
+                <div class="gm-map-center">
+                    <div id="offer-info-box" class="offer-info-box"></div>
+                    <div id="proposal-info-box" class="offer-info-box"></div>
+                    <div id="chat-message-container" class="chat-container">
+                        <div class="chat-height-filler"></div>
+                    </div>
+                    <div id="player-message-container" class="chat-input-container">
+                        <input id="player-message-input" class="player-chat-input"
+                                autocomplete="false" placeholder="Enter a message..."/>
+                        <button id="player-message-button" class="player-chat-send">send</button>
+                    </div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div class="gm-column">
+                    <div id="field11" class="gm-field horizontal-field">
+                        <div id="field11-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field11-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field11-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field11-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field12" class="gm-field horizontal-field">
+                        <div id="field12-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field12-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field12-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field12-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field13" class="gm-field horizontal-field">
+                        <div id="field13-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field13-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field13-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field13-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field14" class="gm-field horizontal-field">
+                        <div id="field14-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field14-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field14-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field14-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field15" class="gm-field horizontal-field">
+                        <div id="field15-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field15-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field15-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field15-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field16" class="gm-field horizontal-field">
+                        <div id="field16-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field16-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field16-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field16-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field17" class="gm-field horizontal-field"></div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field18" class="gm-field horizontal-field">
+                        <div id="field18-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field18-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field18-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field18-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                    <div class="horizontal-gap"></div>
+                    <div id="field19" class="gm-field horizontal-field">
+                        <div id="field19-mortgage" class="mortgage-tag stick-right"></div>
+                        <div id="field19-houses" class="house-container stick-top stick-right"></div>
+                        <div id="field19-cover" class="horizontal-cover stick-right"></div>
+                        <div id="field19-price" class="price-tag price-side right-text stick-left"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="horizontal-gap"></div>
+            <div class="gm-map-row">
+                <div id="field30"  class="gm-field gm-corner"></div>
+                <div class="vertical-gap"></div>
+                <div id="field29" class="gm-field vertical-field">
+                    <div id="field29-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field29-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field29-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field29-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field28" class="gm-field vertical-field">
+                    <div id="field28-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field28-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field28-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field28-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field27" class="gm-field vertical-field">
+                    <div id="field27-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field27-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field27-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field27-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field26" class="gm-field vertical-field">
+                    <div id="field26-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field26-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field26-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field26-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field25" class="gm-field vertical-field">
+                    <div id="field25-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field25-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field25-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field25-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                  <div class="vertical-gap"></div>
+                <div id="field24" class="gm-field vertical-field">
+                    <div id="field24-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field24-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field24-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field24-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field23" class="gm-field vertical-field">
+                    <div id="field23-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field23-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field23-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field23-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field22" class="gm-field vertical-field"></div>
+                <div class="vertical-gap"></div>
+                <div id="field21" class="gm-field vertical-field">
+                    <div id="field21-mortgage" class="mortgage-tag stick-bottom"></div>
+                    <div id="field21-houses" class="house-container stick-bottom stick-left"></div>
+                    <div id="field21-cover" class="vertical-cover stick-bottom"></div>
+                    <div id="field21-price" class="price-tag price-straight stick-top"></div>
+                </div>
+                <div class="vertical-gap"></div>
+                <div id="field20" class="gm-field gm-corner"></div>
+            </div>
+            <div id="chips" class="chips-container">
+                <div id="chip0" class="chip-outer">
+                    <div class="chip-inner"></div>
+                </div>
+                <div id="chip1" class="chip-outer">
+                    <div class="chip-inner"></div>
+                </div>
+                <div id="chip2" class="chip-outer">
+                    <div class="chip-inner"></div>
+                </div>
+                <div id="chip3" class="chip-outer">
+                    <div class="chip-inner"></div>
+                </div>
+                <div id="chip4" class="chip-outer">
+                    <div class="chip-inner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="dice-container" class="dice-container screen-centered">
         <img src="/images/dice-left.gif" alt="left dice" class="dice">
         <img src="/images/dice-right.gif" alt="right dice" class="dice">
