@@ -33,7 +33,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import javax.websocket.CloseReason;
+import jakarta.websocket.CloseReason;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

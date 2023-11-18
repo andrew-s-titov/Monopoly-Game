@@ -3,7 +3,7 @@ package com.monopolynew.service;
 import com.monopolynew.event.GameEvent;
 import org.springframework.lang.Nullable;
 
-import javax.websocket.CloseReason;
+import jakarta.websocket.CloseReason;
 
 public interface GameEventSender {
 

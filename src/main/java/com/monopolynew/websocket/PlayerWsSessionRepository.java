@@ -3,7 +3,7 @@ package com.monopolynew.websocket;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 import java.util.Collection;
 
 public interface PlayerWsSessionRepository {
