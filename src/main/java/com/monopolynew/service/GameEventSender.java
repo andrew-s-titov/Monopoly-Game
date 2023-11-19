@@ -1,15 +1,13 @@
 package com.monopolynew.service;
 
-import com.monopolynew.event.GameEvent;
-import org.springframework.lang.Nullable;
-
 import jakarta.websocket.CloseReason;
+import org.springframework.lang.Nullable;
 
 public interface GameEventSender {
 
-    void sendToAllPlayers(GameEvent event);
+    void sendToAllPlayers(Object gameEvent);
 
-    void sendToPlayer(String playerId, GameEvent event);
+    void sendToPlayer(String playerId, Object gameEvent);
 
     void closeExchangeChannel(@Nullable CloseReason reason);
 }

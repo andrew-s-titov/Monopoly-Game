@@ -6,13 +6,13 @@ import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.MortgageChange;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ChipMoveEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.GameOverEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.MortgageChangeEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -28,12 +28,12 @@ import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameFieldConverter;
 import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.websocket.GameWebSocketHandler;
+import jakarta.websocket.CloseReason;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import jakarta.websocket.CloseReason;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         changePlayerPosition(player, newPositionIndex, true);
         if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     String.format("%s received $%s for starting a new circle",
                             player.getName(), Rules.CIRCLE_MONEY)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
@@ -67,7 +67,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         player.resetDoublets();
         player.imprison();
         gameEventSender.sendToAllPlayers(
-                new SystemMessageEvent(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
+                new ChatMessageEvent(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
         changePlayerPosition(player, Rules.JAIL_FIELD_NUMBER, false);
         endTurn(game);
     }
@@ -86,7 +86,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         var buyer = game.getPlayerById(buyerId);
         field.newOwner(buyer);
         buyer.takeMoney(price);
-        gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s is buying %s for $%s", buyer.getName(), field.getName(), price)));
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
@@ -101,7 +101,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                     .distinct().count();
             if (allGroupOwnedByTheSameOwner) {
                 fieldGroup.stream()
-                        .map(streetField -> (StreetField) streetField)
+                        .map(StreetField.class::cast)
                         .forEach(streetField -> streetField.setNewRent(true));
                 newPriceViews = fieldGroup.stream()
                         .map(gameFieldConverter::toView)
@@ -115,7 +115,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                     .filter(f -> !f.isFree())
                     .filter(f -> f.getOwner().equals(field.getOwner()))
                     .map(f -> (CompanyField) f)
-                    .collect(Collectors.toList());
+                    .toList();
             int ownedByTheSamePlayer = playerCompanyFields.size();
             if (ownedByTheSamePlayer > 1) {
                 playerCompanyFields
@@ -134,10 +134,10 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                     .allMatch(f -> buyer.equals(f.getOwner()));
             if (increasedMultiplier) {
                 fieldGroup.stream()
-                        .map(utilityField -> (UtilityField) utilityField)
+                        .map(UtilityField.class::cast)
                         .forEach(UtilityField::increaseMultiplier);
                 newPriceViews = fieldGroup.stream()
-                        .map(utilityField -> (UtilityField) utilityField)
+                        .map(UtilityField.class::cast)
                         .map(gameFieldConverter::toView)
                         .collect(Collectors.toList());
             } else {
@@ -153,11 +153,11 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     public int computePlayerAssets(Game game, Player player) {
         int assetSum = player.getMoney();
         List<PurchasableField> countedFields = game.getGameMap().getFields().stream()
-                .filter(field -> field instanceof PurchasableField)
-                .map(field -> (PurchasableField) field)
+                .filter(PurchasableField.class::isInstance)
+                .map(PurchasableField.class::cast)
                 .filter(field -> player.equals(field.getOwner()))
                 .filter(field -> !field.isMortgaged())
-                .collect(Collectors.toList());
+                .toList();
         for (PurchasableField field : countedFields) {
             if (field instanceof StreetField) {
                 int houses = ((StreetField) field).getHouses();
@@ -251,8 +251,8 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private List<PurchasableField> getPlayerFields(Game game, Player player) {
         return game.getGameMap().getFields().stream()
-                .filter(field -> field instanceof PurchasableField)
-                .map(field -> (PurchasableField) field)
+                .filter(PurchasableField.class::isInstance)
+                .map(PurchasableField.class::cast)
                 .filter(field -> !field.isFree())
                 .filter(field -> field.getOwner().equals(player))
                 .collect(Collectors.toList());
@@ -288,7 +288,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isBankrupt() || nextPlayer.isSkipping()) {
             if (nextPlayer.isSkipping()) {
-                gameEventSender.sendToAllPlayers(new SystemMessageEvent(nextPlayer.getName() + " is skipping his/her turn"));
+                gameEventSender.sendToAllPlayers(new ChatMessageEvent(nextPlayer.getName() + " is skipping his/her turn"));
                 nextPlayer.skip();
             }
             nextPlayer = toNextPlayer(game);
@@ -301,8 +301,8 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         List<MortgageChange> mortgageChanges = new ArrayList<>(30);
         List<GameFieldView> fieldViews = new ArrayList<>(30);
         game.getGameMap().getFields().stream()
-                .filter(field -> field instanceof PurchasableField)
-                .map(field -> (PurchasableField) field)
+                .filter(PurchasableField.class::isInstance)
+                .map(PurchasableField.class::cast)
                 .filter(PurchasableField::isMortgaged)
                 .forEach(field -> {
                     if (!field.isMortgagedDuringThisTurn() && field.getOwner().equals(currentPlayer)) {

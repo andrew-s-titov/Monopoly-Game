@@ -55,13 +55,11 @@ public class GameMapRefresherImpl implements GameMapRefresher {
                     }
                     break;
                 }
-                case AWAITING_PAYMENT:
-                case AWAITING_JAIL_FINE: {
+                case AWAITING_PAYMENT, AWAITING_JAIL_FINE: {
                     gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(game.getCheckToPay()));
                     break;
                 }
-                case ROLLED_FOR_JAIL:
-                case ROLLED_FOR_TURN: {
+                case ROLLED_FOR_JAIL, ROLLED_FOR_TURN: {
                     var lastDice = game.getLastDice();
                     gameEventSender.sendToAllPlayers(
                             new DiceResultEvent(playerId, lastDice.getFirstDice(), lastDice.getSecondDice()));

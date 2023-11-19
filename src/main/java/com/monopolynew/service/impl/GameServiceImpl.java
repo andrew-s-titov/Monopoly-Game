@@ -9,11 +9,11 @@ import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -121,7 +121,7 @@ public class GameServiceImpl implements GameService {
             }
             gameEventSender.sendToAllPlayers(
                     new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(message));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
         }
     }
 
@@ -145,7 +145,7 @@ public class GameServiceImpl implements GameService {
             if (lastDice.isDoublet()) {
                 currentPlayer.amnesty();
                 game.setStage(GameStage.ROLLED_FOR_TURN);
-                gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                         currentPlayer.getName() + " is pardoned under amnesty"));
                 doRegularMove(game);
             } else {
@@ -154,7 +154,7 @@ public class GameServiceImpl implements GameService {
                     paymentProcessor.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
                 } else {
                     currentPlayer.doTime();
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName() + " is doing time"));
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
                     gameLogicExecutor.endTurn(game);
                 }
             }
@@ -223,7 +223,7 @@ public class GameServiceImpl implements GameService {
             currentPlayer.releaseFromJail();
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                     MoneyState.fromPlayer(currentPlayer))));
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     currentPlayer.getName() + " is released on bail"));
             game.setStage(GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(new TurnStartEvent(currentPlayer.getId()));
@@ -243,7 +243,7 @@ public class GameServiceImpl implements GameService {
         // TODO: check if game is in progress
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
-        gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + " gave up"));
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " gave up"));
         gameLogicExecutor.bankruptPlayer(game, player, null);
     }
 

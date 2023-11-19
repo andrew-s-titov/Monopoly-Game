@@ -1,8 +1,8 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.MoneyState;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
@@ -80,7 +80,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     }
                     currentPlayer.addMoney(giftTotal);
                     moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                             String.format("%s has a birthday - every player is paying him/her $%s",
                                     currentPlayer.getName(), giftSize)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
@@ -104,7 +104,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                         }
                     }
                     moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                             String.format("%s is paying everyone $%s for help with election campaign",
                                     currentPlayer.getName(), rewardRate)));
                     gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
@@ -127,7 +127,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     for (Integer houses : housesOnStreets) {
                         tax += houses == Rules.MAX_HOUSES_ON_STREET ? perHotel : houses * perHouse;
                     }
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                             String.format("%s failed tax audit and is paying $%s per house and $%s per hotel owned",
                                     currentPlayer.getName(), perHouse, perHotel)));
                     if (tax > 0) {
@@ -162,14 +162,14 @@ public class ChanceContainerImpl implements ChanceContainer {
                             .orElseThrow(() -> new IllegalStateException("wrong distance calculations"))
                             .getKey();
 
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName()
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName()
                             + " was urgently called on a business trip and is proceeding to the nearest airport"));
                     gameLogicExecutor.movePlayer(game, currentPlayer, nearestField.getId(), false);
                 },
 
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                             String.format("%s unexpectedly ended up on the %s field after a booze",
                                     currentPlayer.getName(), FieldAction.START.getName())));
                     boolean forward = currentPlayer.getPosition() > Rules.NUMBER_OF_FIELDS / 2;
@@ -178,7 +178,7 @@ public class ChanceContainerImpl implements ChanceContainer {
 
                 game -> {
                     var currentPlayer = game.getCurrentPlayer();
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName() + " is TELEPORTING!"));
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is TELEPORTING!"));
                     GameMap gameMap = game.getGameMap();
                     List<Integer> purchasableFieldsIndexes = gameMap.getFields().stream()
                             .filter(field -> field instanceof PurchasableField)
@@ -203,7 +203,7 @@ public class ChanceContainerImpl implements ChanceContainer {
             } else {
                 currentPlayer.skipTurns(turns);
             }
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     String.format(formatMessage, currentPlayer.getName(), turns)));
             gameLogicExecutor.endTurn(game);
         };
@@ -217,7 +217,7 @@ public class ChanceContainerImpl implements ChanceContainer {
             } else {
                 currentPlayer.takeMoney(amount);
             }
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     String.format(formatMessage, currentPlayer.getName(), amount)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));

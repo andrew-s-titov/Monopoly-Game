@@ -1,16 +1,15 @@
 package com.monopolynew.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.monopolynew.event.GameEvent;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.websocket.PlayerWsSessionRepository;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import jakarta.websocket.CloseReason;
-import jakarta.websocket.Session;
 import java.io.IOException;
 
 @RequiredArgsConstructor
@@ -22,16 +21,16 @@ public class GameEventSenderWebsocketImpl implements GameEventSender {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void sendToAllPlayers(GameEvent event) {
+    public void sendToAllPlayers(Object gameEvent) {
         playerWsSessionRepository.getAllSessions()
-                .forEach(session -> sendToSession(session, event));
+                .forEach(session -> sendToSession(session, gameEvent));
     }
 
     @Override
-    public void sendToPlayer(String playerId, GameEvent event) {
+    public void sendToPlayer(String playerId, Object gameEvent) {
         Session wsSession = playerWsSessionRepository.getPlayerSession(playerId);
         if (wsSession != null) {
-            sendToSession(wsSession, event);
+            sendToSession(wsSession, gameEvent);
         } else {
             log.debug("no session found for player with id {} on this server", playerId);
         }

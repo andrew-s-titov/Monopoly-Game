@@ -184,7 +184,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         if (!purchasableField.isMortgaged()) {
             if (purchasableField instanceof StreetField) {
                 return PurchasableFieldGroups.getGroupByFieldIndex(game, purchasableField.getId()).stream()
-                        .map(field -> (StreetField) field)
+                        .map(StreetField.class::cast)
                         .allMatch(field -> field.getHouses() == 0);
             } else {
                 return true;

@@ -6,12 +6,12 @@ import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.OfferProcessedEvent;
 import com.monopolynew.event.OfferSentEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -90,7 +90,7 @@ public class DealManagerImpl implements DealManager {
                 .stageToReturnTo(currentGameStage)
                 .build();
         game.setOffer(newOffer);
-        gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
         gameEventSender.sendToPlayer(offerInitiatorId, new OfferSentEvent());
         gameEventSender.sendToPlayer(offerAddresseeId, gameEventGenerator.newOfferProposalEvent(game));
@@ -110,9 +110,9 @@ public class DealManagerImpl implements DealManager {
         }
         var offerInitiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(offerAddressee.getName() + " declined the offer"));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(offerAddressee.getName() + " declined the offer"));
         } else {
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(offerAddressee.getName() + " accepted the offer"));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(offerAddressee.getName() + " accepted the offer"));
             processOfferPayments(offer, offerInitiator, offerAddressee);
             processOfferPropertyExchange(game, offer, offerInitiator, offerAddressee);
         }

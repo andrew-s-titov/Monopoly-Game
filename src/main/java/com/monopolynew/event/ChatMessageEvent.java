@@ -1,17 +1,15 @@
 package com.monopolynew.event;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
-@AllArgsConstructor
 @Getter
-public class ChatMessageEvent implements GameEvent {
+public record ChatMessageEvent(@NonNull String message, @Nullable String playerId) {
 
-    private final int code = 200;
+    public ChatMessageEvent(@NonNull String message) {
+        this(message, null);
+    }
 
-    @JsonProperty("player_id")
-    private final String playerId;
-
-    private final String message;
+    private static final int code = 200;
 }

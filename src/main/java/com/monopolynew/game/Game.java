@@ -28,6 +28,7 @@ public class Game {
 
     private final boolean withTeleport;
 
+    @Getter
     private boolean inProgress = false;
     @Getter
     @Setter
@@ -76,10 +77,6 @@ public class Game {
 
     public void removePlayer(String playerId) {
         this.players.remove(playerId);
-    }
-
-    public boolean isInProgress() {
-        return this.inProgress;
     }
 
     public void startGame() {

@@ -3,8 +3,8 @@ package com.monopolynew.service.impl;
 import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
@@ -50,7 +50,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 game.setCheckToPay(checkToPay);
                 gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
             } else {
-                gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + " went bankrupt"));
+                gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " went bankrupt"));
                 gameLogicExecutor.bankruptPlayer(game, player, assets);
             }
         }
@@ -80,7 +80,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
         var paymentComment = checkToPay.getComment();
         if (StringUtils.isNotBlank(paymentComment)) {
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(paymentComment));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(paymentComment));
         }
         game.setCheckToPay(null);
 
