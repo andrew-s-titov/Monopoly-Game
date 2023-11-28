@@ -77,7 +77,7 @@ function getBackgroundContainer() {
 
 function getBackgroundImageDiv() {
     if (_BACKGROUND_IMAGE_DIV === null) {
-        _BACKGROUND_IMAGE_DIV = getBackgroundContainer().lastElementChild;;
+        _BACKGROUND_IMAGE_DIV = getBackgroundContainer().lastElementChild;
     }
     return _BACKGROUND_IMAGE_DIV;
 }

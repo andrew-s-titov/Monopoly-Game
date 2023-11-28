@@ -19,7 +19,6 @@ import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
-import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +30,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-@ServerEndpoint(value = "/connect/{playerName}", configurator = SpringWebsocketCustomConfigurer.class)
+@ServerEndpoint(value = "/", configurator = SpringWebsocketCustomConfigurer.class)
 public class GameWebSocketHandler {
 
     public static final int GAME_OVER_CLOSE_REASON_CODE = 3000;
@@ -44,8 +43,9 @@ public class GameWebSocketHandler {
     private final GameEventSender gameEventSender;
 
     @OnOpen
-    public void onOpen(Session session, EndpointConfig config, @PathParam("playerName") String playerName) throws IOException {
+    public void onOpen(Session session, EndpointConfig config) throws IOException {
         var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
+        var playerName = (String) config.getUserProperties().get(GlobalConfig.PLAYER_NAME_KEY);
 
         Game game = gameRepository.getGame();
         if (game.isInProgress()) {

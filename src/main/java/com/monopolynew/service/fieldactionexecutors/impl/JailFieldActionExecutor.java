@@ -7,7 +7,6 @@ import com.monopolynew.map.FieldAction;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.fieldactionexecutors.FieldActionExecutor;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +17,10 @@ public class JailFieldActionExecutor implements FieldActionExecutor {
     private final GameEventSender gameEventSender;
     private final GameLogicExecutor gameLogicExecutor;
 
-    @Getter
-    private static final FieldAction fieldAction = FieldAction.JAIL;
+    @Override
+    public FieldAction getFieldAction() {
+        return FieldAction.JAIL;
+    }
 
     @Override
     public void executeAction(Game game) {
