@@ -1,8 +1,6 @@
 package com.monopolynew.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Builder
 @Getter
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class GameFieldView {
 
     private final int id;

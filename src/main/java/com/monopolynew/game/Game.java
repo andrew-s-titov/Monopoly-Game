@@ -88,7 +88,7 @@ public class Game {
 
     public void finishGame() {
         this.inProgress = false;
-        this.players.clear();
+        this.players.values().forEach(Player::resetState);
         this.gameMap = null;
         this.whoseTurn = null;
         this.playerIterator = null;

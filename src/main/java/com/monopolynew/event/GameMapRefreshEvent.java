@@ -1,6 +1,5 @@
 package com.monopolynew.event;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.game.Player;
 import lombok.Getter;
@@ -19,6 +18,5 @@ public class GameMapRefreshEvent implements GameEvent {
 
     private final List<GameFieldView> fields;
 
-    @JsonProperty("current_player")
     private final String currentPlayer;
 }

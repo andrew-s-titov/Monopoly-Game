@@ -1,8 +1,6 @@
 package com.monopolynew.service.impl;
 
-import com.monopolynew.dto.GameFieldOfferView;
 import com.monopolynew.dto.GameFieldView;
-import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StaticRentField;
@@ -11,43 +9,40 @@ import com.monopolynew.map.UtilityField;
 import com.monopolynew.service.GameFieldConverter;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class GameFieldConverterImpl implements GameFieldConverter {
 
-    public <T extends GameField> GameFieldView toView(T gameField) {
-        int id = gameField.getId();
+    @Override
+    public GameFieldView toView(PurchasableField purchasableField) {
+        int id = purchasableField.getId();
         String priceTag = null;
         String ownerId = null;
-        Integer group = null;
         Integer houses = null;
         boolean mortgage = false;
-        if (gameField instanceof PurchasableField) {
-            PurchasableField purchasableField = (PurchasableField) gameField;
-            group = PurchasableFieldGroups.getGroupIdByFieldIndex(gameField.getId());
-            if (purchasableField.isFree()) {
-                priceTag = "$ " + purchasableField.getPrice();
-            } else {
-                ownerId = purchasableField.getOwner().getId();
-                if (purchasableField.isMortgaged()) {
-                    mortgage = true;
-                    priceTag = Integer.toString(purchasableField.getMortgageTurnsLeft());
-                } else if (gameField instanceof StaticRentField) {
-                    priceTag = "$ " + ((StaticRentField) gameField).getCurrentRent();
-                } else if (gameField instanceof UtilityField) {
-                    priceTag = "x" + ((UtilityField) gameField).getCurrentMultiplier();
-                }
-            }
-            if (purchasableField instanceof StreetField) {
-                houses = ((StreetField) purchasableField).getHouses();
+
+        Integer group = PurchasableFieldGroups.getGroupIdByFieldIndex(purchasableField.getId());
+        if (purchasableField.isFree()) {
+            priceTag = "$ " + purchasableField.getPrice();
+        } else {
+            ownerId = purchasableField.getOwner().getId();
+            if (purchasableField.isMortgaged()) {
+                mortgage = true;
+                priceTag = Integer.toString(purchasableField.getMortgageTurnsLeft());
+            } else if (purchasableField instanceof StaticRentField staticRentField) {
+                priceTag = "$ " + staticRentField.getCurrentRent();
+            } else if (purchasableField instanceof UtilityField utilityField) {
+                priceTag = "x" + utilityField.getCurrentMultiplier();
             }
         }
+        if (purchasableField instanceof StreetField streetField) {
+            houses = streetField.getHouses();
+        }
+
         return GameFieldView.builder()
                 .id(id)
-                .name(gameField.getName())
+                .name(purchasableField.getName())
                 .group(group)
                 .ownerId(ownerId)
                 .mortgage(mortgage)
@@ -56,15 +51,10 @@ public class GameFieldConverterImpl implements GameFieldConverter {
                 .build();
     }
 
-    public <T extends GameField> List<GameFieldView> toListView(List<T> gameFieldList) {
+    @Override
+    public List<GameFieldView> toListView(List<PurchasableField> gameFieldList) {
         return gameFieldList.stream()
                 .map(this::toView)
-                .collect(Collectors.toList());
-    }
-
-    public <T extends GameField> List<GameFieldOfferView> toListOfferView(List<T> gameFieldList) {
-        return gameFieldList.stream()
-                .map(field -> new GameFieldOfferView(field.getId(), field.getName()))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

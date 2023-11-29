@@ -27,8 +27,6 @@ import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameFieldConverter;
 import com.monopolynew.service.GameLogicExecutor;
-import com.monopolynew.websocket.GameWebSocketHandler;
-import jakarta.websocket.CloseReason;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -255,7 +253,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 .map(PurchasableField.class::cast)
                 .filter(field -> !field.isFree())
                 .filter(field -> field.getOwner().equals(player))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private boolean isGameFinished(Game game) {
@@ -271,9 +269,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                     .orElseThrow(() -> new IllegalStateException("failed to get last non-bankrupt player"));
             game.finishGame();
             gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getId(), winner.getName()));
-            gameEventSender.closeExchangeChannel(
-                    new CloseReason(CloseReason.CloseCodes.getCloseCode(GameWebSocketHandler.GAME_OVER_CLOSE_REASON_CODE),
-                    "game over"));
             return true;
         }
         return false;

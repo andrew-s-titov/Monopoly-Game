@@ -41,10 +41,9 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         checkFieldExists(fieldIndex);
         GameField field = game.getGameMap().getField(fieldIndex);
         List<FieldManagementAction> actions = new ArrayList<>(FieldManagementAction.values().length);
-        if (field instanceof PurchasableField && !managementNotAvailable(game.getStage())) {
+        if (field instanceof PurchasableField purchasableField && !managementNotAvailable(game.getStage())) {
             actions.add(FieldManagementAction.INFO);
             if (!managementNotAvailable(game.getStage())) {
-                var purchasableField = (PurchasableField) field;
                 Player currentPlayer = game.getCurrentPlayer();
                 if (currentPlayer.getId().equals(playerId) && !purchasableField.isFree() && currentPlayer.equals(purchasableField.getOwner())) {
                     if (redemptionAvailable(game, purchasableField)) {
@@ -52,12 +51,11 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                     } else if (mortgageAvailable(game, purchasableField)) {
                         actions.add(FieldManagementAction.MORTGAGE);
                     }
-                    if (purchasableField instanceof StreetField) {
-                        var street = (StreetField) purchasableField;
-                        if (houseSaleAvailable(game, street)) {
+                    if (purchasableField instanceof StreetField streetField) {
+                        if (houseSaleAvailable(game, streetField)) {
                             actions.add(FieldManagementAction.SELL_HOUSE);
                         }
-                        if (housePurchaseAvailable(game, currentPlayer, street)) {
+                        if (housePurchaseAvailable(game, currentPlayer, streetField)) {
                             actions.add(FieldManagementAction.BUY_HOUSE);
                         }
                     }
@@ -106,8 +104,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     @Override
     public Pair<Integer, Integer> buyHouse(Game game, int fieldIndex, String playerId) {
         return doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
-            if (field instanceof StreetField) {
-                var streetField = (StreetField) field;
+            if (field instanceof StreetField streetField) {
                 Player currentPlayer = aGame.getCurrentPlayer();
                 if (housePurchaseAvailable(aGame, currentPlayer, streetField)) {
                     streetField.addHouse();
@@ -125,16 +122,13 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     @Override
     public Pair<Integer, Integer> sellHouse(Game game, int fieldIndex, String playerId) {
         return doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
-            if (field instanceof StreetField) {
-                var streetField = (StreetField) field;
-                if (houseSaleAvailable(aGame, streetField)) {
-                    streetField.sellHouse();
-                    streetField.setNewRent(true);
-                    Player currentPlayer = aGame.getCurrentPlayer();
-                    currentPlayer.addMoney(streetField.getHousePrice());
-                    notifyAfterHouseManagementChange(currentPlayer, streetField);
-                    return;
-                }
+            if (field instanceof StreetField streetField && houseSaleAvailable(aGame, streetField)) {
+                streetField.sellHouse();
+                streetField.setNewRent(true);
+                Player currentPlayer = aGame.getCurrentPlayer();
+                currentPlayer.addMoney(streetField.getHousePrice());
+                notifyAfterHouseManagementChange(currentPlayer, streetField);
+                return;
             }
             throw new ClientBadRequestException("Cannot sell a house on this property field");
         });
@@ -210,8 +204,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         Player currentPlayer = game.getCurrentPlayer();
         int beforeManagementMoneyAmount = currentPlayer.getMoney();
         GameField field = game.getGameMap().getField(fieldIndex);
-        if (field instanceof PurchasableField && currentPlayer.equals(((PurchasableField) field).getOwner())) {
-            var purchasableField = (PurchasableField) field;
+        if (field instanceof PurchasableField purchasableField
+                && currentPlayer.equals(((PurchasableField) field).getOwner())) {
             action.accept(game, purchasableField);
         } else {
             throw new ClientBadRequestException("Cannot manage field - it doesn't belong to the current player");

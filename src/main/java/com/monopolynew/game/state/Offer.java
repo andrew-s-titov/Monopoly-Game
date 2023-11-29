@@ -18,13 +18,13 @@ public class Offer {
 
     private final Player addressee;
 
-    private final List<PurchasableField> fieldsToBuy;
+    private final List<PurchasableField> addresseeFields;
 
-    private final List<PurchasableField> fieldsToSell;
+    private final List<PurchasableField> initiatorFields;
 
-    private final Integer moneyToGive;
+    private final Integer initiatorMoney;
 
-    private final Integer moneyToReceive;
+    private final Integer addresseeMoney;
 
     private final GameStage stageToReturnTo;
 }

@@ -5,21 +5,20 @@ import com.monopolynew.exception.PlayerInvalidInputException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@Controller
+@RestController
 @RequestMapping("/")
 public class IndexController {
 
-    @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
-    public void homePage(@RequestParam(name = "name") String playerName,
-                         HttpServletResponse response) {
+    @PostMapping
+    public void login(@RequestParam(name = "name") String playerName,
+                      HttpServletResponse response) {
         // TODO: remove upon login feature implementation
         if (StringUtils.isBlank(playerName) || playerName.length() < 3 || playerName.length() > 20) {
             throw new PlayerInvalidInputException("Player name length must be from 3 to 20 characters");

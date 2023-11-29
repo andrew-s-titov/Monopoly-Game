@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class MortgageChange {
 
-    private final int field;
+    private final int fieldIndex;
 
     private final int turns;
 }

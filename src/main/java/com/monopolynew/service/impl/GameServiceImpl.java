@@ -3,7 +3,6 @@ package com.monopolynew.service.impl;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
@@ -297,12 +296,6 @@ public class GameServiceImpl implements GameService {
         var game = gameRepository.getGame();
         var moneyHistory = fieldManagementService.sellHouse(game, fieldIndex, playerId);
         afterManagementStateCheck(game, moneyHistory);
-    }
-
-    @Override
-    public PreDealInfo getPreDealInfo(String offerInitiatorId, String offerAddresseeId) {
-        var game = gameRepository.getGame();
-        return dealManager.getPreDealInfo(game, offerInitiatorId, offerAddresseeId);
     }
 
     @Override

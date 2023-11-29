@@ -117,6 +117,16 @@ public class Player {
         this.bankrupt = true;
     }
 
+    public void resetState() {
+        this.money = Rules.START_MONEY_AMOUNT;
+        this.bankrupt = false;
+        this.amnestied = false;
+        this.position = 0;
+        this.skipsTurns = 0;
+        this.jailTurns = 0;
+        this.doubletCount = 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

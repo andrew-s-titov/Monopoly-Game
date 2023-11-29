@@ -10,8 +10,8 @@ import * as GameRoom from './game-room.js';
 import * as StartPage from './start-page.js';
 import * as Background from './start-background.js';
 import * as GameMap from "./game-map.js";
-import {initialiseChipParamsAsync} from './chip-movement.js';
-import {displayError} from './utils.js';
+import { initialiseChipParamsAsync } from './chip-movement.js';
+import { displayError } from './utils.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
 
@@ -268,7 +268,7 @@ function onJailReleaseProcess(jailReleaseProcessEvent) {
             !jailReleaseProcessEvent.bail_available);
         const luckButton = Buttons.createActionButton('Try luck',
             `${HttpUtils.baseGameUrl()}/jail?action=LUCK`, false);
-        Buttons.renderActionContainer('Chose a way out:', payButton, luckButton);
+        Buttons.renderActionContainer('Choose a way out:', payButton, luckButton);
     }
 }
 

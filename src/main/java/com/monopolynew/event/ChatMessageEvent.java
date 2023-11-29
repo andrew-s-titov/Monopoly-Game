@@ -1,5 +1,6 @@
 package com.monopolynew.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -11,6 +12,7 @@ public class ChatMessageEvent {
     private final String message;
     private final String playerId;
 
+    @JsonCreator
     public ChatMessageEvent(@NonNull String message, @Nullable String playerId) {
         this.message = message;
         this.playerId = playerId;
