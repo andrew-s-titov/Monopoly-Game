@@ -1,10 +1,10 @@
 package com.monopolynew.websocket;
 
+import jakarta.websocket.Session;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import jakarta.websocket.Session;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,10 +47,5 @@ public class PlayerWsSessionRepositoryImpl implements PlayerWsSessionRepository 
     @NonNull
     public Collection<Session> getAllSessions() {
         return activePlayerSessions.values();
-    }
-
-    @Override
-    public void clearSessions() {
-        activePlayerSessions.clear();
     }
 }

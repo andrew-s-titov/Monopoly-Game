@@ -74,7 +74,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public String getPlayerName(String playerId) {
         var player = gameRepository.getGame().getPlayerById(playerId);
-        return player == null ? null :  player.getName();
+        return player == null ? null : player.getName();
     }
 
     @Override
@@ -143,7 +143,7 @@ public class GameServiceImpl implements GameService {
         } else if (GameStage.ROLLED_FOR_JAIL.equals(stage)) {
             if (lastDice.isDoublet()) {
                 currentPlayer.amnesty();
-                game.setStage(GameStage.ROLLED_FOR_TURN);
+                gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
                 gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                         currentPlayer.getName() + " is pardoned under amnesty"));
                 doRegularMove(game);
@@ -187,7 +187,7 @@ public class GameServiceImpl implements GameService {
         game.setBuyProposal(null);
         if (action.equals(ProposalAction.ACCEPT)) {
             gameLogicExecutor.doBuyField(game, field, field.getPrice(), buyerId);
-            game.setStage(GameStage.TURN_START);
+            gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
             gameLogicExecutor.endTurn(game);
         } else if (action.equals(ProposalAction.DECLINE)) {
             auctionManager.startNewAuction(game, field);
@@ -224,7 +224,7 @@ public class GameServiceImpl implements GameService {
                     MoneyState.fromPlayer(currentPlayer))));
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     currentPlayer.getName() + " is released on bail"));
-            game.setStage(GameStage.TURN_START);
+            gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(new TurnStartEvent(currentPlayer.getId()));
         } else if (jailAction.equals(JailAction.LUCK)) {
             notifyAboutDiceRolling(game);
@@ -299,9 +299,9 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void createOffer(String offerInitiatorId, String offerAddresseeId, DealOffer offer) {
+    public void createOffer(String initiatorId, String addresseeId, DealOffer offer) {
         var game = gameRepository.getGame();
-        dealManager.createOffer(game, offerInitiatorId, offerAddresseeId, offer);
+        dealManager.createOffer(game, initiatorId, addresseeId, offer);
     }
 
     @Override
@@ -370,7 +370,10 @@ public class GameServiceImpl implements GameService {
     private void notifyAboutDiceRolling(Game game) {
         GameStage currentStage = game.getStage();
         if (GameStage.TURN_START.equals(currentStage) || GameStage.JAIL_RELEASE_START.equals(currentStage)) {
-            game.setStage(GameStage.TURN_START.equals(currentStage) ? GameStage.ROLLED_FOR_TURN : GameStage.ROLLED_FOR_JAIL);
+            var newStage = GameStage.TURN_START.equals(currentStage)
+                    ? GameStage.ROLLED_FOR_TURN
+                    : GameStage.ROLLED_FOR_JAIL;
+            gameLogicExecutor.changeGameStage(game, newStage);
         } else {
             throw new WrongGameStageException("cannot roll the dice - wrong game stage");
         }

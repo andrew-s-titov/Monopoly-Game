@@ -1,6 +1,7 @@
 package com.monopolynew.service;
 
 import com.monopolynew.dto.DiceResult;
+import com.monopolynew.enums.GameStage;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
@@ -23,4 +24,6 @@ public interface GameLogicExecutor {
     void endTurn(Game game);
 
     void bankruptPlayer(Game game, Player player, @Nullable Integer remainingAssets);
+
+    void changeGameStage(Game game, GameStage newGameStage);
 }

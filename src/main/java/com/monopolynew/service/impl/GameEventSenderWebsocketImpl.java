@@ -3,11 +3,9 @@ package com.monopolynew.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.websocket.PlayerWsSessionRepository;
-import jakarta.websocket.CloseReason;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -34,25 +32,6 @@ public class GameEventSenderWebsocketImpl implements GameEventSender {
         } else {
             log.debug("no session found for player with id {} on this server", playerId);
         }
-    }
-
-    @Override
-    public void closeExchangeChannel(@Nullable CloseReason reason) {
-        var allActiveSessions = playerWsSessionRepository.getAllSessions();
-        for (Session wsSession : allActiveSessions) {
-            if (wsSession.isOpen()) {
-                try {
-                    if (reason != null) {
-                        wsSession.close(reason);
-                    } else {
-                        wsSession.close();
-                    }
-                } catch (IOException ex) {
-                    log.error("Failed to close session: ", ex);
-                }
-            }
-        }
-        playerWsSessionRepository.clearSessions();
     }
 
     private void sendToSession(Session session, Object payload) {

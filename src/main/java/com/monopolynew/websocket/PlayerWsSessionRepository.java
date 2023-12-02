@@ -1,9 +1,9 @@
 package com.monopolynew.websocket;
 
+import jakarta.websocket.Session;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import jakarta.websocket.Session;
 import java.util.Collection;
 
 public interface PlayerWsSessionRepository {
@@ -20,6 +20,4 @@ public interface PlayerWsSessionRepository {
 
     @NonNull
     Collection<Session> getAllSessions();
-
-    void clearSessions();
 }

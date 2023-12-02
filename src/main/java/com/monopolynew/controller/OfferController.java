@@ -20,11 +20,11 @@ public class OfferController {
 
     private final GameService gameService;
 
-    @PostMapping("/{offerAddresseeId}/send")
-    public void sendOffer(@CookieValue(GlobalConfig.PLAYER_ID_KEY) String offerInitiatorId,
-                          @PathVariable("offerAddresseeId") String offerAddresseeId,
+    @PostMapping("/{addresseeId}/send")
+    public void sendOffer(@CookieValue(GlobalConfig.PLAYER_ID_KEY) String initiatorId,
+                          @PathVariable("addresseeId") String addresseeId,
                           @RequestBody DealOffer dealOffer) {
-        gameService.createOffer(offerInitiatorId, offerAddresseeId, dealOffer);
+        gameService.createOffer(initiatorId, addresseeId, dealOffer);
     }
 
     @PostMapping("/process")

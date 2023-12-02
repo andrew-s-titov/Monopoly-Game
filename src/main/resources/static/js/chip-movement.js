@@ -15,12 +15,12 @@ export async function initialiseChipParamsAsync() {
 
 function initialiseChipParams() {
     const style = getComputedStyle(document.body);
-    _WINDOW_SIZE = getNumberProperty(style, '--mount')
     _FIELD_WIDE_SIDE = getNumberProperty(style, '--wide');
     _FIELD_NARROW_SIDE = getNumberProperty(style, '--narrow');
+    _CHIP_WIDTH_ADJUSTMENT = getNumberProperty(style, '--player-chip') / 2;
+    _WINDOW_SIZE = getNumberProperty(style, '--mount');
     _STEP_PX = _FIELD_NARROW_SIDE + getNumberProperty(style, '--gap');
     _CORNER_STEP_ADJUSTMENT = (_FIELD_WIDE_SIDE - _FIELD_NARROW_SIDE) / 2;
-    _CHIP_WIDTH_ADJUSTMENT = getNumberProperty(style, '--player-chip') / 2;
     _START_POSITION = _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
     paramsSet = true;
 }

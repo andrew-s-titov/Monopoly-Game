@@ -10,6 +10,7 @@ import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ChipMoveEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.GameOverEvent;
+import com.monopolynew.event.GameStageEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.MortgageChangeEvent;
@@ -75,7 +76,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         String buyerId = player.getId();
         var buyProposal = new BuyProposal(buyerId, field, payable);
         game.setBuyProposal(buyProposal);
-        game.setStage(GameStage.BUY_PROPOSAL);
+        changeGameStage(game, GameStage.BUY_PROPOSAL);
         gameEventSender.sendToPlayer(buyerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
     }
 
@@ -194,11 +195,11 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         }
         String nextPlayerId = nextPlayer.getId();
         if (nextPlayer.isImprisoned()) {
-            game.setStage(GameStage.JAIL_RELEASE_START);
+            changeGameStage(game, GameStage.JAIL_RELEASE_START);
             gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(
                     nextPlayerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
         } else {
-            game.setStage(GameStage.TURN_START);
+            changeGameStage(game, GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(new TurnStartEvent(nextPlayerId));
         }
     }
@@ -245,6 +246,12 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         if (!isGameFinished(game) && player.equals(currentPlayer)) {
             endTurn(game);
         }
+    }
+
+    @Override
+    public void changeGameStage(Game game, GameStage newGameStage) {
+        game.setStage(newGameStage);
+        gameEventSender.sendToAllPlayers(new GameStageEvent(newGameStage));
     }
 
     private List<PurchasableField> getPlayerFields(Game game, Player player) {

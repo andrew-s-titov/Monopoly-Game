@@ -36,7 +36,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 GameStage.AWAITING_PAYMENT : GameStage.AWAITING_JAIL_FINE;
         boolean payable = player.getMoney() >= amount;
         if (payable) {
-            game.setStage(newGameStage);
+            gameLogicExecutor.changeGameStage(game, newGameStage);
             var checkToPay = new CheckToPay(player, beneficiary, amount, true, false, paymentComment);
             game.setCheckToPay(checkToPay);
             gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
@@ -44,7 +44,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             int assets = gameLogicExecutor.computePlayerAssets(game, player);
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
-                game.setStage(newGameStage);
+                gameLogicExecutor.changeGameStage(game, newGameStage);
                 var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.9 < amount,
                         paymentComment);
                 game.setCheckToPay(checkToPay);
@@ -88,7 +88,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             gameLogicExecutor.endTurn(game);
         } else if (GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
             payer.releaseFromJail();
-            game.setStage(GameStage.ROLLED_FOR_TURN);
+            gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
             var newPosition = gameLogicExecutor.computeNewPlayerPosition(payer, game.getLastDice());
             gameLogicExecutor.movePlayer(game, payer, newPosition, true);
         }

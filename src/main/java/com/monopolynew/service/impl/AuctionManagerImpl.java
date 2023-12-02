@@ -31,7 +31,7 @@ public class AuctionManagerImpl implements AuctionManager {
 
     @Override
     public void startNewAuction(Game game, PurchasableField field) {
-        game.setStage(GameStage.AUCTION_IN_PROGRESS);
+        gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         var currentPlayer = game.getCurrentPlayer();
         game.setAuction(new Auction(game, field));
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " started an auction"));
@@ -50,7 +50,7 @@ public class AuctionManagerImpl implements AuctionManager {
             // propose to raise the stake
             var player = auction.getNextPlayer();
             if (player.getMoney() >= auction.getAuctionPrice() + Rules.AUCTION_STEP) {
-                game.setStage(GameStage.AWAITING_AUCTION_RAISE);
+                gameLogicExecutor.changeGameStage(game, GameStage.AWAITING_AUCTION_RAISE);
                 gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newAuctionRaiseProposalEvent(auction));
             } else {
                 // player can't afford to raise the stake - exclude from participants and proceed to next player
@@ -61,7 +61,7 @@ public class AuctionManagerImpl implements AuctionManager {
             var playerId = auction.getNextPlayer().getId();
             if (auction.isFirstCircle()) {
                 // if first circle - next playerId is the only participant: propose on start price
-                game.setStage(GameStage.AWAITING_AUCTION_BUY);
+                gameLogicExecutor.changeGameStage(game, GameStage.AWAITING_AUCTION_BUY);
                 gameEventSender.sendToPlayer(playerId, gameEventGenerator.newAuctionBuyProposalEvent(auction));
             } else {
                 // automatically sell to the winner
@@ -76,7 +76,7 @@ public class AuctionManagerImpl implements AuctionManager {
         var auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_BUY, auction);
         Assert.notNull(action, NULL_ARG_MESSAGE);
-        game.setStage(GameStage.AUCTION_IN_PROGRESS);
+        gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             var buyerId = auction.getCurrentParticipant().getId();
             gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyerId);
@@ -91,7 +91,7 @@ public class AuctionManagerImpl implements AuctionManager {
         Auction auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_RAISE, auction);
         Assert.notNull(action, NULL_ARG_MESSAGE);
-        game.setStage(GameStage.AUCTION_IN_PROGRESS);
+        gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(
