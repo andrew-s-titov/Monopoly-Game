@@ -1,8 +1,4 @@
 import {getPlayerColorById} from './players.js';
-import {removeElementsIfPresent} from './utils.js';
-
-const OWNER_COVER_POSTFIX = '-owner-cover';
-const MORTGAGE_TAG_POSTFIX = '-mortgage-cover';
 
 export function renderFieldViews(fieldViews) {
     for (let fieldView of fieldViews) {
@@ -20,9 +16,9 @@ export function renderFieldViews(fieldViews) {
             document.getElementById(`field${fieldIndex}-price`).textContent = fieldView.price_tag;
         }
         if (fieldView.hasOwnProperty('mortgage') && fieldView.mortgage) {
-            renderMortgageTag(fieldIndex);
+            showMortgageTag(fieldIndex);
         } else {
-            removeOldMortgageCover(fieldIndex);
+            hideMortgageCover(fieldIndex);
         }
         if (fieldView.hasOwnProperty('houses')) {
             renderHouses(fieldIndex, fieldView.houses);
@@ -35,97 +31,76 @@ export function renderMortgageState(fieldIndex, turns) {
         console.error(`no field with id ${fieldIndex} found on map`);
         return;
     }
-    removeOldMortgageCover(fieldIndex);
+    hideMortgageCover(fieldIndex);
     if (turns > 0) {
         const fieldPriceField = document.getElementById(`field${fieldIndex}-price`);
         if (fieldPriceField) {
             fieldPriceField.innerText = turns;
         }
-        renderMortgageTag(fieldIndex);
+        showMortgageTag(fieldIndex);
     }
 }
 
-function renderMortgageTag(fieldIndex) {
-    const propertyField = document.getElementById(`field${fieldIndex}`);
-    const newMortgageTag = document.createElement('div');
-    newMortgageTag.id = `field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`;
-    newMortgageTag.className = 'mortgage-tag';
-    addTextStickingClassName(fieldIndex, newMortgageTag);
-    propertyField.appendChild(newMortgageTag);
+function showMortgageTag(fieldIndex) {
+    const mortgageTag = document.getElementById(`field${fieldIndex}-mortgage`);
+    if (mortgageTag) {
+        mortgageTag.style.display = 'block';
+    }
 }
 
-function removeOldMortgageCover(fieldIndex) {
-    removeElementsIfPresent(`field${fieldIndex}${MORTGAGE_TAG_POSTFIX}`);
+function hideMortgageCover(fieldIndex) {
+    const mortgageTag = document.getElementById(`field${fieldIndex}-mortgage`);
+    if (mortgageTag) {
+        mortgageTag.style.display = 'none';
+    }
 }
 
 export function renderHouses(fieldIndex, amount) {
-    const field = document.getElementById(`field${fieldIndex}`);
-    if (!field) {
-        console.error(`no field with id ${fieldIndex} found on map`);
+    const houseContainer = document.getElementById(`field${fieldIndex}-houses`);
+    if (!houseContainer) {
+        console.error(`cannot display houses on field with id ${fieldIndex}`);
         return;
     }
-    const houseContainerId = `field${fieldIndex}-houses`;
-    removeElementsIfPresent(houseContainerId);
-    if (amount > 0) {
-        const houseContainer = document.createElement('div');
-        houseContainer.id = houseContainerId;
-        houseContainer.classList.add('house-container');
-        if (fieldIndex < 20) {
-            houseContainer.classList.add('stick-top', 'stick-right');
+    const property = houseContainer.children;
+    const propertyAmount = property.length;
+    if (amount < 0 || amount > 5) {
+        return;
+    }
+    if (amount === propertyAmount) {
+        if (amount !== 1) {
+            return;
         } else {
-            houseContainer.classList.add('stick-bottom', 'stick-left');
-        }
-        if (amount === 5) {
-            const hotel = document.createElement('div');
-            hotel.className = 'hotel-pic';
-            houseContainer.appendChild(hotel);
-        } else {
-            for (let i = 0; i < amount; i++) {
-                const house = document.createElement('div');
-                house.className = 'house-pic';
-                houseContainer.appendChild(house);
+            if (property[0].className === 'house-pic') {
+                return;
             }
         }
-        field.appendChild(houseContainer);
     }
+    houseContainer.innerHTML = '';
+    if (amount === 5) {
+        addProperty(houseContainer, false);
+    } else {
+        for (let i = 0; i < amount; i++) {
+            addProperty(houseContainer, true);
+        }
+    }
+}
+
+function addProperty(houseContainer, house) {
+    const property = document.createElement('div');
+    property.className = house === true ? 'house-pic' : 'hotel-pic';
+    houseContainer.appendChild(property);
 }
 
 function addOwnerCover(fieldIndex, ownerId) {
-    removeOwnerCover(fieldIndex);
-    const propertyField = document.getElementById(`field${fieldIndex}`);
-    const ownerCover = document.createElement('div');
-    ownerCover.id = `field${fieldIndex}${OWNER_COVER_POSTFIX}`;
-    ownerCover.className = 'owner-cover';
-    addTextStickingClassName(fieldIndex, ownerCover);
-    setOwnerCoverOrientation(fieldIndex, ownerCover);
-    ownerCover.style.backgroundColor = getPlayerColorById(ownerId);
-    propertyField.appendChild(ownerCover);
+    const fieldCover = document.getElementById(`field${fieldIndex}-cover`);
+    if (fieldCover) {
+        fieldCover.style.backgroundColor = getPlayerColorById(ownerId);
+    }
 }
 
 function removeOwnerCover(fieldIndex) {
-    removeElementsIfPresent(`field${fieldIndex}${OWNER_COVER_POSTFIX}`);
-}
-
-function addTextStickingClassName(fieldIndex, htmlElement) {
-    let className;
-    if (fieldIndex < 10) {
-        className = 'stick-top';
-    } else if (fieldIndex < 20) {
-        className = 'stick-right';
-    } else if (fieldIndex < 30) {
-        className = 'stick-bottom';
-    } else {
-        className = 'stick-left';
+    const fieldCover = document.getElementById(`field${fieldIndex}-cover`);
+    if (fieldCover) {
+        fieldCover.style.backgroundColor = 'transparent';
     }
-    htmlElement.classList.add(className);
-}
-
-function setOwnerCoverOrientation(fieldIndex, ownerCoverHtmlElement) {
-    let className;
-    if (fieldIndex < 10 || (fieldIndex > 20 && fieldIndex < 30)) {
-        className = 'vertical-cover';
-    } else {
-        className = 'horizontal-cover';
-    }
-    ownerCoverHtmlElement.classList.add(className);
 }

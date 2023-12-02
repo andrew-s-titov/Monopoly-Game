@@ -4,11 +4,8 @@ import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.dto.PlayerStatusDTO;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
-import com.monopolynew.exception.PlayerInvalidInputException;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,20 +23,6 @@ public class GameController {
     @PostMapping
     public void start() {
         gameService.startGame();
-    }
-
-    @GetMapping
-    public ResponseEntity<?> checkName(@RequestParam("name") String playerName) {
-        String message = null;
-        if (StringUtils.isBlank(playerName) || playerName.length() < 3) {
-            message = "Player name must be at least 3 character long";
-        } else if (gameService.usernameTaken(playerName)) {
-            message = "Username '" + playerName + "' is already taken. Please, choose another one.";
-        }
-        if (message != null) {
-            throw new PlayerInvalidInputException(message);
-        }
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/status")

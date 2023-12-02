@@ -1,6 +1,5 @@
 :root {
     --action-button-width: 150px;
-    --roll-the-dice-button-height: 45px;
 }
 
 .management-container {
@@ -36,12 +35,13 @@
 }
 
 .roll-the-dice-button {
+    display: none;
+    z-index: 7;
     background-color: white;
     border: none;
-    position: absolute;
-    height: var(--roll-the-dice-button-height);
-    margin-top: calc((var(--message-container-height) - var(--roll-the-dice-button-height))/2);
-    margin-left: calc((var(--message-container-width) - var(--action-button-width))/2);
+    height: 10vh;
+    width: 36vh;
+    font-size: 4vh;
 }
 
 .action-container {

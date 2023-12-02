@@ -1,6 +1,5 @@
 package com.monopolynew.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.monopolynew.game.Player;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class MoneyState {
 
-    @JsonProperty("player_id")
     private final String playerId;
 
     private final int money;

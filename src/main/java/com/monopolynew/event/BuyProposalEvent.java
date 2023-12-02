@@ -1,20 +1,19 @@
 package com.monopolynew.event;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
+@Builder
 @RequiredArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BuyProposalEvent implements GameEvent {
 
     private final int code = 306;
 
     private final String playerId;
 
-    private final String fieldName;
+    private final int fieldIndex;
 
     private final int price;
 

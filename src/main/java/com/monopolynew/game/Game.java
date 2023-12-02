@@ -28,6 +28,7 @@ public class Game {
 
     private final boolean withTeleport;
 
+    @Getter
     private boolean inProgress = false;
     @Getter
     @Setter
@@ -78,10 +79,6 @@ public class Game {
         this.players.remove(playerId);
     }
 
-    public boolean isInProgress() {
-        return this.inProgress;
-    }
-
     public void startGame() {
         this.inProgress = true;
         this.stage = GameStage.TURN_START;
@@ -91,7 +88,7 @@ public class Game {
 
     public void finishGame() {
         this.inProgress = false;
-        this.players.clear();
+        this.players.values().forEach(Player::resetState);
         this.gameMap = null;
         this.whoseTurn = null;
         this.playerIterator = null;

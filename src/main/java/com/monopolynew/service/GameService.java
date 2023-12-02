@@ -1,7 +1,6 @@
 package com.monopolynew.service;
 
 import com.monopolynew.dto.DealOffer;
-import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.PlayerManagementAction;
@@ -50,8 +49,6 @@ public interface GameService {
     void buyHouse(int fieldIndex, String playerId);
 
     void sellHouse(int fieldIndex, String playerId);
-
-    PreDealInfo getPreDealInfo(String offerInitiatorId, String offerAddresseeId);
 
     void createOffer(String offerInitiatorId, String offerAddresseeId, DealOffer offer);
 

@@ -10,7 +10,8 @@ import * as GameRoom from './game-room.js';
 import * as StartPage from './start-page.js';
 import * as Background from './start-background.js';
 import * as GameMap from "./game-map.js";
-import {initialiseChipParams} from './chip-movement.js';
+import { initialiseChipParamsAsync } from './chip-movement.js';
+import { displayError } from './utils.js';
 
 const PLAYER_ID_COOKIE = 'player_id';
 
@@ -42,13 +43,20 @@ function prepareMainPage() {
 }
 
 function joinGameRoom() {
-    const playerName = StartPage.getPlayerNameFromInput();
-    HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
-        () => {
-            closeStartPage();
-            renderGameRoomPage();
-            openWebsocket(playerName);
-        });
+    const playerNameInput = StartPage.getPlayerNameInput();
+    const validityState = playerNameInput.validity;
+    if (validityState.tooLong || validityState.tooShort || validityState.valueMissing) {
+        displayError('Player name length must be from 3 to 20 characters');
+        playerNameInput.focus();
+    } else {
+        const playerName = playerNameInput.value;
+        HttpUtils.get(`${HttpUtils.baseGameUrl()}?name=${playerName}`,
+            () => {
+                closeStartPage();
+                renderGameRoomPage();
+                openWebsocket(playerName);
+            });
+    }
 }
 
 function openWebsocket(username) {
@@ -149,7 +157,6 @@ function onGameStartOrMapRefresh(gameMapRefreshEvent) {
         closeGameRoomPage();
         Background.hide();
         renderGameMap();
-        document.body.style.backgroundColor = 'darkslategray';
     }
 
     const players = gameMapRefreshEvent.players;
@@ -190,7 +197,7 @@ function onSystemMessage(systemMessageEvent) {
 
 function messageDiv() {
     const messageElement = document.createElement('div');
-    messageElement.className = 'message-body';
+    messageElement.className = 'chat-message';
     return messageElement;
 }
 
@@ -261,7 +268,7 @@ function onJailReleaseProcess(jailReleaseProcessEvent) {
             !jailReleaseProcessEvent.bail_available);
         const luckButton = Buttons.createActionButton('Try luck',
             `${HttpUtils.baseGameUrl()}/jail?action=LUCK`, false);
-        Buttons.renderActionContainer('Chose a way out:', payButton, luckButton);
+        Buttons.renderActionContainer('Choose a way out:', payButton, luckButton);
     }
 }
 
@@ -308,6 +315,7 @@ function onMortgageChange(mortgageChangeEvent) {
 
 function onGameOver(gameOverEvent) {
     markGameAsFinished();
+    PlayerService.removePlayersOutline();
     const winnerName = gameOverEvent.player_name;
     const text = `${winnerName} is the winner!`;
     GameMap.displayAtopMapMessage(text);
@@ -370,8 +378,8 @@ function getThisPlayerId() {
 
 function preloadImagesAndInfoAsync() {
     Promise.allSettled([
-        imagePreload('images/map-back.png', 'images/loading-bubbles.gif'),
-        initialiseChipParams()
+        imagePreload('images/map-back.png', 'images/loading-bubbles.gif', 'images/mortgage-tag.png'),
+        initialiseChipParamsAsync()
     ])
         .catch(error => console.log('failed to load some resources or data asynchronously: ' + error));
 }

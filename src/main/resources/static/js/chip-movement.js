@@ -1,21 +1,28 @@
-let _PRICE_NARROW_SIDE = 14;
-let _FIELD_WIDE_SIDE = 81;
-let _FIELD_NARROW_SIDE = 52;
-let _STEP_PX = _FIELD_NARROW_SIDE;
-let _CORNER_STEP_ADJUSTMENT = 14.5;
-let _CHIP_WIDTH = 24;
-let _CHIP_WIDTH_ADJUSTMENT = 12;
-const PX_POSTFIX = 'px';
+let _WINDOW_SIZE = 0;
+let _FIELD_WIDE_SIDE = 0;
+let _FIELD_NARROW_SIDE = 0;
+let _STEP_PX = 0;
+let _CORNER_STEP_ADJUSTMENT = 0;
+let _CHIP_WIDTH_ADJUSTMENT = 0;
+let _START_POSITION = 0;
+const _POSTFIX = 'vh';
 
-export async function initialiseChipParams() {
+let paramsSet = false;
+
+export async function initialiseChipParamsAsync() {
+    initialiseChipParams();
+}
+
+function initialiseChipParams() {
     const style = getComputedStyle(document.body);
-    _PRICE_NARROW_SIDE = getStylePropertyNumber(style, '--price-narrow-side');
-    _FIELD_WIDE_SIDE = getStylePropertyNumber(style, '--field-wide-side');
-    _FIELD_NARROW_SIDE = getStylePropertyNumber(style, '--field-narrow-side');
-    _STEP_PX = _FIELD_NARROW_SIDE;
+    _FIELD_WIDE_SIDE = getNumberProperty(style, '--wide');
+    _FIELD_NARROW_SIDE = getNumberProperty(style, '--narrow');
+    _CHIP_WIDTH_ADJUSTMENT = getNumberProperty(style, '--player-chip') / 2;
+    _WINDOW_SIZE = getNumberProperty(style, '--mount');
+    _STEP_PX = _FIELD_NARROW_SIDE + getNumberProperty(style, '--gap');
     _CORNER_STEP_ADJUSTMENT = (_FIELD_WIDE_SIDE - _FIELD_NARROW_SIDE) / 2;
-    _CHIP_WIDTH = getStylePropertyNumber(style, '--chip-width');
-    _CHIP_WIDTH_ADJUSTMENT = _CHIP_WIDTH / 2;
+    _START_POSITION = _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
+    paramsSet = true;
 }
 
 export function moveChip(chip, fieldIndex) {
@@ -23,18 +30,24 @@ export function moveChip(chip, fieldIndex) {
         console.error(`no field with id ${fieldIndex} found on map`);
         return;
     }
+    if (!paramsSet) {
+        initialiseChipParams();
+    }
     chip.style.top = defineChipTop(fieldIndex);
     chip.style.left = defineChipLeft(fieldIndex);
 }
 
 export function moveToStart(chip) {
-    chip.style.top = getStartTop() + PX_POSTFIX;
-    chip.style.left = getStartLeft() + PX_POSTFIX;
+    if (!paramsSet) {
+        initialiseChipParams();
+    }
+    chip.style.top = calculateSide(_START_POSITION);
+    chip.style.left = calculateSide(_START_POSITION);
 }
 
 // returning string for 'style.top'
 function defineChipTop(fieldIndex) {
-    let top = getStartTop();
+    let top = _START_POSITION;
     if (fieldIndex >= 20 && fieldIndex <= 30) {
         top += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 10 && fieldIndex < 20) {
@@ -42,12 +55,12 @@ function defineChipTop(fieldIndex) {
     } else if (fieldIndex > 30 && fieldIndex < 40) {
         top += _CORNER_STEP_ADJUSTMENT + _STEP_PX * (40 - fieldIndex);
     }
-    return top + PX_POSTFIX;
+    return calculateSide(top);
 }
 
 // returning string for 'style.left'
 function defineChipLeft(fieldIndex) {
-    let left = getStartLeft();
+    let left = _START_POSITION;
     if (fieldIndex >= 10 && fieldIndex <= 20) {
         left += _STEP_PX * 10 + _CORNER_STEP_ADJUSTMENT * 2;
     } else if (fieldIndex > 0 && fieldIndex < 10) {
@@ -55,17 +68,13 @@ function defineChipLeft(fieldIndex) {
     } else if (fieldIndex > 20 && fieldIndex < 30) {
         left += _STEP_PX * (30 - fieldIndex) + _CORNER_STEP_ADJUSTMENT;
     }
-    return left + PX_POSTFIX;
+    return calculateSide(left);
 }
 
-function getStylePropertyNumber(computedStyle, propertyName) {
-    return Number.parseFloat(computedStyle.getPropertyValue(propertyName).trim().replace(PX_POSTFIX, ''));
+function getNumberProperty(style, propertyName) {
+    return Number.parseInt(style.getPropertyValue(propertyName).trim());
 }
 
-function getStartTop() {
-    return _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT; // adding body default margin;
-}
-
-function getStartLeft() {
-    return _PRICE_NARROW_SIDE + _FIELD_WIDE_SIDE / 2 - _CHIP_WIDTH_ADJUSTMENT;
+function calculateSide(value) {
+    return `calc(100${_POSTFIX} * ${value} / ${_WINDOW_SIZE})`;
 }

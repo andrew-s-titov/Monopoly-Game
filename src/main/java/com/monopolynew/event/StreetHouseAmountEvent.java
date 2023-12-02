@@ -9,7 +9,7 @@ public class StreetHouseAmountEvent implements GameEvent {
 
     private final int code = 314;
 
-    private final int field;
+    private final int fieldIndex;
 
-    private final int amount;
+    private final int houses;
 }

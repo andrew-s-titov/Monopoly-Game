@@ -3,15 +3,14 @@ package com.monopolynew.service.impl;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.OfferProcessedEvent;
 import com.monopolynew.event.OfferSentEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -21,7 +20,6 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.state.Offer;
 import com.monopolynew.map.CompanyField;
-import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
@@ -31,6 +29,7 @@ import com.monopolynew.service.DealManager;
 import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameFieldConverter;
+import com.monopolynew.service.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -49,94 +48,74 @@ public class DealManagerImpl implements DealManager {
     private final GameEventGenerator gameEventGenerator;
     private final GameFieldConverter gameFieldConverter;
     private final GameEventSender gameEventSender;
+    private final GameLogicExecutor gameLogicExecutor;
 
     @Override
-    public PreDealInfo getPreDealInfo(Game game, String offerInitiatorId, String offerAddresseeId) {
+    public void createOffer(Game game, String initiatorId, String addresseeId, DealOffer offer) {
         checkCanCreateOffer(game);
-        checkDealSides(game, offerInitiatorId, offerAddresseeId);
-        List<GameField> fields = game.getGameMap().getFields();
-        var offerInitiatorFieldList = getPlayerFields(fields, offerInitiatorId);
-        var offerAddresseeFieldList = getPlayerFields(fields, offerAddresseeId);
-        return new PreDealInfo(
-                gameFieldConverter.toListOfferView(offerInitiatorFieldList),
-                gameFieldConverter.toListOfferView(offerAddresseeFieldList));
-    }
-
-    @Override
-    public void createOffer(Game game, String offerInitiatorId, String offerAddresseeId, DealOffer offer) {
-        checkCanCreateOffer(game);
-        checkDealSides(game, offerInitiatorId, offerAddresseeId);
+        checkDealSides(game, initiatorId, addresseeId);
         var currentPlayer = game.getCurrentPlayer();
-        var offerAddressee = getOfferAddressee(game, offerAddresseeId);
+        var offerAddressee = getOfferAddressee(game, addresseeId);
         checkOfferNotEmpty(offer);
-        var moneyToGive = offer.getMoneyToGive();
-        var moneyToReceive = offer.getMoneyToReceive();
-        checkPlayerSolvency(currentPlayer, moneyToGive, true);
-        checkPlayerSolvency(offerAddressee, moneyToReceive, false);
-        var fieldsToBuy = getFieldsByIndexes(game, offer.getFieldsToBuy());
-        var fieldsToSell = getFieldsByIndexes(game, offer.getFieldsToSell());
-        checkFieldsOwner(fieldsToBuy, offerAddressee);
-        checkFieldsOwner(fieldsToSell, currentPlayer);
+        var initiatorMoney = offer.getInitiatorMoney();
+        var addresseeMoney = offer.getAddresseeMoney();
+        checkPlayerSolvency(currentPlayer, initiatorMoney, true);
+        checkPlayerSolvency(offerAddressee, addresseeMoney, false);
+        var initiatorFields = getFieldsByIndexes(game, offer.getInitiatorFields());
+        var addresseeFields = getFieldsByIndexes(game, offer.getAddresseeFields());
+        checkFieldsOwner(initiatorFields, currentPlayer);
+        checkFieldsOwner(addresseeFields, offerAddressee);
         var currentGameStage = game.getStage();
-        game.setStage(GameStage.DEAL_OFFER);
+        gameLogicExecutor.changeGameStage(game, GameStage.DEAL_OFFER);
 
         var newOffer = Offer.builder()
                 .initiator(currentPlayer)
                 .addressee(offerAddressee)
-                .fieldsToSell(fieldsToSell)
-                .fieldsToBuy(fieldsToBuy)
-                .moneyToGive(moneyToGive)
-                .moneyToReceive(moneyToReceive)
+                .initiatorFields(initiatorFields)
+                .addresseeFields(addresseeFields)
+                .initiatorMoney(initiatorMoney)
+                .addresseeMoney(addresseeMoney)
                 .stageToReturnTo(currentGameStage)
                 .build();
         game.setOffer(newOffer);
-        gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
-        gameEventSender.sendToPlayer(offerInitiatorId, new OfferSentEvent());
-        gameEventSender.sendToPlayer(offerAddresseeId, gameEventGenerator.newOfferProposalEvent(game));
+        gameEventSender.sendToPlayer(initiatorId, new OfferSentEvent());
+        gameEventSender.sendToPlayer(addresseeId, gameEventGenerator.newOfferProposalEvent(game));
     }
 
     @Override
-    public void processOfferAnswer(Game game, String callerId, ProposalAction proposalAction) {
+    public void processOfferAnswer(Game game, String addresseeId, ProposalAction proposalAction) {
         var currentGameStage = game.getStage();
         if (!GameStage.DEAL_OFFER.equals(currentGameStage)) {
             throw new WrongGameStageException("cannot process offer - wrong game stage");
         }
         var offer = game.getOffer();
-        var offerAddressee = offer.getAddressee();
-        if (!offerAddressee.getId().equals(callerId)) {
+        var addressee = offer.getAddressee();
+        if (!addressee.getId().equals(addresseeId)) {
             // for security reasons
             throw new ClientBadRequestException("only offer addressee can process offer");
         }
-        var offerInitiator = offer.getInitiator();
+        var initiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(offerAddressee.getName() + " declined the offer"));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(addressee.getName() + " declined the offer"));
         } else {
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(offerAddressee.getName() + " accepted the offer"));
-            processOfferPayments(offer, offerInitiator, offerAddressee);
-            processOfferPropertyExchange(game, offer, offerInitiator, offerAddressee);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(addressee.getName() + " accepted the offer"));
+            processOfferPayments(offer, initiator, addressee);
+            processOfferPropertyExchange(game, offer, initiator, addressee);
         }
         game.setOffer(null);
         GameStage stageToReturnTo = offer.getStageToReturnTo();
-        game.setStage(stageToReturnTo);
-        String offerInitiatorId = offerInitiator.getId();
+        gameLogicExecutor.changeGameStage(game, stageToReturnTo);
+        String offerInitiatorId = initiator.getId();
         gameEventSender.sendToPlayer(offerInitiatorId, new OfferProcessedEvent());
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
             gameEventSender.sendToPlayer(offerInitiatorId, new TurnStartEvent(offerInitiatorId));
         }
         if (GameStage.JAIL_RELEASE_START.equals(stageToReturnTo)) {
             gameEventSender.sendToPlayer(offerInitiatorId,
-                    new JailReleaseProcessEvent(offerInitiatorId, offerInitiator.getMoney() >= Rules.JAIL_BAIL));
+                    new JailReleaseProcessEvent(offerInitiatorId, initiator.getMoney() >= Rules.JAIL_BAIL));
         }
-    }
-
-    private List<PurchasableField> getPlayerFields(List<GameField> fields, String playerId) {
-        return fields.stream()
-                .filter(field -> field instanceof PurchasableField)
-                .map(field -> (PurchasableField) field)
-                .filter(field -> !field.isFree())
-                .filter(field -> field.getOwner().getId().equals(playerId))
-                .collect(Collectors.toList());
     }
 
     private void checkDealSides(Game game, String offerInitiatorId, String offerAddresseeId) {
@@ -172,7 +151,7 @@ public class DealManagerImpl implements DealManager {
         } else {
             return indexes.stream()
                     .map(index -> safeGetFieldByIndex(gameMap, index))
-                    .collect(Collectors.toList());
+                    .toList();
         }
     }
 
@@ -203,13 +182,13 @@ public class DealManagerImpl implements DealManager {
         }
     }
 
-    private void processOfferPayments(Offer offer, Player offerInitiator, Player offerAddressee) {
-        var moneyToGive = offer.getMoneyToGive();
-        var moneyToReceive = offer.getMoneyToReceive();
-        if (processOfferPayment(moneyToGive, offerInitiator, offerAddressee) ||
-                processOfferPayment(moneyToReceive, offerAddressee, offerInitiator)) {
+    private void processOfferPayments(Offer offer, Player initiator, Player addressee) {
+        var initiatorMoney = offer.getInitiatorMoney();
+        var addresseeMoney = offer.getAddresseeMoney();
+        if (processOfferPayment(initiatorMoney, initiator, addressee) ||
+                processOfferPayment(addresseeMoney, addressee, initiator)) {
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                    List.of(MoneyState.fromPlayer(offerInitiator), MoneyState.fromPlayer(offerAddressee))));
+                    List.of(MoneyState.fromPlayer(initiator), MoneyState.fromPlayer(addressee))));
         }
     }
 
@@ -222,15 +201,15 @@ public class DealManagerImpl implements DealManager {
         return false;
     }
 
-    private void processOfferPropertyExchange(Game game, Offer offer, Player offerInitiator, Player offerAddressee) {
+    private void processOfferPropertyExchange(Game game, Offer offer, Player initiator, Player addressee) {
         Set<PurchasableField> exchangedFields = new HashSet<>();
-        var fieldsToBuy = offer.getFieldsToBuy();
-        if (processOfferFieldExchange(fieldsToBuy, offerInitiator)) {
-            exchangedFields.addAll(fieldsToBuy);
+        var addresseeFields = offer.getAddresseeFields();
+        if (processOfferFieldExchange(addresseeFields, initiator)) {
+            exchangedFields.addAll(addresseeFields);
         }
-        var fieldsToSell = offer.getFieldsToSell();
-        if (processOfferFieldExchange(fieldsToSell, offerAddressee)) {
-            exchangedFields.addAll(fieldsToSell);
+        var initiatorFields = offer.getInitiatorFields();
+        if (processOfferFieldExchange(initiatorFields, addressee)) {
+            exchangedFields.addAll(initiatorFields);
         }
 
         Set<List<PurchasableField>> fieldGroupsToCheck = exchangedFields.stream()
@@ -247,7 +226,7 @@ public class DealManagerImpl implements DealManager {
     private List<GameFieldView> recalculateFieldGroupPrices(Game game, List<PurchasableField> fieldGroup) {
         var ownedFields = fieldGroup.stream()
                 .filter(field -> !field.isFree())
-                .collect(Collectors.toList());
+                .toList();
         if (CollectionUtils.isEmpty(fieldGroup)) {
             return Collections.emptyList();
         }
@@ -258,7 +237,7 @@ public class DealManagerImpl implements DealManager {
                     .map(PurchasableField::getOwner)
                     .distinct().count();
             ownedFields.stream()
-                    .map(streetField -> (StreetField) streetField)
+                    .map(StreetField.class::cast)
                     .forEach(streetField -> streetField.setNewRent(allGroupOwnedByTheSameOwner));
         } else if (anyGroupField instanceof CompanyField) {
             ownedFields.forEach(ownedField -> {
@@ -275,7 +254,7 @@ public class DealManagerImpl implements DealManager {
                     .distinct()
                     .count();
             ownedFields.stream()
-                    .map(field -> (UtilityField) field)
+                    .map(UtilityField.class::cast)
                     .forEach(field -> {
                         if (increasedMultiplier) {
                             field.increaseMultiplier();
@@ -300,12 +279,12 @@ public class DealManagerImpl implements DealManager {
     }
 
     private void checkOfferNotEmpty(DealOffer offer) {
-        Integer moneyToGive = offer.getMoneyToGive();
-        Integer moneyToReceive = offer.getMoneyToReceive();
+        Integer moneyToGive = offer.getInitiatorMoney();
+        Integer moneyToReceive = offer.getAddresseeMoney();
         if ((moneyToGive == null || moneyToGive == 0)
                 && (moneyToReceive == null || moneyToReceive == 0)
-                && CollectionUtils.isEmpty(offer.getFieldsToBuy())
-                && CollectionUtils.isEmpty(offer.getFieldsToSell())) {
+                && CollectionUtils.isEmpty(offer.getAddresseeFields())
+                && CollectionUtils.isEmpty(offer.getInitiatorFields())) {
             throw new PlayerInvalidInputException("Cannot send an empty offer");
         }
     }

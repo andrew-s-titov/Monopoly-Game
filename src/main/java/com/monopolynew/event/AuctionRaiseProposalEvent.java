@@ -1,6 +1,5 @@
 package com.monopolynew.event;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -10,11 +9,9 @@ public class AuctionRaiseProposalEvent implements GameEvent {
 
     private final int code = 309;
 
-    @JsonProperty("player_id")
     private final String playerId;
 
-    @JsonProperty("field_name")
-    private final String fieldName;
+    private final int fieldIndex;
 
     private final int proposal;
 }

@@ -1,25 +1,22 @@
 package com.monopolynew.dto;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Getter
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DealOffer {
 
-    private final List<Integer> fieldsToSell;
+    private final List<Integer> initiatorFields;
 
-    private final List<Integer> fieldsToBuy;
-
-    @PositiveOrZero
-    private final Integer moneyToGive;
+    private final List<Integer> addresseeFields;
 
     @PositiveOrZero
-    private final Integer moneyToReceive;
+    private final Integer initiatorMoney;
+
+    @PositiveOrZero
+    private final Integer addresseeMoney;
 }

@@ -4,6 +4,11 @@ table, tr, td {
     border-collapse: collapse;
 }
 
+body {
+    margin: 0;
+    padding: 0;
+}
+
 body, button, input {
     font-family: 'Century Gothic', serif;
     font-size: 20px;
@@ -40,28 +45,30 @@ ul {
 .error-container {
     display: none;
     position: fixed;
-    bottom: 100px;
+    bottom: 10vh;
     width: 70%;
     left: 15%;
     right: 15%;
     background-color: rgba(255,154,72,0.9);
     text-align: center;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 1.5vh;
+    border-radius: 1.5vh;
+    font-size: 2.8vh;
     opacity: 0;
 }
 
 .fullscreen-shadow-container {
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
     left: 0;
     top: 0;
     z-index: 10;
     display: none;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
 }
 
 .center-screen-container {
@@ -70,4 +77,11 @@ ul {
     color: black;
     text-align: center;
     padding: 5vh;
+}
+
+.screen-centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }

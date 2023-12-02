@@ -65,7 +65,7 @@ export function outlinePlayer(playerId) {
     getPlayerInfoHTMLFields(playerIndex).iconField.appendChild(runningCircle);
 }
 
-function removePlayersOutline() {
+export function removePlayersOutline() {
     if (runningCircle != null) {
         runningCircle.remove();
         runningCircle = null;
@@ -182,7 +182,7 @@ function renderPlayerPicture(playerIndex, playerId, playerColor) {
 
 function renderPlayerChip(index, position) {
     const chip = getChip(index);
-    chip.style.display = 'block';
+    chip.style.display = 'flex';
     moveChip(chip, position);
 }
 

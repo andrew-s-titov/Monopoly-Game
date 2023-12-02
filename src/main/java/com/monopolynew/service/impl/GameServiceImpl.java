@@ -3,17 +3,16 @@ package com.monopolynew.service.impl;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.dto.PreDealInfo;
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -75,7 +74,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public String getPlayerName(String playerId) {
         var player = gameRepository.getGame().getPlayerById(playerId);
-        return player == null ? null :  player.getName();
+        return player == null ? null : player.getName();
     }
 
     @Override
@@ -121,7 +120,7 @@ public class GameServiceImpl implements GameService {
             }
             gameEventSender.sendToAllPlayers(
                     new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(message));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
         }
     }
 
@@ -144,8 +143,8 @@ public class GameServiceImpl implements GameService {
         } else if (GameStage.ROLLED_FOR_JAIL.equals(stage)) {
             if (lastDice.isDoublet()) {
                 currentPlayer.amnesty();
-                game.setStage(GameStage.ROLLED_FOR_TURN);
-                gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+                gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
+                gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                         currentPlayer.getName() + " is pardoned under amnesty"));
                 doRegularMove(game);
             } else {
@@ -154,7 +153,7 @@ public class GameServiceImpl implements GameService {
                     paymentProcessor.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
                 } else {
                     currentPlayer.doTime();
-                    gameEventSender.sendToAllPlayers(new SystemMessageEvent(currentPlayer.getName() + " is doing time"));
+                    gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
                     gameLogicExecutor.endTurn(game);
                 }
             }
@@ -188,7 +187,7 @@ public class GameServiceImpl implements GameService {
         game.setBuyProposal(null);
         if (action.equals(ProposalAction.ACCEPT)) {
             gameLogicExecutor.doBuyField(game, field, field.getPrice(), buyerId);
-            game.setStage(GameStage.TURN_START);
+            gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
             gameLogicExecutor.endTurn(game);
         } else if (action.equals(ProposalAction.DECLINE)) {
             auctionManager.startNewAuction(game, field);
@@ -223,9 +222,9 @@ public class GameServiceImpl implements GameService {
             currentPlayer.releaseFromJail();
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                     MoneyState.fromPlayer(currentPlayer))));
-            gameEventSender.sendToAllPlayers(new SystemMessageEvent(
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     currentPlayer.getName() + " is released on bail"));
-            game.setStage(GameStage.TURN_START);
+            gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(new TurnStartEvent(currentPlayer.getId()));
         } else if (jailAction.equals(JailAction.LUCK)) {
             notifyAboutDiceRolling(game);
@@ -243,7 +242,7 @@ public class GameServiceImpl implements GameService {
         // TODO: check if game is in progress
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
-        gameEventSender.sendToAllPlayers(new SystemMessageEvent(player.getName() + " gave up"));
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " gave up"));
         gameLogicExecutor.bankruptPlayer(game, player, null);
     }
 
@@ -300,15 +299,9 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public PreDealInfo getPreDealInfo(String offerInitiatorId, String offerAddresseeId) {
+    public void createOffer(String initiatorId, String addresseeId, DealOffer offer) {
         var game = gameRepository.getGame();
-        return dealManager.getPreDealInfo(game, offerInitiatorId, offerAddresseeId);
-    }
-
-    @Override
-    public void createOffer(String offerInitiatorId, String offerAddresseeId, DealOffer offer) {
-        var game = gameRepository.getGame();
-        dealManager.createOffer(game, offerInitiatorId, offerAddresseeId, offer);
+        dealManager.createOffer(game, initiatorId, addresseeId, offer);
     }
 
     @Override
@@ -377,7 +370,10 @@ public class GameServiceImpl implements GameService {
     private void notifyAboutDiceRolling(Game game) {
         GameStage currentStage = game.getStage();
         if (GameStage.TURN_START.equals(currentStage) || GameStage.JAIL_RELEASE_START.equals(currentStage)) {
-            game.setStage(GameStage.TURN_START.equals(currentStage) ? GameStage.ROLLED_FOR_TURN : GameStage.ROLLED_FOR_JAIL);
+            var newStage = GameStage.TURN_START.equals(currentStage)
+                    ? GameStage.ROLLED_FOR_TURN
+                    : GameStage.ROLLED_FOR_JAIL;
+            gameLogicExecutor.changeGameStage(game, newStage);
         } else {
             throw new WrongGameStageException("cannot roll the dice - wrong game stage");
         }

@@ -1,16 +1,13 @@
 package com.monopolynew.service;
 
-import com.monopolynew.dto.GameFieldOfferView;
 import com.monopolynew.dto.GameFieldView;
-import com.monopolynew.map.GameField;
+import com.monopolynew.map.PurchasableField;
 
 import java.util.List;
 
 public interface GameFieldConverter {
 
-    <T extends GameField> GameFieldView toView(T gameField);
+    GameFieldView toView(PurchasableField gameField);
 
-    <T extends GameField> List<GameFieldView> toListView(List<T> gameFieldList);
-
-    <T extends GameField> List<GameFieldOfferView> toListOfferView(List<T> gameFieldList);
+    List<GameFieldView> toListView(List<PurchasableField> gameFieldList);
 }
