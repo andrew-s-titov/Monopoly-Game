@@ -1,0 +1,54 @@
+body {
+  text-align: center;
+  padding: 0;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 2.2vh;
+
+  -webkit-user-select: none;  /* Safari */
+  -ms-user-select: none;      /* IE 10 and IE 11 */
+  user-select: none;          /* Standard syntax */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.icon {
+  font-size: 2.5vh;
+  text-shadow: none;
+}
+
+.p-component {
+  font-size: 2.5vh;
+}
+
+.p-overlaypanel .p-overlaypanel-content {
+  padding: 0;
+}
+
+.p-button {
+  padding: 1vh 1vh;
+}
+
+.p-button .p-button-icon-left {
+  margin-right: 0.5vh;
+}
+
+.p-checkbox .p-checkbox-box {
+  width: 2.7vh;
+  height: 2.7vh;
+  border: 0.3vh solid #ced4da;
+  border-radius: 0.8vh;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+  font-size: 2.5vh
+}
+
+.p-dialog .p-dialog-content {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}

@@ -4,3 +4,5 @@ server:
 spring:
   mvc:
     throw-exception-if-no-handler-found: true
+  thymeleaf:
+    prefix: classpath:/static/

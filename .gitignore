@@ -1,5 +1,7 @@
 HELP.md
 target
+src/react/node_modules
+src/react/.idea
 
 ### STS ###
 .apt_generated
