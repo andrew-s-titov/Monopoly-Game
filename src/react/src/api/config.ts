@@ -1,9 +1,12 @@
 import { getLoggedInUserId, getLoggedInUserName, PLAYER_ID_KEY, PLAYER_NAME_KEY } from "../utils/auth";
 
-export const BE_ENDPOINT = 'https://742e-109-243-0-109.ngrok-free.app';
+export const BE_ENDPOINT = 'http://localhost:8080';
 
 export const getWebsocketUrl = () => {
-  return `${getWebsocketEndpoint()}?${PLAYER_ID_KEY}=${getLoggedInUserId()}&${PLAYER_NAME_KEY}=${getLoggedInUserName()}`;
+  const wsUri = getWebsocketEndpoint();
+  const userId = getLoggedInUserId();
+  const userName = getLoggedInUserName();
+  return `${wsUri}?${PLAYER_ID_KEY}=${userId}&${PLAYER_NAME_KEY}=${userName}`;
 }
 
 const getWebsocketEndpoint = () => {
