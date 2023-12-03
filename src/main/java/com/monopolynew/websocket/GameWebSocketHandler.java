@@ -30,7 +30,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-@ServerEndpoint(value = "/", configurator = SpringWebsocketCustomConfigurer.class)
+@ServerEndpoint(value = "/ws", configurator = SpringWebsocketCustomConfigurer.class)
 public class GameWebSocketHandler {
 
     public static final int GAME_OVER_CLOSE_REASON_CODE = 3000;

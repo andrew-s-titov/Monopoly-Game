@@ -5,8 +5,6 @@ import com.monopolynew.game.Rules;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PurchasableFieldGroups {
 
@@ -54,10 +52,11 @@ public class PurchasableFieldGroups {
         }
         return FIELD_GROUPS.get(fieldGroupId).stream()
                 .map(fieldIndex -> (PurchasableField) game.getGameMap().getField(fieldIndex))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public static Set<Integer> getGroupKeys() {
-        return FIELD_GROUPS.keySet();
+    private PurchasableFieldGroups() {
+        // NO-OP
     }
+
 }
