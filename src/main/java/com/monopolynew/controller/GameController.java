@@ -6,9 +6,9 @@ import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +26,7 @@ public class GameController {
     }
 
     @GetMapping("/status")
-    public PlayerStatusDTO status(@CookieValue(value = GlobalConfig.PLAYER_ID_KEY) String playerIdCookie) {
+    public PlayerStatusDTO status(@RequestHeader(value = GlobalConfig.PLAYER_ID_KEY) String playerIdCookie) {
         if (gameService.isGameStarted()) {
             var playerName = gameService.getPlayerName(playerIdCookie);
             return new PlayerStatusDTO(playerName);

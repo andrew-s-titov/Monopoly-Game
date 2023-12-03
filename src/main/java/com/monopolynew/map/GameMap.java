@@ -2,23 +2,22 @@ package com.monopolynew.map;
 
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.monopolynew.game.Rules.LAST_FIELD_INDEX;
 
 public class GameMap {
 
-    private final Map<Integer, Boolean> housePurchaseMade;
+    // TODO: send this data to FE
+    // TODO: instead of int use some text marker like color on FE
+    private final List<Integer> housePurchaseMade;
     @Getter
     private final List<GameField> fields;
 
     public GameMap(boolean withTeleport) {
         this.fields = createFields(withTeleport);
-        this.housePurchaseMade = PurchasableFieldGroups.getGroupKeys().stream()
-                .collect(Collectors.toMap(Function.identity(), k -> false));
+        this.housePurchaseMade = new ArrayList<>(10);
     }
 
     public GameField getField(int position) {
@@ -29,23 +28,15 @@ public class GameMap {
     }
 
     public boolean isPurchaseMadeForGroup(int groupId) {
-        if (!housePurchaseMade.containsKey(groupId)) {
-            throw new IllegalArgumentException("no group found for id " + groupId);
-        }
-        return this.housePurchaseMade.get(groupId);
+        return this.housePurchaseMade.contains(groupId);
     }
 
     public void setPurchaseMadeFlag(int groupId) {
-        if (!housePurchaseMade.containsKey(groupId)) {
-            throw new IllegalArgumentException("no group found for id " + groupId);
-        }
-        this.housePurchaseMade.put(groupId, true);
+        this.housePurchaseMade.add(groupId);
     }
 
     public void resetPurchaseHistory() {
-        this.housePurchaseMade.forEach((group, purchased) -> {
-            if (purchased) housePurchaseMade.put(group, false);
-        });
+        this.housePurchaseMade.clear();
     }
 
     private List<GameField> createFields(boolean withTeleport) {
