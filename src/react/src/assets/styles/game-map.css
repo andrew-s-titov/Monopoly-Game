@@ -1,0 +1,319 @@
+:root {
+
+    --filler: 92;
+    --mount: 3862;
+    --map: 3662;
+    --gap: 8;
+    --narrow: 292;
+    --player-chip: 95;
+    --wide: 477;
+    --main-field-block: 362;
+    --price-block: 107;
+    --center: 2692;
+    --center-inner-gap: 24;
+    --map-vh: calc(100vh * var(--map) / var(--mount));
+    --narrow-vh: calc(100vh * var(--narrow) / var(--mount));
+    --wide-vh: calc(100vh * var(--wide) / var(--mount));
+    --gap-vh: calc(100vh * var(--gap) / var(--mount));
+    --center-vh: calc(100vh * var(--center) / var(--mount));
+    --center-inner-gap-hv: calc(100vh * var(--center-inner-gap) / var(--mount));
+    --main-field-block-vh: calc(100vh * var(--main-field-block) / var(--mount));
+    --price-block-vh: calc(100vh * var(--price-block) / var(--mount));
+    --house-container-length: calc(var(--narrow-vh) * 0.9);
+    --house-container-margin: calc(var(--narrow-vh) * 0.05);
+    --house-size-vh: calc(var(--house-container-length) / 4);
+    --hotel-size-vh: calc(var(--house-container-length) / 2.5);
+    --mortgage-tag-height: calc(var(--wide-vh) / 10 * 4);
+    --mortgage-tag-margin: calc(var(--wide-vh) / 5);
+
+    --chip-vh: calc(100vh * var(--player-chip) / var(--mount));
+    --chip-inner-vh: calc(var(--chip-vh) * 1);
+
+    --map-background-color: rgba(33, 38, 41);
+    --map-main-color: rgba(230, 228, 218);
+}
+
+.map-container {
+    height: 100vh;
+    width: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-image: url('../images/map-back.png');
+    background-size: 100%;
+}
+
+.map {
+    display: flex;
+    flex-direction: column;
+    height: var(--map-vh);
+    width: var(--map-vh);
+}
+
+.map-fields-row {
+    height: var(--wide-vh);
+    display: flex;
+}
+
+.map-fields-row .map-field:not(:last-child) {
+    margin-right: var(--gap-vh);
+}
+
+.map-center-row {
+    height: var(--center-vh);
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: var(--gap-vh);
+    margin-top: var(--gap-vh);
+}
+
+.map-fields-column {
+    width: var(--wide-vh);
+    display: flex;
+    flex-direction: column;
+}
+
+.map-fields-column .map-field:not(:last-child) {
+    margin-bottom: var(--gap-vh);
+}
+
+.map-corner {
+    width: var(--wide-vh);
+    height: 100%;
+}
+
+.map-field {
+    display: flex;
+    position: relative;
+}
+
+.vertical-field {
+    width: var(--narrow-vh);
+    height: var(--wide-vh);
+    flex-direction: column;
+}
+
+.horizontal-field {
+    width: var(--wide-vh);
+    height: var(--narrow-vh);
+    flex-direction: row;
+}
+
+.property-left, .property-top {
+    place-content: start;
+}
+
+.property-right, .property-bottom {
+    place-content: end;
+}
+
+.map-center {
+    width: var(--center-vh);
+    margin-right: var(--gap-vh);
+    margin-left: var(--gap-vh);
+    padding: var(--center-inner-gap-hv);
+    /*background-color: var(--map-back-color);*/
+}
+
+.vertical-gap {
+    height: 100%;
+    width: var(--gap-vh);
+}
+
+.horizontal-gap {
+    height: var(--gap-vh);
+    width: 100%;
+}
+
+.price-tag {
+    position: absolute;
+    text-align: center;
+    line-height: var(--price-block-vh);
+}
+
+.map-field.vertical-field > .price-tag {
+    height: var(--price-block-vh);
+    width: var(--narrow-vh);
+}
+
+.map-field.horizontal-field > .price-tag {
+    width: var(--price-block-vh);
+    height: var(--narrow-vh);
+}
+
+.map-field.property-top > .price-tag {
+    bottom: 0;
+}
+
+.map-field.property-bottom > .price-tag {
+    top: 0;
+}
+
+.map-field.property-left > .price-tag {
+    right: 0;
+}
+
+.map-field.property-right > .price-tag {
+    left: 0;
+    transform: rotate(180deg);
+}
+
+.map-field.property-right > .price-tag, .map-field.property-left > .price-tag {
+    writing-mode: vertical-lr;
+}
+
+
+div::-webkit-scrollbar {
+    width: 1vh;
+}
+
+div::-webkit-scrollbar-track {
+    border-radius: 1.2vh;
+}
+
+div::-webkit-scrollbar-thumb {
+    background: var(--surface-700);
+    border-radius: 2vh;
+}
+
+.dice-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.dice {
+    width: 18vh;
+}
+
+.chips-container {
+    position: relative;
+}
+
+.player-chip {
+    width: var(--chip-vh);
+    height: var(--chip-vh);
+    border-radius: var(--chip-vh);
+    position: absolute;
+    box-shadow: 0 0 0.3vh 0.25vh var(--map-background-color);
+    background: white;
+    opacity: 0.75;
+    z-index: 50;
+    transition: left 0.4s, top 0.4s, right 0.4s, down 0.4s;
+    transition-timing-function: linear;
+}
+
+.chip-inner {
+    border-radius: var(--chip-inner-vh);
+}
+
+.mortgage-tag {
+    position: absolute;
+    height: var(--mortgage-tag-height);
+    width: var(--narrow-vh);
+}
+
+.map-field.vertical-field > .mortgage-tag {
+    height: var(--mortgage-tag-height);
+    width: var(--narrow-vh);
+}
+
+.map-field.horizontal-field > .mortgage-tag {
+    height: var(--narrow-vh);
+    width: var(--mortgage-tag-height);
+}
+
+.map-field.property-top > .mortgage-tag {
+    top: var(--mortgage-tag-margin);
+}
+
+.map-field.property-bottom > .mortgage-tag {
+    bottom: var(--mortgage-tag-margin);
+}
+
+.map-field.property-left > .mortgage-tag {
+    left: var(--mortgage-tag-margin);
+}
+
+.map-field.property-right > .mortgage-tag {
+    right: var(--mortgage-tag-margin);
+}
+
+.mortgage-pic {
+    width: var(--narrow-vh);
+    height: var(--mortgage-tag-height);
+    background-image: url('../images/mortgage.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: var(--narrow-vh);
+}
+
+.map-field.property-left > .mortgage-tag > .mortgage-pic {
+    transform: rotate(90deg);
+}
+
+.map-field.property-right > .mortgage-tag > .mortgage-pic {
+    transform: rotate(-90deg);
+}
+
+.map-field.horizontal-field > .mortgage-tag > .mortgage-pic {
+    translate: -12.5% 25%;
+}
+
+
+.house-container {
+    margin: var(--house-container-margin);
+    align-self: start;
+    position: relative;
+    display: flex;
+}
+
+.vertical-field > .house-container {
+    flex-direction: row;
+}
+
+.horizontal-field > .house-container {
+    flex-direction: column;
+}
+
+.house-pic {
+    font-size: var(--house-size-vh);
+    color: var(--teal-900);
+}
+
+.hotel-pic {
+    font-size: var(--hotel-size-vh);
+    color: var(--red-900);
+}
+
+.owner-cover {
+    position: absolute;
+}
+
+.vertical-field > .owner-cover {
+    width: 100%;
+    height: 80%;
+}
+
+.horizontal-field > .owner-cover {
+    height: 100%;
+    width: 80%
+}
+
+.property-management-buttons-container {
+    display: flex;
+    flex-direction: column;
+    width: 25vh;
+    align-self: center;
+}
+
+.property-management-buttons-container > button {
+
+}
+
+.property-management-buttons-container > button > .p-button-label {
+    font-weight: normal;
+    flex: none !important;
+    margin-left: 1vh;
+}

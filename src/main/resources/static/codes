@@ -1,8 +1,6 @@
 Websocket codes:
-101 - player connected
-102 - player disconnected
+100 - connected players info
 200 - chat message
-201 - system message
 300 - game map refresh
 301 - turn starts
 302 - dice rolling start
@@ -22,6 +20,7 @@ Websocket codes:
 316 - offer received
 317 - offer processed
 318 - offer sent
+350 - game stage changed
 
 Http error code:
 401 - wrong player input

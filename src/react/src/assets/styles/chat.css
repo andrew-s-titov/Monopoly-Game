@@ -1,0 +1,79 @@
+.chat {
+    height: 90%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    position: relative;
+}
+
+.chat-message {
+    display: flex;
+    font-size: 2.2vh;
+    max-width: 70%;
+    width: fit-content;
+    text-align: start;
+    word-break: break-word;
+    color: var(--gray-900);
+    padding: 0.4vh 1vh;
+    margin: 0 0 0.3vh 0;
+    border-radius: 1vh;
+}
+
+.chat-message > span {
+    margin-left: 0.5vh;
+}
+
+.own-message {
+    align-self: end;
+}
+
+.system-message {
+    align-self: start;
+    font-style: italic;
+    background: var(--gray-400);
+    font-size: 1.8vh;
+}
+
+.player-message {
+    align-self: start;
+}
+
+.chat-input-container {
+    height: 10%;
+}
+
+.chat-input-container > input, .chat-input-container > button {
+    border-radius: 0;
+    padding: 1.5vh 1.5vh;
+}
+
+.chat-input {
+    font-size: 2.5vh;
+    width: 90%;
+}
+
+.send-message {
+    width: 10%;
+}
+
+.chat-filler {
+    height: 100%;
+}
+
+.scroll-down {
+    position: sticky;
+    bottom: 2vh;
+    align-self: end;
+    width: 5vh;
+    min-width: 5vh;
+    height: 5vh;
+    min-height: 5vh;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 0;
+    margin-right: 2vh;
+}
+
+.scroll-down-icon {
+    font-size: 5vh;
+}
