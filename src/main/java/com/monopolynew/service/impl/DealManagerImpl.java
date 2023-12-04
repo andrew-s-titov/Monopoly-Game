@@ -90,13 +90,13 @@ public class DealManagerImpl implements DealManager {
     public void processOfferAnswer(Game game, String addresseeId, ProposalAction proposalAction) {
         var currentGameStage = game.getStage();
         if (!GameStage.DEAL_OFFER.equals(currentGameStage)) {
-            throw new WrongGameStageException("cannot process offer - wrong game stage");
+            throw new WrongGameStageException("Cannot process offer - wrong game stage");
         }
         var offer = game.getOffer();
         var addressee = offer.getAddressee();
         if (!addressee.getId().equals(addresseeId)) {
             // for security reasons
-            throw new ClientBadRequestException("only offer addressee can process offer");
+            throw new ClientBadRequestException("Only offer addressee can process offer");
         }
         var initiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {

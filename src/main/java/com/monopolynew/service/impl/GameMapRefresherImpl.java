@@ -2,11 +2,13 @@ package com.monopolynew.service.impl;
 
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.DiceResultEvent;
+import com.monopolynew.event.GameRoomEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
+import com.monopolynew.mapper.PlayerMapper;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameMapRefresher;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class GameMapRefresherImpl implements GameMapRefresher {
 
     private final GameEventGeneratorImpl gameEventGenerator;
+    private final PlayerMapper playerMapper;
     private final GameEventSender gameEventSender;
 
     @Override
@@ -24,6 +27,8 @@ public class GameMapRefresherImpl implements GameMapRefresher {
         var player = game.getPlayerById(playerId);
         var currentPlayerId = game.getCurrentPlayer().getId();
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.newMapRefreshEvent(game));
+        gameEventSender.sendToPlayer(playerId,
+                new GameRoomEvent(playerMapper.toPlayersShortInfoList(game.getPlayers())));
 
         var gameStage = game.getStage();
         if (currentPlayerId.equals(playerId)) {
