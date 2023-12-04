@@ -246,6 +246,11 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new GameStageEvent(newGameStage));
     }
 
+    @Override
+    public int getFieldMortgagePrice(PurchasableField field) {
+        return field.getPrice() / 2;
+    }
+
     private List<PurchasableField> getPlayerFields(Game game, Player player) {
         return game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
@@ -319,10 +324,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         if (field instanceof StreetField streetField && streetField.getHouses() > 0) {
             streetField.sellAllHouses();
         }
-    }
-
-    private int getFieldMortgagePrice(PurchasableField field) {
-        return field.getPrice() / 2;
     }
 
     private void processFieldsForBeneficiary(Player beneficiary, int debt,

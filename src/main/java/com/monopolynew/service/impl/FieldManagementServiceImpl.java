@@ -20,8 +20,8 @@ import com.monopolynew.map.StreetField;
 import com.monopolynew.service.FieldManagementService;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameFieldConverter;
+import com.monopolynew.service.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -35,6 +35,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
 
     private final GameEventSender gameEventSender;
     private final GameFieldConverter gameFieldConverter;
+    private final GameLogicExecutor gameLogicExecutor;
 
     @Override
     public List<FieldManagementAction> availableManagementActions(Game game, int fieldIndex, String playerId) {
@@ -66,12 +67,12 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public Pair<Integer, Integer> mortgageField(Game game, int fieldIndex, String playerId) {
-        return doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
+    public void mortgageField(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (mortgageAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.mortgage();
-                currentPlayer.addMoney(f.getPrice() / 2);
+                currentPlayer.addMoney(gameLogicExecutor.getFieldMortgagePrice(f));
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                 gameEventSender.sendToAllPlayers(new MortgageChangeEvent(
@@ -83,8 +84,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public Pair<Integer, Integer> redeemMortgagedProperty(Game game, int fieldIndex, String playerId) {
-        return doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
+    public void redeemMortgagedProperty(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (redemptionAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.redeem();
@@ -102,8 +103,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public Pair<Integer, Integer> buyHouse(Game game, int fieldIndex, String playerId) {
-        return doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
+    public void buyHouse(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
             if (field instanceof StreetField streetField) {
                 Player currentPlayer = aGame.getCurrentPlayer();
                 if (housePurchaseAvailable(aGame, currentPlayer, streetField)) {
@@ -120,8 +121,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public Pair<Integer, Integer> sellHouse(Game game, int fieldIndex, String playerId) {
-        return doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
+    public void sellHouse(Game game, int fieldIndex, String playerId) {
+        doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
             if (field instanceof StreetField streetField && houseSaleAvailable(aGame, streetField)) {
                 streetField.sellHouse();
                 streetField.setNewRent(true);
@@ -197,12 +198,11 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         return purchasableField.getPrice() * 55 / 100;
     }
 
-    private Pair<Integer, Integer> doFieldManagement(Game game, String playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
+    private void doFieldManagement(Game game, String playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
         checkFieldExists(fieldIndex);
         checkFieldManagementAvailability(game, playerId);
 
         Player currentPlayer = game.getCurrentPlayer();
-        int beforeManagementMoneyAmount = currentPlayer.getMoney();
         GameField field = game.getGameMap().getField(fieldIndex);
         if (field instanceof PurchasableField purchasableField
                 && currentPlayer.equals(((PurchasableField) field).getOwner())) {
@@ -210,7 +210,6 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         } else {
             throw new ClientBadRequestException("Cannot manage field - it doesn't belong to the current player");
         }
-        return Pair.of(beforeManagementMoneyAmount, currentPlayer.getMoney());
     }
 
     private void checkFieldManagementAvailability(Game game, String playerId) {

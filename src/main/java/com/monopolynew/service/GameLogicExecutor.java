@@ -26,4 +26,6 @@ public interface GameLogicExecutor {
     void bankruptPlayer(Game game, Player player);
 
     void changeGameStage(Game game, GameStage newGameStage);
+
+    int getFieldMortgagePrice(PurchasableField field);
 }

@@ -65,6 +65,8 @@ public class DealManagerImpl implements DealManager {
         var addresseeFields = getFieldsByIndexes(game, offer.getAddresseeFields());
         checkFieldsOwner(initiatorFields, currentPlayer);
         checkFieldsOwner(addresseeFields, offerAddressee);
+        checkNoHouses(initiatorFields);
+        checkNoHouses(addresseeFields);
         var currentGameStage = game.getStage();
         gameLogicExecutor.changeGameStage(game, GameStage.DEAL_OFFER);
 
@@ -179,6 +181,15 @@ public class DealManagerImpl implements DealManager {
                 throw new ClientBadRequestException(
                         String.format("field %s doesn't belong to the player %s", field.getId(), owner.getId()));
             }
+        }
+    }
+
+    private void checkNoHouses(List<PurchasableField> fields) {
+        if (!CollectionUtils.isEmpty(fields) && fields.stream()
+                .filter(StreetField.class::isInstance)
+                .map(StreetField.class::cast)
+                .anyMatch(field -> field.getHouses() > 0)) {
+            throw new ClientBadRequestException("Selling fields with property is not allowed");
         }
     }
 
