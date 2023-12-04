@@ -13,11 +13,13 @@
     <version>0.0.1</version>
     <name>monopoly-new</name>
     <properties>
+        <src.dir>backend/src/main/java</src.dir>
+        <test.src.dir>backend/src/test/java</test.src.dir>
         <java.version>17</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok-binding.version>0.2.0</lombok-binding.version>
         <compiler-plugin.version>3.11.0</compiler-plugin.version>
-        <frontend-src-dir>${project.basedir}/src/react</frontend-src-dir>
+        <frontend-src-dir>${project.basedir}/frontend</frontend-src-dir>
         <node.version>v20.10.0</node.version>
         <yarn.version>v1.22.19</yarn.version>
         <frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
@@ -65,6 +67,15 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>${src.dir}</sourceDirectory>
+        <testSourceDirectory>${test.src.dir}</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>backend/src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
