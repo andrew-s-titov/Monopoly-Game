@@ -237,6 +237,10 @@
     font-size: 3vh;
 }
 
+.roll-dice-button > .pi-spin {
+    animation: fa-spin 1s linear infinite;
+}
+
 .roll-dice-button > .p-button-icon {
     margin-left: 2vh;
     font-size: 3vh;

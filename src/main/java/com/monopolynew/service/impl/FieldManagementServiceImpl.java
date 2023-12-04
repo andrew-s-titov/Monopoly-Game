@@ -45,7 +45,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
             actions.add(FieldManagementAction.INFO);
             if (!managementNotAvailable(game.getStage())) {
                 Player currentPlayer = game.getCurrentPlayer();
-                if (currentPlayer.getId().equals(playerId) && !purchasableField.isFree() && currentPlayer.equals(purchasableField.getOwner())) {
+                if (currentPlayer.getId().equals(playerId) && currentPlayer.equals(purchasableField.getOwner())) {
                     if (redemptionAvailable(game, purchasableField)) {
                         actions.add(FieldManagementAction.REDEEM);
                     } else if (mortgageAvailable(game, purchasableField)) {

@@ -38,10 +38,9 @@ public class StepProcessorImpl implements StepProcessor {
 
     @Override
     public void processStepOnField(Game game, GameField field) {
-        if (field instanceof PurchasableField) {
-            processStepOnPurchasableField(game, (PurchasableField) field);
-        } else if (field instanceof ActionableField) {
-            var actionableField = (ActionableField) field;
+        if (field instanceof PurchasableField purchasableField) {
+            processStepOnPurchasableField(game, purchasableField);
+        } else if (field instanceof ActionableField actionableField) {
             fieldActionExecutorMap.get(actionableField.getAction()).executeAction(game);
         } else {
             throw new IllegalStateException("field on new player position is of an unsupported type");
@@ -53,10 +52,10 @@ public class StepProcessorImpl implements StepProcessor {
         boolean rentPaymentNeeded = isRentPaymentNeeded(game, currentPlayer, field);
         if (rentPaymentNeeded) {
             int rent;
-            if (field instanceof StaticRentField) {
-                rent = ((StaticRentField) field).getCurrentRent();
-            } else if (field instanceof UtilityField) {
-                rent = ((UtilityField) field).getRent(game.getLastDice());
+            if (field instanceof StaticRentField staticRentField) {
+                rent = staticRentField.getCurrentRent();
+            } else if (field instanceof UtilityField utilityField) {
+                rent = utilityField.getRent(game.getLastDice());
             } else {
                 throw new IllegalStateException("Failed to compute rent - unknown field type");
             }

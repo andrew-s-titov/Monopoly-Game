@@ -4,6 +4,7 @@ import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.GameFieldView;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.MortgageChange;
+import com.monopolynew.dto.PropertyPrice;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.ChatMessageEvent;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -92,7 +92,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
         List<GameFieldView> newPriceViews;
         List<PurchasableField> fieldGroup = PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId());
-        if (field instanceof StreetField) {
+        if (field instanceof StreetField streetField) {
             boolean allGroupOwnedByTheSameOwner = fieldGroup.stream()
                     .noneMatch(PurchasableField::isFree)
                     && 1 == fieldGroup.stream()
@@ -101,15 +101,15 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             if (allGroupOwnedByTheSameOwner) {
                 fieldGroup.stream()
                         .map(StreetField.class::cast)
-                        .forEach(streetField -> streetField.setNewRent(true));
+                        .forEach(strField -> strField.setNewRent(true));
                 newPriceViews = fieldGroup.stream()
                         .map(gameFieldConverter::toView)
-                        .collect(Collectors.toList());
+                        .toList();
             } else {
-                ((StreetField) field).setNewRent(false);
+                streetField.setNewRent(false);
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
             }
-        } else if (field instanceof CompanyField) {
+        } else if (field instanceof CompanyField companyField) {
             List<CompanyField> playerCompanyFields = fieldGroup.stream()
                     .filter(f -> !f.isFree())
                     .filter(f -> f.getOwner().equals(field.getOwner()))
@@ -118,12 +118,12 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             int ownedByTheSamePlayer = playerCompanyFields.size();
             if (ownedByTheSamePlayer > 1) {
                 playerCompanyFields
-                        .forEach(companyField -> companyField.setNewRent(ownedByTheSamePlayer));
+                        .forEach(compField -> compField.setNewRent(ownedByTheSamePlayer));
                 newPriceViews = playerCompanyFields.stream()
                         .map(gameFieldConverter::toView)
-                        .collect(Collectors.toList());
+                        .toList();
             } else {
-                ((CompanyField) field).setNewRent(ownedByTheSamePlayer);
+                companyField.setNewRent(ownedByTheSamePlayer);
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
             }
         } else if (field instanceof UtilityField) {
@@ -138,7 +138,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 newPriceViews = fieldGroup.stream()
                         .map(UtilityField.class::cast)
                         .map(gameFieldConverter::toView)
-                        .collect(Collectors.toList());
+                        .toList();
             } else {
                 newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
             }
@@ -150,23 +150,12 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     @Override
     public int computePlayerAssets(Game game, Player player) {
-        int assetSum = player.getMoney();
-        List<PurchasableField> countedFields = game.getGameMap().getFields().stream()
-                .filter(PurchasableField.class::isInstance)
-                .map(PurchasableField.class::cast)
-                .filter(field -> player.equals(field.getOwner()))
+        return getPlayerFields(game, player).stream()
                 .filter(field -> !field.isMortgaged())
-                .toList();
-        for (PurchasableField field : countedFields) {
-            if (field instanceof StreetField) {
-                int houses = ((StreetField) field).getHouses();
-                int housePrice = ((StreetField) field).getHousePrice();
-                assetSum += housePrice * houses;
-            }
-            int price = field.getPrice();
-            assetSum += price / 2;
-        }
-        return assetSum;
+                .map(field -> field instanceof StreetField streetField
+                        ? streetField.getHousePrice() * streetField.getHouses() + field.getPrice() / 2
+                        : field.getPrice() / 2 )
+                .reduce(player.getMoney(), Integer::sum);
     }
 
     @Override
@@ -179,7 +168,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     @Override
     public void endTurn(Game game) {
         if (!GameStage.ROLLED_FOR_JAIL.equals(game.getStage())) {
-            // as there was no actual turn when turn ended after rolled for jail (tried luck but hot nota a doublet)
+            // as there was no actual turn when turn ended after rolled for jail (tried luck but failed)
             processMortgage(game);
         }
         game.getGameMap().resetPurchaseHistory();
@@ -205,45 +194,48 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     }
 
     @Override
-    public void bankruptPlayer(Game game, Player player, Integer remainingAssets) {
+    public void bankruptPlayer(Game game, Player debtor) {
         GameStage stage = game.getStage();
-        player.goBankrupt();
-        gameEventSender.sendToAllPlayers(new BankruptcyEvent(player.getId()));
-        var checkToPay = game.getCheckToPay();
+        debtor.goBankrupt();
+        gameEventSender.sendToAllPlayers(new BankruptcyEvent(debtor.getId()));
         var moneyStatesToSend = new ArrayList<MoneyState>();
-        var playerMoneyLeft = player.getMoney();
+        var playerMoneyLeft = debtor.getMoney();
+        var playerFieldsLeft = getPlayerFields(game, debtor);
+        var playerFieldsToProcess = new ArrayList<>(playerFieldsLeft);
+        var shouldProcessFields = !CollectionUtils.isEmpty(playerFieldsLeft);
         if (playerMoneyLeft > 0) {
-            player.takeMoney(playerMoneyLeft);
-            moneyStatesToSend.add(MoneyState.fromPlayer(player));
+            debtor.takeMoney(playerMoneyLeft);
+            moneyStatesToSend.add(MoneyState.fromPlayer(debtor));
         }
-        Player currentPlayer = game.getCurrentPlayer();
+        var checkToPay = game.getCheckToPay();
         if (checkToPay != null) {
             var beneficiary = checkToPay.getBeneficiary();
-            var sumToPay = checkToPay.getSum();
-            if (checkToPay.getPlayer().equals(player) && beneficiary != null && GameStage.AWAITING_PAYMENT.equals(stage)) {
-                remainingAssets = remainingAssets == null ? computePlayerAssets(game, player) : remainingAssets;
-                beneficiary.addMoney(remainingAssets > sumToPay ? sumToPay : remainingAssets);
+            var shouldProcessCheck = debtor.equals(checkToPay.getDebtor()) && beneficiary != null
+                    && GameStage.AWAITING_PAYMENT.equals(stage);
+            var debt = checkToPay.getDebt();
+            if (shouldProcessCheck) {
+                var sumToTransfer = Math.min(playerMoneyLeft, debt);
+                beneficiary.addMoney(sumToTransfer);
+                debt = debt - sumToTransfer;
+                if (shouldProcessFields && debt > 0) {
+                    processFieldsForBeneficiary(beneficiary, debt, playerFieldsLeft, playerFieldsToProcess);
+                }
                 moneyStatesToSend.add(MoneyState.fromPlayer(beneficiary));
             }
+        }
+        if (shouldProcessFields) {
+            for (PurchasableField field : playerFieldsToProcess) {
+                field.redeem();
+                field.newOwner(null); // property goes to Bank
+                removeFieldHouses(field);
+            }
+            gameEventSender.sendToAllPlayers(
+                    new FieldViewChangeEvent(gameFieldConverter.toListView(playerFieldsLeft)));
         }
         if (!CollectionUtils.isEmpty(moneyStatesToSend)) {
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStatesToSend));
         }
-        var playerPurchasableFields = getPlayerFields(game, player);
-        if (!CollectionUtils.isEmpty(playerPurchasableFields)) {
-            playerPurchasableFields.forEach(field -> {
-                field.newOwner(null); // all property goes to the 'bank'
-                if (field.isMortgaged()) {
-                    field.redeem();
-                }
-                if (field instanceof StreetField && ((StreetField) field).getHouses() > 0) {
-                    ((StreetField) field).sellAllHouses();
-                }
-            });
-            gameEventSender.sendToAllPlayers(
-                    new FieldViewChangeEvent(gameFieldConverter.toListView(playerPurchasableFields)));
-        }
-        if (!isGameFinished(game) && player.equals(currentPlayer)) {
+        if (!isGameFinished(game) && debtor.equals(game.getCurrentPlayer())) {
             endTurn(game);
         }
     }
@@ -258,8 +250,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         return game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
-                .filter(field -> !field.isFree())
-                .filter(field -> field.getOwner().equals(player))
+                .filter(field -> player.equals(field.getOwner()))
                 .toList();
     }
 
@@ -322,5 +313,63 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         if (!CollectionUtils.isEmpty(fieldViews)) {
             gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(fieldViews));
         }
+    }
+
+    private void removeFieldHouses(PurchasableField field) {
+        if (field instanceof StreetField streetField && streetField.getHouses() > 0) {
+            streetField.sellAllHouses();
+        }
+    }
+
+    private int getFieldMortgagePrice(PurchasableField field) {
+        return field.getPrice() / 2;
+    }
+
+    private void processFieldsForBeneficiary(Player beneficiary, int debt,
+                                             List<PurchasableField> playerFieldsLeft,
+                                             List<PurchasableField> playerFieldsToProcess) {
+        var debtorPropertyPrice = computeDebtorPropertyPrice(playerFieldsLeft);
+
+        if (debtorPropertyPrice.getTotal() <= debt) {
+            for (PurchasableField field : playerFieldsLeft) {
+                field.newOwner(beneficiary);
+                removeFieldHouses(field);
+                playerFieldsToProcess.remove(field);
+            }
+        } else {
+            var housePriceToTransfer = Math.min(debtorPropertyPrice.getHousesPrice(), debt);
+            debt = debt - housePriceToTransfer;
+            var fieldsIterator = playerFieldsLeft.iterator();
+            while (debt > 0 && fieldsIterator.hasNext()) {
+                var field = fieldsIterator.next();
+                removeFieldHouses(field);
+                var price = field.isMortgaged() ? getFieldMortgagePrice(field) : field.getPrice();
+                if (debt >= price) {
+                    debt = debt - price;
+                    field.newOwner(beneficiary);
+                    playerFieldsToProcess.remove(field);
+                } else {
+                    beneficiary.addMoney(debt);
+                    debt = 0;
+                }
+            }
+        }
+    }
+
+    private PropertyPrice computeDebtorPropertyPrice(List<PurchasableField> playerFieldsLeft) {
+        var housesPrice = playerFieldsLeft.stream()
+                .filter(StreetField.class::isInstance)
+                .map(StreetField.class::cast)
+                .map(street -> street.getHousePrice() * street.getHouses())
+                .reduce(0, Integer::sum);
+        var fieldsPrice = playerFieldsLeft.stream()
+                .map(field -> field.isMortgaged()
+                        ? getFieldMortgagePrice(field)
+                        : field.getPrice())
+                .reduce(0, Integer::sum);
+        return PropertyPrice.builder()
+                .housesPrice(housesPrice)
+                .fieldsPrice(fieldsPrice)
+                .build();
     }
 }

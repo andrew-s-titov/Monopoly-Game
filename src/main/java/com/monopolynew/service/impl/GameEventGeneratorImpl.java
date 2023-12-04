@@ -78,8 +78,8 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
 
     @Override
     public PayCommandEvent newPayCommandEvent(CheckToPay checkToPay) {
-        var player = checkToPay.getPlayer();
-        var checkSum = checkToPay.getSum();
-        return new PayCommandEvent(player.getId(), checkSum, player.getMoney() >= checkSum, checkToPay.isWiseToGiveUp());
+        var debtor = checkToPay.getDebtor();
+        var debt = checkToPay.getDebt();
+        return new PayCommandEvent(debtor.getId(), debt, debtor.getMoney() >= debt, checkToPay.isWiseToGiveUp());
     }
 }

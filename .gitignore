@@ -1,6 +1,7 @@
 HELP.md
 target
 src/react/node_modules
+src/react/build
 src/react/.idea
 
 ### STS ###

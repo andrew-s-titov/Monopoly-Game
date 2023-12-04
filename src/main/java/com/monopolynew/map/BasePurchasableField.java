@@ -44,9 +44,6 @@ public abstract class BasePurchasableField implements PurchasableField {
     }
 
     public final void redeem() {
-        if (!isMortgaged()) {
-            throw new IllegalStateException("cannot redeem not mortgaged field");
-        }
         mortgagedDuringThisTurn = false;
         this.mortgageTurns = 0;
     }
