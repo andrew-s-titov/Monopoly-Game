@@ -35,6 +35,7 @@ export const GameStateProvider = ({ children }: PropsWithChildren) => {
   const clearGameState = () => {
     setGameState(INITIAL_GAME_STATE);
     setMessages([]);
+    clearHousePurchaseRecords();
   };
 
   return (

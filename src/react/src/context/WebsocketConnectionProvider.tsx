@@ -1,4 +1,4 @@
-import { createContext, memo, PropsWithChildren, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef } from "react";
 
 import { BE_ENDPOINT, getWebsocketUrl } from "../api/config";
 import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
@@ -133,7 +133,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           })
           setTimeout(
             () => {
-              closeEventModal();
+              // closeEventModal(); // TODO: check how this behaves for other users
               loggedInUserId === playerId && get({
                 url: `${BE_ENDPOINT}/game/dice/after`
               });
@@ -374,8 +374,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           && websocket.current.close(1000, 'connection closed on React component unload');
       }
     }, []
-  )
-  ;
+  );
 
   const sendMessage = (chatMessage: ChatMessageBody) => {
     if (websocket.current && websocket.current.readyState === websocket.current.OPEN) {
@@ -390,6 +389,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
   );
 }
 
-export default memo(WebsocketConnectionProvider);
+export default WebsocketConnectionProvider;
 
 export const useWebsocketContext = () => useContext(WebsocketContext);
