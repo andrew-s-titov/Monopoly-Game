@@ -60,9 +60,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
       websocket.current = new WebSocket(getWebsocketUrl());
       const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-      const newTimeOut = (action: () => void, delay: number) => {
-        timeouts.push(setTimeout(action, delay));
-      }
+      const newTimeout = (action: () => void, delay: number) => timeouts.push(setTimeout(action, delay));
+      const clearTimeouts = () => timeouts.forEach(timer => clearTimeout(timer));
 
       const codeActions: Record<number, (data: any) => void> = {
         100: ({ players }: any) => {
@@ -121,7 +120,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             transparent: true,
           })
           loggedInUserId === playerId &&
-          newTimeOut(
+          newTimeout(
             () => get({
               url: `${BE_ENDPOINT}/game/dice/result`
             }),
@@ -134,8 +133,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             modal: false,
             transparent: true,
           })
-          newTimeOut(closeEventModal, 1500);
-          newTimeOut(
+          newTimeout(closeEventModal, 1500);
+          newTimeout(
             () => {
               loggedInUserId === playerId && get({
                 url: `${BE_ENDPOINT}/game/dice/after`
@@ -152,7 +151,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             return newState;
           });
           needAfterMoveCall && loggedInUserId === playerId &&
-          newTimeOut(
+          newTimeout(
             () => get({
               url: `${BE_ENDPOINT}/game/after_move`
             }),
@@ -310,7 +309,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             modal: true,
           });
           changeCurrentPlayer('');
-          newTimeOut(
+          clearTimeouts();
+          newTimeout(
             () => {
               closeEventModal();
               clearGameState();
@@ -354,6 +354,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           if (GameStages.TURN_START === gameStage || GameStages.JAIL_RELEASE_START === gameStage) {
             clearHousePurchaseRecords();
           }
+          if (GameStages.DEAL_OFFER === gameStage) {
+            closeEventModal();
+          }
         }
       }
 
@@ -372,10 +375,10 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
       }
 
       return () => {
+        clearTimeouts();
         websocket.current
         && websocket.current?.readyState === websocket.current?.OPEN
         && websocket.current.close(1000, 'connection closed on React component unload');
-        timeouts.forEach(timer => clearTimeout(timer));
       }
     }, []
   );
