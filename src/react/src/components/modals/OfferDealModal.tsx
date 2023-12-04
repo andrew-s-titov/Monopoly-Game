@@ -23,7 +23,7 @@ const extractPlayerFields = (propertyStates: Record<UPropertyIndex, PropertyStat
   : PropertyShortInfo[] =>
   getEntries(propertyStates)
     .filter(([_, propertyState]) => playerId === propertyState.ownerId)
-    .filter(([_, propertyState]) => propertyState.houses === 0)
+    .filter(([_, propertyState]) => !propertyState.houses)
     .map(([fieldIndex]) => {
       return {
         fieldIndex,
