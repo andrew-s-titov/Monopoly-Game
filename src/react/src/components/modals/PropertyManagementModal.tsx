@@ -67,7 +67,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
             <Button
               label='Mortgage'
               outlined
-              severity="secondary"
+              severity="danger"
               icon="pi pi-file-excel icon"
               className="property-management-button"
               onClick={() => callManagementEndpoint('mortgage')}
@@ -77,8 +77,8 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
             <Button
               label='Buy a house'
               outlined
-              severity="secondary"
-              icon="pi pi-money-bill icon"
+              severity="success"
+              icon="pi pi-home icon"
               className="property-management-button"
               onClick={onBuyHouse}
             />
@@ -87,8 +87,8 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
             <Button
               label='Sell a house'
               outlined
-              severity="secondary"
-              icon="pi pi-home icon"
+              severity="warning"
+              icon="pi pi-money-bill icon"
               className="property-management-button"
               onClick={() => callManagementEndpoint('sell_house')}
             />
