@@ -1,8 +1,8 @@
 HELP.md
 target
-src/react/node_modules
-src/react/build
-src/react/.idea
+frontend/node_modules
+frontend/build
+frontend/.idea
 
 ### STS ###
 .apt_generated
