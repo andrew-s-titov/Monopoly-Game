@@ -11,7 +11,6 @@ import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
-import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
@@ -35,7 +34,6 @@ import com.monopolynew.service.GameService;
 import com.monopolynew.service.PaymentProcessor;
 import com.monopolynew.service.StepProcessor;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -273,29 +271,25 @@ public class GameServiceImpl implements GameService {
     @Override
     public void mortgageField(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        var moneyHistory = fieldManagementService.mortgageField(game, fieldIndex, playerId);
-        afterManagementStateCheck(game, moneyHistory);
+        fieldManagementService.mortgageField(game, fieldIndex, playerId);
     }
 
     @Override
     public void redeemMortgagedProperty(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        var moneyHistory = fieldManagementService.redeemMortgagedProperty(game, fieldIndex, playerId);
-        afterManagementStateCheck(game, moneyHistory);
+        fieldManagementService.redeemMortgagedProperty(game, fieldIndex, playerId);
     }
 
     @Override
     public void buyHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        var moneyHistory = fieldManagementService.buyHouse(game, fieldIndex, playerId);
-        afterManagementStateCheck(game, moneyHistory);
+        fieldManagementService.buyHouse(game, fieldIndex, playerId);
     }
 
     @Override
     public void sellHouse(int fieldIndex, String playerId) {
         var game = gameRepository.getGame();
-        var moneyHistory = fieldManagementService.sellHouse(game, fieldIndex, playerId);
-        afterManagementStateCheck(game, moneyHistory);
+        fieldManagementService.sellHouse(game, fieldIndex, playerId);
     }
 
     @Override
@@ -327,43 +321,6 @@ public class GameServiceImpl implements GameService {
         }
         if (player.isImprisoned()) {
             throw new ClientBadRequestException("imprisoned player cannot do regular turn");
-        }
-    }
-
-    private void afterManagementStateCheck(Game game, Pair<Integer, Integer> managementMoneyInfo) {
-        int beforeManagementMoneyAmount = managementMoneyInfo.getLeft();
-        int afterManagementMoneyAmount = managementMoneyInfo.getRight();
-        var playerId = game.getCurrentPlayer().getId();
-
-        GameStage stage = game.getStage();
-        if ((GameStage.AWAITING_PAYMENT.equals(stage) || GameStage.AWAITING_JAIL_FINE.equals(stage))) {
-            var checkToPay = game.getCheckToPay();
-            var debt = checkToPay.getDebt();
-            var checkIsPayable = checkToPay.isPayable();
-            if (checkIsPayable && afterManagementMoneyAmount < debt) {
-                checkToPay.setPayable(false);
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
-            } else if (!checkIsPayable && afterManagementMoneyAmount >= debt) {
-                checkToPay.setPayable(true);
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
-            }
-        } else if (GameStage.JAIL_RELEASE_START.equals(stage)) {
-            if (beforeManagementMoneyAmount < Rules.JAIL_BAIL && afterManagementMoneyAmount >= Rules.JAIL_BAIL) {
-                gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, true));
-            } else if (beforeManagementMoneyAmount >= Rules.JAIL_BAIL && afterManagementMoneyAmount < Rules.JAIL_BAIL) {
-                gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId, false));
-            }
-        } else if (GameStage.BUY_PROPOSAL.equals(stage)) {
-            var buyProposal = game.getBuyProposal();
-            var fieldPrice = buyProposal.getField().getPrice();
-            var proposalIsPayable = buyProposal.isPayable();
-            if (proposalIsPayable && afterManagementMoneyAmount < fieldPrice) {
-                buyProposal.setPayable(false);
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
-            } else if (!proposalIsPayable && afterManagementMoneyAmount >= fieldPrice) {
-                buyProposal.setPayable(true);
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
-            }
         }
     }
 

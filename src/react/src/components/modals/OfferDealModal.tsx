@@ -22,9 +22,9 @@ interface IOfferDealModalProps {
 const extractPlayerFields = (propertyStates: Record<UPropertyIndex, PropertyState>, playerId: string)
   : PropertyShortInfo[] =>
   getEntries(propertyStates)
-    .filter((entry, _) => playerId === entry[1].ownerId)
-    .map(entry => {
-      const [fieldIndex, state] = entry;
+    .filter(([_, propertyState]) => playerId === propertyState.ownerId)
+    .filter(([_, propertyState]) => !propertyState.houses)
+    .map(([fieldIndex]) => {
       return {
         fieldIndex,
         name: PROPERTY_FIELDS_DATA[fieldIndex].name,
