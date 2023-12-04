@@ -308,12 +308,27 @@ div::-webkit-scrollbar-thumb {
     align-self: center;
 }
 
-.property-management-buttons-container > button {
-
-}
-
 .property-management-buttons-container > button > .p-button-label {
     font-weight: normal;
     flex: none !important;
     margin-left: 1vh;
+}
+
+.winner-modal {
+    font-size: 4vh;
+    margin: 10vh;
+    line-height: 20vh;
+}
+
+.winner-modal > span {
+    margin: 0 3vh 0 3vh;
+}
+
+.winner-modal > .pi-spin {
+    font-size: 3.5vh;
+    animation: fa-spin 1s linear infinite;
+}
+
+.animation-backwards {
+    animation-direction: reverse !important;
 }

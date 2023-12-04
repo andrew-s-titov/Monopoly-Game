@@ -65,11 +65,11 @@ const PlayerChipsContainer = () => {
   return (
     <div className="chips-container">
       {
-        Object.values(playerStates)
-          .filter(player => !player.bankrupt)
-          .map(player =>
+        Object.entries(playerStates)
+          .filter(([_, player]) => !player.bankrupt)
+          .map(([playerId, player]) =>
             <PlayerChip
-              key={`${player.name}-chip`}
+              key={`${playerId}-chip`}
               playerColor={player.color}
               top={defineChipTop(player.position)}
               left={defineChipLeft(player.position)}
