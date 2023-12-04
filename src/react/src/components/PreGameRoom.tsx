@@ -31,6 +31,7 @@ const PreGameRoom = () => {
         )}
       </div>
       <StartPageButton
+        label='Start the game'
         icon="pi-play"
         isLoading={isLoading}
         isDisabled={!canStartGame}
