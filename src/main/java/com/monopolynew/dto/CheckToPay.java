@@ -2,18 +2,20 @@ package com.monopolynew.dto;
 
 import com.monopolynew.game.Player;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @AllArgsConstructor
+@Builder
 @Getter
 public class CheckToPay {
 
-    private final Player player;
+    private final Player debtor;
 
     private final Player beneficiary;
 
-    private final int sum;
+    private final int debt;
 
     @Setter
     private boolean payable;

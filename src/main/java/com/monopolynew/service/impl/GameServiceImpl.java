@@ -243,7 +243,7 @@ public class GameServiceImpl implements GameService {
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " gave up"));
-        gameLogicExecutor.bankruptPlayer(game, player, null);
+        gameLogicExecutor.bankruptPlayer(game, player);
     }
 
     @Override
@@ -338,12 +338,12 @@ public class GameServiceImpl implements GameService {
         GameStage stage = game.getStage();
         if ((GameStage.AWAITING_PAYMENT.equals(stage) || GameStage.AWAITING_JAIL_FINE.equals(stage))) {
             var checkToPay = game.getCheckToPay();
-            var sumToPay = checkToPay.getSum();
+            var debt = checkToPay.getDebt();
             var checkIsPayable = checkToPay.isPayable();
-            if (checkIsPayable && afterManagementMoneyAmount < sumToPay) {
+            if (checkIsPayable && afterManagementMoneyAmount < debt) {
                 checkToPay.setPayable(false);
                 gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
-            } else if (!checkIsPayable && afterManagementMoneyAmount >= sumToPay) {
+            } else if (!checkIsPayable && afterManagementMoneyAmount >= debt) {
                 checkToPay.setPayable(true);
                 gameEventSender.sendToPlayer(playerId, gameEventGenerator.newPayCommandEvent(checkToPay));
             }

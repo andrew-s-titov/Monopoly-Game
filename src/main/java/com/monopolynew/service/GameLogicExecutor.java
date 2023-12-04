@@ -23,7 +23,7 @@ public interface GameLogicExecutor {
 
     void endTurn(Game game);
 
-    void bankruptPlayer(Game game, Player player, @Nullable Integer remainingAssets);
+    void bankruptPlayer(Game game, Player player);
 
     void changeGameStage(Game game, GameStage newGameStage);
 }

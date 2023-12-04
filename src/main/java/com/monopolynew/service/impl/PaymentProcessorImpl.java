@@ -41,17 +41,17 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             game.setCheckToPay(checkToPay);
             gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
         } else {
-            int assets = gameLogicExecutor.computePlayerAssets(game, player);
+            var assets = gameLogicExecutor.computePlayerAssets(game, player);
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 gameLogicExecutor.changeGameStage(game, newGameStage);
-                var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.9 < amount,
+                var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.85 < amount,
                         paymentComment);
                 game.setCheckToPay(checkToPay);
                 gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
             } else {
                 gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " went bankrupt"));
-                gameLogicExecutor.bankruptPlayer(game, player, assets);
+                gameLogicExecutor.bankruptPlayer(game, player);
             }
         }
     }
@@ -64,17 +64,17 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         if (checkToPay == null) {
             throw new IllegalStateException("Cannot process payment - no payment found");
         }
-        var payer = checkToPay.getPlayer();
-        int sum = checkToPay.getSum();
-        if (payer.getMoney() < sum) {
+        var debtor = checkToPay.getDebtor();
+        int debt = checkToPay.getDebt();
+        if (debtor.getMoney() < debt) {
             throw new ClientBadRequestException("Player doesn't have enough money - payment is impossible");
         }
-        payer.takeMoney(sum);
+        debtor.takeMoney(debt);
         List<MoneyState> moneyStates = new ArrayList<>(2);
-        moneyStates.add(MoneyState.fromPlayer(payer));
+        moneyStates.add(MoneyState.fromPlayer(debtor));
         var beneficiary = checkToPay.getBeneficiary();
         if (beneficiary != null) {
-            beneficiary.addMoney(sum);
+            beneficiary.addMoney(debt);
             moneyStates.add(MoneyState.fromPlayer(beneficiary));
         }
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
@@ -87,10 +87,10 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         if (GameStage.AWAITING_PAYMENT.equals(currentGameStage)) {
             gameLogicExecutor.endTurn(game);
         } else if (GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
-            payer.releaseFromJail();
+            debtor.releaseFromJail();
             gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
-            var newPosition = gameLogicExecutor.computeNewPlayerPosition(payer, game.getLastDice());
-            gameLogicExecutor.movePlayer(game, payer, newPosition, true);
+            var newPosition = gameLogicExecutor.computeNewPlayerPosition(debtor, game.getLastDice());
+            gameLogicExecutor.movePlayer(game, debtor, newPosition, true);
         }
     }
 

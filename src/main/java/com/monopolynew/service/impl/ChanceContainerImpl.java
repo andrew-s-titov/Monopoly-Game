@@ -40,6 +40,8 @@ public class ChanceContainerImpl implements ChanceContainer {
     private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
 
+    private final Random random = new Random();
+
     @Autowired
     public ChanceContainerImpl(GameLogicExecutor gameLogicExecutor, GameEventSender gameEventSender) {
         this.gameLogicExecutor = gameLogicExecutor;
@@ -117,13 +119,12 @@ public class ChanceContainerImpl implements ChanceContainer {
                     int perHotel = 115;
                     int tax = 0;
                     List<Integer> housesOnStreets = game.getGameMap().getFields().stream()
-                            .filter(field -> field instanceof StreetField)
-                            .map(field -> (StreetField) field)
-                            .filter(field -> !field.isFree())
-                            .filter(field -> field.getOwner().equals(currentPlayer))
+                            .filter(StreetField.class::isInstance)
+                            .map(StreetField.class::cast)
+                            .filter(field -> currentPlayer.equals(field.getOwner()))
                             .map(StreetField::getHouses)
                             .filter(houses -> houses > 0)
-                            .collect(Collectors.toList());
+                            .toList();
                     for (Integer houses : housesOnStreets) {
                         tax += houses == Rules.MAX_HOUSES_ON_STREET ? perHotel : houses * perHouse;
                     }
@@ -147,7 +148,7 @@ public class ChanceContainerImpl implements ChanceContainer {
                     var currentPlayer = game.getCurrentPlayer();
                     int currentPosition = currentPlayer.getPosition();
                     CompanyField nearestField = PurchasableFieldGroups.getGroupById(game, COMPANY_FIELD_GROUP).stream()
-                            .map(field -> (CompanyField) field)
+                            .map(CompanyField.class::cast)
                             .map(field -> {
                                 int fieldPosition = field.getId();
                                 int forward = (fieldPosition > currentPosition) ?
@@ -181,11 +182,11 @@ public class ChanceContainerImpl implements ChanceContainer {
                     gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is TELEPORTING!"));
                     GameMap gameMap = game.getGameMap();
                     List<Integer> purchasableFieldsIndexes = gameMap.getFields().stream()
-                            .filter(field -> field instanceof PurchasableField)
+                            .filter(PurchasableField.class::isInstance)
                             .map(GameField::getId)
-                            .collect(Collectors.toList());
-                    var random = new Random().nextInt(purchasableFieldsIndexes.size());
-                    Integer randomFieldIndex = purchasableFieldsIndexes.get(random);
+                            .toList();
+                    var randomArrayIndex = random.nextInt(purchasableFieldsIndexes.size());
+                    Integer randomFieldIndex = purchasableFieldsIndexes.get(randomArrayIndex);
                     gameLogicExecutor.movePlayer(game, currentPlayer, randomFieldIndex, false);
                 }
         );
