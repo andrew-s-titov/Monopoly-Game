@@ -7,7 +7,7 @@ Websocket codes:
 303 - dice result
 304 - new player position
 305 - money change
-306 - buy or auction proposal
+306 - buy proposal
 307 - field view change
 308 - jail release process
 309 - auction raise proposal

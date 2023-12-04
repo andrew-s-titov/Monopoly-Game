@@ -238,7 +238,7 @@
 }
 
 .roll-dice-button > .pi-spin {
-    animation: fa-spin 1s linear infinite;
+    animation: fa-spin 0.85s linear infinite;
 }
 
 .roll-dice-button > .p-button-icon {

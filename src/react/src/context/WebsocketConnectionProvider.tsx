@@ -58,8 +58,11 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
       websocket.current = new WebSocket(getWebsocketUrl());
+      const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-      // TODO: additional BE message for stage change
+      const newTimeOut = (action: () => void, delay: number) => {
+        timeouts.push(setTimeout(action, delay));
+      }
 
       const codeActions: Record<number, (data: any) => void> = {
         100: ({ players }: any) => {
@@ -118,7 +121,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             transparent: true,
           })
           loggedInUserId === playerId &&
-          setTimeout(
+          newTimeOut(
             () => get({
               url: `${BE_ENDPOINT}/game/dice/result`
             }),
@@ -131,9 +134,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             modal: false,
             transparent: true,
           })
-          setTimeout(
+          newTimeOut(closeEventModal, 1500);
+          newTimeOut(
             () => {
-              // closeEventModal(); // TODO: check how this behaves for other users
               loggedInUserId === playerId && get({
                 url: `${BE_ENDPOINT}/game/dice/after`
               });
@@ -149,7 +152,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             return newState;
           });
           needAfterMoveCall && loggedInUserId === playerId &&
-          setTimeout(
+          newTimeOut(
             () => get({
               url: `${BE_ENDPOINT}/game/after_move`
             }),
@@ -307,7 +310,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             modal: true,
           });
           changeCurrentPlayer('');
-          setTimeout(
+          newTimeOut(
             () => {
               closeEventModal();
               clearGameState();
@@ -370,8 +373,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
 
       return () => {
         websocket.current
-          && websocket.current?.readyState === websocket.current?.OPEN
-          && websocket.current.close(1000, 'connection closed on React component unload');
+        && websocket.current?.readyState === websocket.current?.OPEN
+        && websocket.current.close(1000, 'connection closed on React component unload');
+        timeouts.forEach(timer => clearTimeout(timer));
       }
     }, []
   );

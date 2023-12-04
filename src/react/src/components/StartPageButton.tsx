@@ -2,13 +2,14 @@ import { memo } from "react";
 import { Button } from "primereact/button";
 
 interface IStartPageButtonProps {
+  label: string,
   icon: string;
   isLoading: boolean;
   isDisabled: boolean;
   onClickHandler: () => void;
 }
 
-const StartPageButton = ({ icon, isLoading, isDisabled, onClickHandler }: IStartPageButtonProps) => {
+const StartPageButton = ({ label, icon, isLoading, isDisabled, onClickHandler }: IStartPageButtonProps) => {
 
   return (
     <Button
@@ -18,7 +19,7 @@ const StartPageButton = ({ icon, isLoading, isDisabled, onClickHandler }: IStart
       onClick={onClickHandler}
       loadingIcon="pi pi-spin pi-spinner icon"
       className="non-game-button"
-      label='Join the game'
+      label={label}
       text
       raised
     />
