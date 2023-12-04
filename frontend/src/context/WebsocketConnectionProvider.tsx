@@ -30,6 +30,7 @@ import {
   OfferProposalModal,
   PayCommandModal
 } from "../components/modals";
+import WinnerModal from "../components/modals/WinnerModal";
 
 interface IWebsocketContext {
   sendMessage: (chatMessage: ChatMessageBody) => void;
@@ -178,7 +179,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 playerId={playerId}
                 price={price}
               />,
-            draggable: true,
             modal: false,
           });
         },
@@ -211,7 +211,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 <JailReleaseModal
                   playerId={playerId}
                 />,
-              draggable: true,
               modal: false,
             });
           } else {
@@ -231,7 +230,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                   playerId={playerId}
                   proposal={proposal}
                 />,
-              draggable: true,
               modal: false,
             }
           );
@@ -248,7 +246,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 <AuctionBuyProposalModal
                   proposal={proposal}
                 />,
-              draggable: true,
               modal: false,
             }
           );
@@ -275,7 +272,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                   sum={sum}
                   wiseToGiveUp={wiseToGiveUp}
                 />,
-              draggable: true,
               modal: false,
             }
           );
@@ -303,9 +299,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         315: ({ playerId, playerName }) => {
           openEventModal({
-            // TODO: prettify winner info modal
-            header: <span>{`${playerName} is the winner!`}</span>,
-            draggable: true,
+            header: <WinnerModal name={playerName} />,
             modal: true,
           });
           changeCurrentPlayer('');
@@ -338,7 +332,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 addresseeMoney={addresseeMoney}
                 initiatorMoney={initiatorMoney}
               />,
-            draggable: true,
             modal: true,
           });
         },
