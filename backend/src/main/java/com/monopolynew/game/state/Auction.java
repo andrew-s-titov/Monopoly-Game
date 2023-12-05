@@ -1,14 +1,13 @@
 package com.monopolynew.game.state;
 
 import com.monopolynew.game.Game;
-import com.monopolynew.map.PurchasableField;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
+import com.monopolynew.map.PurchasableField;
 import lombok.Getter;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Auction {
     @Getter
@@ -17,6 +16,7 @@ public class Auction {
     private final List<Player> participants;
     @Getter
     private int auctionPrice;
+    @Getter
     private Player currentParticipant;
 
     private Iterator<Player> playerIterator;
@@ -30,7 +30,7 @@ public class Auction {
                 .filter(player -> !player.equals(auctionInitiator))
                 .filter(player -> !player.isBankrupt())
                 .filter(player -> player.getMoney() >= auctionPrice)
-                .collect(Collectors.toList());
+                .toList();
         this.playerIterator = participants.iterator();
     }
 
@@ -49,10 +49,6 @@ public class Auction {
             currentParticipant = getNextPlayer();
         }
         return currentParticipant;
-    }
-
-    public Player getCurrentParticipant() {
-        return this.currentParticipant;
     }
 
     public boolean isFirstCircle() {

@@ -46,6 +46,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
         var currentPlayer = game.getCurrentPlayer();
         return OfferProposalEvent.builder()
                 .initiatorName(currentPlayer.getName())
+                .addresseeId(offer.getAddressee().getId())
                 .addresseeFields(offer.getAddresseeFields().stream().map(GameField::getId).toList())
                 .initiatorFields(offer.getInitiatorFields().stream().map(GameField::getId).toList())
                 .addresseeMoney(offer.getAddresseeMoney())
@@ -56,6 +57,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     @Override
     public AuctionBuyProposalEvent auctionBuyProposalEvent(Auction auction) {
         return new AuctionBuyProposalEvent(
+                auction.getCurrentParticipant().getId(),
                 auction.getField().getId(),
                 auction.getAuctionPrice()
         );
