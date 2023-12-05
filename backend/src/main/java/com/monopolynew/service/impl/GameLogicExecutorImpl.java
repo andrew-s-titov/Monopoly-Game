@@ -263,7 +263,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         if (nonBankruptPlayers.size() == 1) {
             Player winner = nonBankruptPlayers.get(0);
             game.finishGame();
-            gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getId(), winner.getName()));
+            gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getName()));
             return true;
         }
         return false;
