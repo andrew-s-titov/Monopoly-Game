@@ -276,9 +276,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             }
           );
         },
-        315: ({ playerId, playerName }) => {
+        315: ({ winnerName }) => {
           openEventModal({
-            header: <WinnerModal name={playerName} />,
+            header: <WinnerModal name={winnerName} />,
             modal: true,
           });
           changeCurrentPlayer('');
