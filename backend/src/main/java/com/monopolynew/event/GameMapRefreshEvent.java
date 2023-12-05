@@ -1,6 +1,6 @@
 package com.monopolynew.event;
 
-import com.monopolynew.dto.GameFieldView;
+import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.game.Player;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ public class GameMapRefreshEvent implements GameEvent {
 
     private final Collection<Player> players;
 
-    private final List<GameFieldView> fields;
+    private final List<GameFieldState> fields;
 
     private final String currentPlayer;
 }

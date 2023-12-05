@@ -1,7 +1,6 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.enums.GameStage;
-import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.TurnStartEvent;
@@ -34,8 +33,7 @@ public class GameMapRefresherImpl implements GameMapRefresher {
                     break;
                 }
                 case JAIL_RELEASE_START: {
-                    gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(
-                            playerId, player.getMoney() >= Rules.JAIL_BAIL));
+                    gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId));
                     break;
                 }
                 case BUY_PROPOSAL: {
@@ -61,22 +59,19 @@ public class GameMapRefresherImpl implements GameMapRefresher {
                     break;
                 }
                 case ROLLED_FOR_JAIL, ROLLED_FOR_TURN: {
-                    var lastDice = game.getLastDice();
-                    gameEventSender.sendToAllPlayers(
-                            new DiceResultEvent(playerId, lastDice.getFirstDice(), lastDice.getSecondDice()));
+                    gameEventSender.sendToAllPlayers(gameEventGenerator.diceResultEvent(game));
                     break;
                 }
                 case DEAL_OFFER: {
                     gameEventSender.sendToPlayer(currentPlayerId, new OfferSentEvent());
                     break;
                 }
-                default: break;
+                default:
+                    break;
             }
         } else {
-            if (GameStage.DEAL_OFFER.equals(gameStage)) {
-                if (game.getOffer().getAddressee().getId().equals(playerId)) {
-                    gameEventSender.sendToPlayer(playerId, gameEventGenerator.offerProposalEvent(game));
-                }
+            if (GameStage.DEAL_OFFER.equals(gameStage) && game.getOffer().getAddressee().getId().equals(playerId)) {
+                gameEventSender.sendToPlayer(playerId, gameEventGenerator.offerProposalEvent(game));
             }
         }
 

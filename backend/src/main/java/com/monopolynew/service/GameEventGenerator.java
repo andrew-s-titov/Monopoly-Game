@@ -4,6 +4,7 @@ import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.event.AuctionBuyProposalEvent;
 import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.BuyProposalEvent;
+import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.GameMapRefreshEvent;
 import com.monopolynew.event.GameRoomEvent;
 import com.monopolynew.event.OfferProposalEvent;
@@ -27,4 +28,6 @@ public interface GameEventGenerator {
     PayCommandEvent payCommandEvent(CheckToPay checkToPay);
 
     GameRoomEvent gameRoomEvent(Game game);
+
+    DiceResultEvent diceResultEvent(Game game);
 }

@@ -1,6 +1,6 @@
 package com.monopolynew.event;
 
-import com.monopolynew.dto.GameFieldView;
+import com.monopolynew.dto.GameFieldState;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -8,9 +8,9 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class FieldViewChangeEvent implements GameEvent {
+public class FieldStateChangeEvent implements GameEvent {
 
     private final int code = 307;
 
-    private final List<GameFieldView> changes;
+    private final List<GameFieldState> changes;
 }

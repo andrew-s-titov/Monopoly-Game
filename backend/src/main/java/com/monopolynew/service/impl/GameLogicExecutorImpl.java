@@ -1,20 +1,18 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.DiceResult;
-import com.monopolynew.dto.GameFieldView;
+import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.dto.MortgageChange;
 import com.monopolynew.dto.PropertyPrice;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ChipMoveEvent;
-import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.GameOverEvent;
 import com.monopolynew.event.GameStageEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.MortgageChangeEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -90,7 +88,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
 
-        List<GameFieldView> newPriceViews;
+        List<GameFieldState> newPriceViews;
         List<PurchasableField> fieldGroup = PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId());
         if (field instanceof StreetField streetField) {
             boolean allGroupOwnedByTheSameOwner = fieldGroup.stream()
@@ -145,7 +143,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         } else {
             throw new IllegalStateException("Unsupported field type");
         }
-        gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(newPriceViews));
+        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newPriceViews));
     }
 
     @Override
@@ -185,8 +183,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         String nextPlayerId = nextPlayer.getId();
         if (nextPlayer.isImprisoned()) {
             changeGameStage(game, GameStage.JAIL_RELEASE_START);
-            gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(
-                    nextPlayerId, nextPlayer.getMoney() >= Rules.JAIL_BAIL));
+            gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(nextPlayerId));
         } else {
             changeGameStage(game, GameStage.TURN_START);
             gameEventSender.sendToAllPlayers(new TurnStartEvent(nextPlayerId));
@@ -195,7 +192,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     @Override
     public void bankruptPlayer(Game game, Player debtor) {
-        GameStage stage = game.getStage();
         debtor.goBankrupt();
         gameEventSender.sendToAllPlayers(new BankruptcyEvent(debtor.getId()));
         var moneyStatesToSend = new ArrayList<MoneyState>();
@@ -229,7 +225,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 removeFieldHouses(field);
             }
             gameEventSender.sendToAllPlayers(
-                    new FieldViewChangeEvent(gameFieldConverter.toListView(playerFieldsLeft)));
+                    new FieldStateChangeEvent(gameFieldConverter.toListView(playerFieldsLeft)));
         }
         if (!CollectionUtils.isEmpty(moneyStatesToSend)) {
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStatesToSend));
@@ -292,8 +288,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private void processMortgage(Game game) {
         Player currentPlayer = game.getCurrentPlayer();
-        List<MortgageChange> mortgageChanges = new ArrayList<>(30);
-        List<GameFieldView> fieldViews = new ArrayList<>(30);
+        List<GameFieldState> updatedFieldStates = new ArrayList<>(30);
         game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
@@ -301,18 +296,14 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 .forEach(field -> {
                     if (!field.isMortgagedDuringThisTurn() && field.getOwner().equals(currentPlayer)) {
                         int mortgageTurns = field.decreaseMortgageTurns();
-                        mortgageChanges.add(new MortgageChange(field.getId(), field.getMortgageTurnsLeft()));
                         if (mortgageTurns == 0) {
                             field.newOwner(null);
-                            fieldViews.add(gameFieldConverter.toView(field));
                         }
+                        updatedFieldStates.add(gameFieldConverter.toView(field));
                     }
                 });
-        if (!CollectionUtils.isEmpty(mortgageChanges)) {
-            gameEventSender.sendToAllPlayers(new MortgageChangeEvent(mortgageChanges));
-        }
-        if (!CollectionUtils.isEmpty(fieldViews)) {
-            gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(fieldViews));
+        if (!CollectionUtils.isEmpty(updatedFieldStates)) {
+            gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(updatedFieldStates));
         }
     }
 

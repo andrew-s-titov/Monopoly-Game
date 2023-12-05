@@ -1,9 +1,11 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.CheckToPay;
+import com.monopolynew.dto.DiceResult;
 import com.monopolynew.event.AuctionBuyProposalEvent;
 import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.BuyProposalEvent;
+import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.GameMapRefreshEvent;
 import com.monopolynew.event.GameRoomEvent;
 import com.monopolynew.event.OfferProposalEvent;
@@ -89,5 +91,12 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     @Override
     public GameRoomEvent gameRoomEvent(Game game) {
         return new GameRoomEvent(playerMapper.toPlayersShortInfoList(game.getPlayers()));
+    }
+
+    @Override
+    public DiceResultEvent diceResultEvent(Game game) {
+        DiceResult lastDice = game.getLastDice();
+        return new DiceResultEvent(game.getCurrentPlayer().getId(),
+                lastDice.getFirstDice(), lastDice.getSecondDice());
     }
 }

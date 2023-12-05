@@ -276,27 +276,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             }
           );
         },
-        313: ({ changes }: MortgageChangeEvent) => {
-          setGameState(prevState => {
-            const newState = {
-              ...prevState,
-            }
-            changes.forEach(({ fieldIndex, turns }) => {
-              newState.propertyStates[fieldIndex].priceTag = turns.toString();
-              newState.propertyStates[fieldIndex].isMortgaged = !!turns;
-            });
-            return newState;
-          })
-        },
-        314: ({ fieldIndex, houses }: HouseAmountEvent) => {
-          setGameState(prevState => {
-            const newState = {
-              ...prevState,
-            }
-            newState.propertyStates[fieldIndex].houses = houses;
-            return newState;
-          })
-        },
         315: ({ playerId, playerName }) => {
           openEventModal({
             header: <WinnerModal name={playerName} />,

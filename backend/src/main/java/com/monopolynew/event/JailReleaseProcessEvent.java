@@ -13,6 +13,4 @@ public class JailReleaseProcessEvent implements GameEvent {
     private final String playerId;
 
     private final int bail = Rules.JAIL_BAIL;
-
-    private final boolean bailAvailable;
 }

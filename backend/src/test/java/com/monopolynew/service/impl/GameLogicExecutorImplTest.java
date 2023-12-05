@@ -1,9 +1,9 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.CheckToPay;
-import com.monopolynew.dto.GameFieldView;
+import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.event.BankruptcyEvent;
-import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -44,7 +44,7 @@ class GameLogicExecutorImplTest {
     @Mock
     GameFieldConverter gameFieldConverter;
     @Captor
-    ArgumentCaptor<FieldViewChangeEvent> fieldViewChangeEventCaptor;
+    ArgumentCaptor<FieldStateChangeEvent> fieldStateChangeEventCaptor;
 
     @InjectMocks
     GameLogicExecutorImpl gameLogicExecutor;
@@ -59,7 +59,7 @@ class GameLogicExecutorImplTest {
         void setUpFieldConverter() {
             when(gameFieldConverter.toListView(anyList())).thenAnswer(invocation ->
                     invocation.getArgument(0, List.class).stream()
-                            .map(field -> GameFieldView.builder().build())
+                            .map(field -> GameFieldState.builder().build())
                             .toList());
         }
 
@@ -233,8 +233,8 @@ class GameLogicExecutorImplTest {
             assertEquals(0, debtor.getMoney());
             verify(gameEventSender).sendToAllPlayers(any(BankruptcyEvent.class));
             verify(gameEventSender).sendToAllPlayers(any(MoneyChangeEvent.class));
-            verify(gameEventSender).sendToAllPlayers(fieldViewChangeEventCaptor.capture());
-            FieldViewChangeEvent capturedEvent = fieldViewChangeEventCaptor.getValue();
+            verify(gameEventSender).sendToAllPlayers(fieldStateChangeEventCaptor.capture());
+            FieldStateChangeEvent capturedEvent = fieldStateChangeEventCaptor.getValue();
             assertEquals(playerFields.size(), capturedEvent.getChanges().size());
         }
     }
