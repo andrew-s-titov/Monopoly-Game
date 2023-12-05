@@ -21,6 +21,7 @@ Websocket codes:
 317 - offer processed
 318 - offer sent
 350 - game stage changed
+500 - game connection error
 
 Http error code:
 401 - wrong player input

@@ -83,7 +83,7 @@ public class GameServiceImpl implements GameService {
             throw new PlayerInvalidInputException("Cannot start a game without at least 2 players");
         }
         game.startGame();
-        gameEventSender.sendToAllPlayers(gameEventGenerator.newMapRefreshEvent(game));
+        gameEventSender.sendToAllPlayers(gameEventGenerator.mapRefreshEvent(game));
         gameEventSender.sendToAllPlayers(new TurnStartEvent(game.getCurrentPlayer().getId()));
     }
 

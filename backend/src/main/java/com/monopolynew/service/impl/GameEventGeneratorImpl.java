@@ -5,6 +5,7 @@ import com.monopolynew.event.AuctionBuyProposalEvent;
 import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.GameMapRefreshEvent;
+import com.monopolynew.event.GameRoomEvent;
 import com.monopolynew.event.OfferProposalEvent;
 import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.game.Game;
@@ -13,6 +14,7 @@ import com.monopolynew.game.state.Auction;
 import com.monopolynew.game.state.BuyProposal;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
+import com.monopolynew.mapper.PlayerMapper;
 import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameFieldConverter;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,10 @@ import org.springframework.stereotype.Component;
 public class GameEventGeneratorImpl implements GameEventGenerator {
 
     private final GameFieldConverter gameFieldConverter;
+    private final PlayerMapper playerMapper;
 
     @Override
-    public GameMapRefreshEvent newMapRefreshEvent(Game game) {
+    public GameMapRefreshEvent mapRefreshEvent(Game game) {
         var purchasableFields = game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
@@ -35,7 +38,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     }
 
     @Override
-    public OfferProposalEvent newOfferProposalEvent(Game game) {
+    public OfferProposalEvent offerProposalEvent(Game game) {
         var offer = game.getOffer();
 
         var currentPlayer = game.getCurrentPlayer();
@@ -49,7 +52,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     }
 
     @Override
-    public AuctionBuyProposalEvent newAuctionBuyProposalEvent(Auction auction) {
+    public AuctionBuyProposalEvent auctionBuyProposalEvent(Auction auction) {
         return new AuctionBuyProposalEvent(
                 auction.getField().getId(),
                 auction.getAuctionPrice()
@@ -57,7 +60,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     }
 
     @Override
-    public AuctionRaiseProposalEvent newAuctionRaiseProposalEvent(Auction auction) {
+    public AuctionRaiseProposalEvent auctionRaiseProposalEvent(Auction auction) {
         return new AuctionRaiseProposalEvent(
                 auction.getCurrentParticipant().getId(),
                 auction.getField().getId(),
@@ -66,7 +69,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     }
 
     @Override
-    public BuyProposalEvent newBuyProposalEvent(BuyProposal buyProposal) {
+    public BuyProposalEvent buyProposalEvent(BuyProposal buyProposal) {
         var purchasableField = buyProposal.getField();
         return BuyProposalEvent.builder()
                 .playerId(buyProposal.getPlayerId())
@@ -77,9 +80,14 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
     }
 
     @Override
-    public PayCommandEvent newPayCommandEvent(CheckToPay checkToPay) {
+    public PayCommandEvent payCommandEvent(CheckToPay checkToPay) {
         var debtor = checkToPay.getDebtor();
         var debt = checkToPay.getDebt();
         return new PayCommandEvent(debtor.getId(), debt, debtor.getMoney() >= debt, checkToPay.isWiseToGiveUp());
+    }
+
+    @Override
+    public GameRoomEvent gameRoomEvent(Game game) {
+        return new GameRoomEvent(playerMapper.toPlayersShortInfoList(game.getPlayers()));
     }
 }

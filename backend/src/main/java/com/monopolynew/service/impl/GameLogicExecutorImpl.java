@@ -77,7 +77,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         var buyProposal = new BuyProposal(buyerId, field, payable);
         game.setBuyProposal(buyProposal);
         changeGameStage(game, GameStage.BUY_PROPOSAL);
-        gameEventSender.sendToPlayer(buyerId, gameEventGenerator.newBuyProposalEvent(buyProposal));
+        gameEventSender.sendToPlayer(buyerId, gameEventGenerator.buyProposalEvent(buyProposal));
     }
 
     @Override
