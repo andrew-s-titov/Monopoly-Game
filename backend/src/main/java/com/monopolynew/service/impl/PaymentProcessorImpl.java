@@ -15,6 +15,7 @@ import com.monopolynew.service.GameLogicExecutor;
 import com.monopolynew.service.PaymentProcessor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -29,7 +30,8 @@ public class PaymentProcessorImpl implements PaymentProcessor {
     private final GameEventGenerator gameEventGenerator;
 
     @Override
-    public void startPaymentProcess(Game game, Player player, Player beneficiary, int amount, String paymentComment) {
+    public void startPaymentProcess(Game game, @NonNull Player player, Player beneficiary,
+                                    int amount, String paymentComment) {
         var currentGameStage = game.getStage();
         verifyCheckCreationAvailable(currentGameStage);
         var newGameStage = GameStage.ROLLED_FOR_TURN.equals(currentGameStage) ?
