@@ -2,7 +2,6 @@ package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.CheckToPay;
 import com.monopolynew.dto.GameFieldView;
-import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.FieldViewChangeEvent;
 import com.monopolynew.event.MoneyChangeEvent;
@@ -76,7 +75,6 @@ class GameLogicExecutorImplTest {
             var game = mock(Game.class);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
-            when(game.getStage()).thenReturn(GameStage.TURN_START);
             var debtor = new Player("id-1", "player-1");
             var field1 = new StreetField(1, "field-1", 60, 50, new int[]{2, 10, 30, 90, 160, 250});
             field1.newOwner(debtor);
@@ -120,7 +118,6 @@ class GameLogicExecutorImplTest {
             var game = mock(Game.class);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
-            when(game.getStage()).thenReturn(GameStage.AWAITING_PAYMENT);
             var debtor = new Player("id-1", "player-1");
             var debtorInitialMoney = debtor.getMoney();
             var field1 = new StreetField(1, "field-1", 60, 50, new int[]{2, 10, 30, 90, 160, 250});
@@ -182,7 +179,6 @@ class GameLogicExecutorImplTest {
             var game = mock(Game.class);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
-            when(game.getStage()).thenReturn(GameStage.AWAITING_PAYMENT);
             var debtor = new Player("id-1", "player-1");
             var debtorInitialMoney = debtor.getMoney();
             var field1 = new StreetField(1, "field-1", 60, 50, new int[]{2, 10, 30, 90, 160, 250});

@@ -210,8 +210,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         var checkToPay = game.getCheckToPay();
         if (checkToPay != null) {
             var beneficiary = checkToPay.getBeneficiary();
-            var shouldProcessCheck = debtor.equals(checkToPay.getDebtor()) && beneficiary != null
-                    && GameStage.AWAITING_PAYMENT.equals(stage);
+            var shouldProcessCheck = debtor.equals(checkToPay.getDebtor()) && beneficiary != null;
             var debt = checkToPay.getDebt();
             if (shouldProcessCheck) {
                 var sumToTransfer = Math.min(playerMoneyLeft, debt);
@@ -261,15 +260,12 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private boolean isGameFinished(Game game) {
         Collection<Player> players = game.getPlayers();
-        long nonBankruptPlayers = players.stream()
+        var nonBankruptPlayers = players.stream()
                 .filter(p -> !p.isBankrupt())
                 .distinct()
-                .count();
-        if (nonBankruptPlayers == 1) {
-            Player winner = players.stream()
-                    .filter(p -> !p.isBankrupt())
-                    .findAny()
-                    .orElseThrow(() -> new IllegalStateException("failed to get last non-bankrupt player"));
+                .toList();
+        if (nonBankruptPlayers.size() == 1) {
+            Player winner = nonBankruptPlayers.get(0);
             game.finishGame();
             gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getId(), winner.getName()));
             return true;
