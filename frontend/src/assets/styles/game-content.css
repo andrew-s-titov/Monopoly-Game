@@ -252,10 +252,11 @@
 }
 
 .fireworks {
-    position: absolute;
+    position: fixed;
     top: 5vh;
     left: 5vw;
     background-color: transparent;
     width: 90vw;
     height: 90vh;
+    z-index: -1;
 }

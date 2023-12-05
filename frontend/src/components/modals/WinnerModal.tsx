@@ -54,6 +54,7 @@ const WinnerModal = ({ name }: IWinnerModalProps) => {
 
   return (
     <div className="winner-modal" id="winner-modal">
+      <div className="fireworks" id="fireworks"/>
       <i className="pi pi-star-fill pi-spin icon"/>
         <span>{`${name} is the winner!`}</span>
       <i className="pi pi-star-fill pi-spin animation-backwards"/>
