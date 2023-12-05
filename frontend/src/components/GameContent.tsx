@@ -5,7 +5,6 @@ const GameContent = () => {
 
   return (
     <div className='game-content-container'>
-      <div className="fireworks" id="fireworks"/>
       <PlayerContainer/>
       <GameMap/>
     </div>
