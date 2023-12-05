@@ -12,7 +12,7 @@ import {
   OfferProposalEvent,
   PayCommandEvent
 } from "../types/events";
-import { GameStages, PLAYER_COLORS, PROPERTY_FIELDS_DATA } from "../constants";
+import { PLAYER_COLORS, PROPERTY_FIELDS_DATA } from "../constants";
 import { UPropertyIndex } from "../types/unions";
 import RollDiceButton from "../components/RollDiceButton";
 import Dice from "../components/Dice";

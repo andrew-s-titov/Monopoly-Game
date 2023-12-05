@@ -51,7 +51,7 @@ public class AuctionManagerImpl implements AuctionManager {
             var player = auction.getNextPlayer();
             if (player.getMoney() >= auction.getAuctionPrice() + Rules.AUCTION_STEP) {
                 gameLogicExecutor.changeGameStage(game, GameStage.AWAITING_AUCTION_RAISE);
-                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.auctionRaiseProposalEvent(auction));
+                gameEventSender.sendToAllPlayers(gameEventGenerator.auctionRaiseProposalEvent(auction));
             } else {
                 // player can't afford to raise the stake - exclude from participants and proceed to next player
                 auction.removeParticipant();
@@ -60,9 +60,9 @@ public class AuctionManagerImpl implements AuctionManager {
         } else {
             var playerId = auction.getNextPlayer().getId();
             if (auction.isFirstCircle()) {
-                // if first circle - next playerId is the only participant: propose on start price
+                // if first circle - next playerId is the only participant: propose for start price
                 gameLogicExecutor.changeGameStage(game, GameStage.AWAITING_AUCTION_BUY);
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.auctionBuyProposalEvent(auction));
+                gameEventSender.sendToAllPlayers(gameEventGenerator.auctionBuyProposalEvent(auction));
             } else {
                 // automatically sell to the winner
                 gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), playerId);

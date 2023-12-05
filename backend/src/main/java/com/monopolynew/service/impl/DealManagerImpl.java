@@ -83,7 +83,7 @@ public class DealManagerImpl implements DealManager {
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
         gameEventSender.sendToPlayer(initiatorId, new OfferSentEvent());
-        gameEventSender.sendToPlayer(addresseeId, gameEventGenerator.offerProposalEvent(game));
+        gameEventSender.sendToAllPlayers(gameEventGenerator.offerProposalEvent(game));
     }
 
     @Override

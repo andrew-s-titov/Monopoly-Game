@@ -2,10 +2,8 @@ package com.monopolynew.service.impl;
 
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.JailReleaseProcessEvent;
-import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
-import com.monopolynew.game.Rules;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameMapRefresher;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +18,6 @@ public class GameMapRefresherImpl implements GameMapRefresher {
 
     @Override
     public void restoreGameStateForPlayer(Game game, String playerId) {
-        var player = game.getPlayerById(playerId);
         var currentPlayerId = game.getCurrentPlayer().getId();
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.mapRefreshEvent(game));
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.gameRoomEvent(game));
@@ -40,30 +37,12 @@ public class GameMapRefresherImpl implements GameMapRefresher {
                     gameEventSender.sendToPlayer(playerId, gameEventGenerator.buyProposalEvent(game.getBuyProposal()));
                     break;
                 }
-                case AWAITING_AUCTION_BUY: {
-                    var auction = game.getAuction();
-                    if (playerId.equals(auction.getCurrentParticipant().getId())) {
-                        gameEventSender.sendToPlayer(playerId, gameEventGenerator.auctionBuyProposalEvent(auction));
-                    }
-                    break;
-                }
-                case AWAITING_AUCTION_RAISE: {
-                    var auction = game.getAuction();
-                    if (playerId.equals(auction.getCurrentParticipant().getId())) {
-                        gameEventSender.sendToPlayer(playerId, gameEventGenerator.auctionRaiseProposalEvent(auction));
-                    }
-                    break;
-                }
                 case AWAITING_PAYMENT, AWAITING_JAIL_FINE: {
                     gameEventSender.sendToPlayer(playerId, gameEventGenerator.payCommandEvent(game.getCheckToPay()));
                     break;
                 }
                 case ROLLED_FOR_JAIL, ROLLED_FOR_TURN: {
                     gameEventSender.sendToAllPlayers(gameEventGenerator.diceResultEvent(game));
-                    break;
-                }
-                case DEAL_OFFER: {
-                    gameEventSender.sendToPlayer(currentPlayerId, new OfferSentEvent());
                     break;
                 }
                 default:
