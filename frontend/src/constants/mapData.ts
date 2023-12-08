@@ -118,6 +118,7 @@ export const PROPERTY_FIELDS_DATA: Record<UPropertyIndex, PropertyStaticData> = 
     name: 'Hamburg',
     group: PropertyGroup.mustard,
     price: 260,
+    housePrice: 150,
   },
   28: {
     name: 'Petrol Company',
