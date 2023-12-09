@@ -1,10 +1,9 @@
-package com.monopolynew.dto;
+package com.monopolynew.game.procedure;
 
 import com.monopolynew.game.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @AllArgsConstructor
 @Builder
@@ -16,9 +15,6 @@ public class CheckToPay {
     private final Player beneficiary;
 
     private final int debt;
-
-    @Setter
-    private boolean payable;
 
     private final boolean wiseToGiveUp;
 

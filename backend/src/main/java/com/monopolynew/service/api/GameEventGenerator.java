@@ -1,6 +1,6 @@
 package com.monopolynew.service.api;
 
-import com.monopolynew.dto.CheckToPay;
+import com.monopolynew.game.procedure.CheckToPay;
 import com.monopolynew.event.AuctionBuyProposalEvent;
 import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.BuyProposalEvent;
@@ -10,8 +10,8 @@ import com.monopolynew.event.GameRoomEvent;
 import com.monopolynew.event.OfferProposalEvent;
 import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.game.Game;
-import com.monopolynew.game.state.Auction;
-import com.monopolynew.game.state.BuyProposal;
+import com.monopolynew.game.procedure.Auction;
+import com.monopolynew.game.procedure.BuyProposal;
 
 public interface GameEventGenerator {
 

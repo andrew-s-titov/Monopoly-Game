@@ -9,7 +9,7 @@ import com.monopolynew.game.Rules;
 import com.monopolynew.map.FieldAction;
 import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.service.api.GameLogicExecutor;
-import com.monopolynew.service.fieldactionexecutors.api.FieldActionExecutor;
+import com.monopolynew.service.api.FieldActionExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ import java.util.Collections;
 public class StartFieldActionExecutor implements FieldActionExecutor {
 
     @Getter
-    private static final FieldAction fieldAction = FieldAction.START;
+    private final FieldAction fieldAction = FieldAction.START;
 
     private final GameEventSender gameEventSender;
     private final GameLogicExecutor gameLogicExecutor;

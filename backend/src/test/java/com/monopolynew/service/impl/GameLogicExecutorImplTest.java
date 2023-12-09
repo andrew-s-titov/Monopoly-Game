@@ -1,6 +1,6 @@
 package com.monopolynew.service.impl;
 
-import com.monopolynew.dto.CheckToPay;
+import com.monopolynew.game.procedure.CheckToPay;
 import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.FieldStateChangeEvent;
@@ -11,9 +11,9 @@ import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
+import com.monopolynew.mapper.GameFieldMapper;
 import com.monopolynew.service.GameLogicExecutorImpl;
 import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameFieldConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -43,7 +43,7 @@ class GameLogicExecutorImplTest {
     @Mock
     GameEventSender gameEventSender;
     @Mock
-    GameFieldConverter gameFieldConverter;
+    GameFieldMapper gameFieldMapper;
     @Captor
     ArgumentCaptor<FieldStateChangeEvent> fieldStateChangeEventCaptor;
 
@@ -58,7 +58,7 @@ class GameLogicExecutorImplTest {
         @SuppressWarnings("unchecked")
         @BeforeEach
         void setUpFieldConverter() {
-            when(gameFieldConverter.toListView(anyList())).thenAnswer(invocation ->
+            when(gameFieldMapper.toStateList(anyList())).thenAnswer(invocation ->
                     invocation.getArgument(0, List.class).stream()
                             .map(field -> GameFieldState.builder().build())
                             .toList());

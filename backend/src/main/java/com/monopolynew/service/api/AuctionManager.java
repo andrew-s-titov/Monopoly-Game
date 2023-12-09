@@ -3,6 +3,7 @@ package com.monopolynew.service.api;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.game.Game;
 import com.monopolynew.map.PurchasableField;
+import org.springframework.lang.NonNull;
 
 public interface AuctionManager {
 
@@ -10,7 +11,7 @@ public interface AuctionManager {
 
     void auctionStep(Game game);
 
-    void processAuctionBuyProposal(Game game, ProposalAction action);
+    void processAuctionBuyProposal(Game game, @NonNull ProposalAction action);
 
-    void processAuctionRaiseProposal(Game game, ProposalAction action);
+    void processAuctionRaiseProposal(Game game, @NonNull ProposalAction action);
 }

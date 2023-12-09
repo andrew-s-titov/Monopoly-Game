@@ -1,7 +1,6 @@
 package com.monopolynew.service;
 
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.MoneyChangeEvent;
@@ -14,14 +13,13 @@ import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
+import com.monopolynew.mapper.GameFieldMapper;
 import com.monopolynew.service.api.FieldManagementService;
 import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameFieldConverter;
 import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -31,37 +29,8 @@ import java.util.function.BiConsumer;
 public class FieldManagementServiceImpl implements FieldManagementService {
 
     private final GameEventSender gameEventSender;
-    private final GameFieldConverter gameFieldConverter;
+    private final GameFieldMapper gameFieldMapper;
     private final GameLogicExecutor gameLogicExecutor;
-
-    @Override
-    public List<FieldManagementAction> availableManagementActions(Game game, int fieldIndex, String playerId) {
-        checkFieldExists(fieldIndex);
-        GameField field = game.getGameMap().getField(fieldIndex);
-        List<FieldManagementAction> actions = new ArrayList<>(FieldManagementAction.values().length);
-        if (field instanceof PurchasableField purchasableField && !managementNotAvailable(game.getStage())) {
-            actions.add(FieldManagementAction.INFO);
-            if (!managementNotAvailable(game.getStage())) {
-                Player currentPlayer = game.getCurrentPlayer();
-                if (currentPlayer.getId().equals(playerId) && currentPlayer.equals(purchasableField.getOwner())) {
-                    if (redemptionAvailable(game, purchasableField)) {
-                        actions.add(FieldManagementAction.REDEEM);
-                    } else if (mortgageAvailable(game, purchasableField)) {
-                        actions.add(FieldManagementAction.MORTGAGE);
-                    }
-                    if (purchasableField instanceof StreetField streetField) {
-                        if (houseSaleAvailable(game, streetField)) {
-                            actions.add(FieldManagementAction.SELL_HOUSE);
-                        }
-                        if (housePurchaseAvailable(game, currentPlayer, streetField)) {
-                            actions.add(FieldManagementAction.BUY_HOUSE);
-                        }
-                    }
-                }
-            }
-        }
-        return actions;
-    }
 
     @Override
     public void mortgageField(Game game, int fieldIndex, String playerId) {
@@ -73,7 +42,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                 gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
-                        Collections.singletonList(gameFieldConverter.toView(f))));
+                        Collections.singletonList(gameFieldMapper.toState(f))));
                 return;
             }
             throw new ClientBadRequestException("Cannot mortgage street with houses");
@@ -90,7 +59,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                 gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
-                        Collections.singletonList(gameFieldConverter.toView(f))));
+                        Collections.singletonList(gameFieldMapper.toState(f))));
                 return;
             }
             throw new ClientBadRequestException("Cannot redeem property - not enough money");
@@ -235,6 +204,6 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
         gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
-                Collections.singletonList(gameFieldConverter.toView(streetField))));
+                Collections.singletonList(gameFieldMapper.toState(streetField))));
     }
 }

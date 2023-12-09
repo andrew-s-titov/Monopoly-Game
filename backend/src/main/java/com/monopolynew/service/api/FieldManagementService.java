@@ -1,16 +1,11 @@
 package com.monopolynew.service.api;
 
-import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 
-import java.util.List;
-
 public interface FieldManagementService {
-
-    List<FieldManagementAction> availableManagementActions(Game game, int fieldIndex, String playerId);
 
     void mortgageField(Game game, int fieldIndex, String playerId);
 

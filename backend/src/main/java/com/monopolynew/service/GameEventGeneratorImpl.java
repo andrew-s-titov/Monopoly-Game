@@ -1,7 +1,5 @@
 package com.monopolynew.service;
 
-import com.monopolynew.dto.CheckToPay;
-import com.monopolynew.dto.DiceResult;
 import com.monopolynew.event.AuctionBuyProposalEvent;
 import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.BuyProposalEvent;
@@ -12,13 +10,15 @@ import com.monopolynew.event.OfferProposalEvent;
 import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
-import com.monopolynew.game.state.Auction;
-import com.monopolynew.game.state.BuyProposal;
+import com.monopolynew.game.procedure.Auction;
+import com.monopolynew.game.procedure.BuyProposal;
+import com.monopolynew.game.procedure.CheckToPay;
+import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
+import com.monopolynew.mapper.GameFieldMapper;
 import com.monopolynew.mapper.PlayerMapper;
 import com.monopolynew.service.api.GameEventGenerator;
-import com.monopolynew.service.api.GameFieldConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GameEventGeneratorImpl implements GameEventGenerator {
 
-    private final GameFieldConverter gameFieldConverter;
+    private final GameFieldMapper gameFieldMapper;
     private final PlayerMapper playerMapper;
 
     @Override
@@ -35,7 +35,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
                 .toList();
-        var gameFieldViews = gameFieldConverter.toListView(purchasableFields);
+        var gameFieldViews = gameFieldMapper.toStateList(purchasableFields);
         return new GameMapRefreshEvent(game.getPlayers(), gameFieldViews, game.getCurrentPlayer().getId());
     }
 

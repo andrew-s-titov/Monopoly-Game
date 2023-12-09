@@ -1,6 +1,5 @@
 package com.monopolynew.service;
 
-import com.monopolynew.dto.DiceResult;
 import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.dto.PropertyPrice;
@@ -17,15 +16,16 @@ import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
-import com.monopolynew.game.state.BuyProposal;
+import com.monopolynew.game.procedure.BuyProposal;
+import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.map.CompanyField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
+import com.monopolynew.mapper.GameFieldMapper;
 import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameFieldConverter;
 import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
@@ -42,7 +42,7 @@ import java.util.List;
 public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private final GameEventSender gameEventSender;
-    private final GameFieldConverter gameFieldConverter;
+    private final GameFieldMapper gameFieldMapper;
     private final GameEventGenerator gameEventGenerator;
 
     @Override
@@ -88,7 +88,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
 
-        List<GameFieldState> newPriceViews;
+        List<GameFieldState> newPriceStates;
         List<PurchasableField> fieldGroup = PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId());
         if (field instanceof StreetField streetField) {
             boolean allGroupOwnedByTheSameOwner = fieldGroup.stream()
@@ -100,12 +100,10 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 fieldGroup.stream()
                         .map(StreetField.class::cast)
                         .forEach(strField -> strField.setNewRent(true));
-                newPriceViews = fieldGroup.stream()
-                        .map(gameFieldConverter::toView)
-                        .toList();
+                newPriceStates = gameFieldMapper.toStateList(fieldGroup);
             } else {
                 streetField.setNewRent(false);
-                newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
+                newPriceStates = Collections.singletonList(gameFieldMapper.toState(field));
             }
         } else if (field instanceof CompanyField companyField) {
             List<CompanyField> playerCompanyFields = fieldGroup.stream()
@@ -117,12 +115,10 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             if (ownedByTheSamePlayer > 1) {
                 playerCompanyFields
                         .forEach(compField -> compField.setNewRent(ownedByTheSamePlayer));
-                newPriceViews = playerCompanyFields.stream()
-                        .map(gameFieldConverter::toView)
-                        .toList();
+                newPriceStates = gameFieldMapper.toStateList(playerCompanyFields);
             } else {
                 companyField.setNewRent(ownedByTheSamePlayer);
-                newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
+                newPriceStates = Collections.singletonList(gameFieldMapper.toState(field));
             }
         } else if (field instanceof UtilityField) {
             boolean increasedMultiplier = fieldGroup.stream()
@@ -133,17 +129,14 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 fieldGroup.stream()
                         .map(UtilityField.class::cast)
                         .forEach(UtilityField::increaseMultiplier);
-                newPriceViews = fieldGroup.stream()
-                        .map(UtilityField.class::cast)
-                        .map(gameFieldConverter::toView)
-                        .toList();
+                newPriceStates = gameFieldMapper.toStateList(fieldGroup);
             } else {
-                newPriceViews = Collections.singletonList(gameFieldConverter.toView(field));
+                newPriceStates = Collections.singletonList(gameFieldMapper.toState(field));
             }
         } else {
             throw new IllegalStateException("Unsupported field type");
         }
-        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newPriceViews));
+        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newPriceStates));
     }
 
     @Override
@@ -174,7 +167,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         Player currentPlayer = game.getCurrentPlayer();
 
         Player nextPlayer;
-        if (!currentPlayer.isAmnestied() && game.getLastDice() != null && game.getLastDice().isDoublet()
+        if (!currentPlayer.isJustAmnestied() && game.getLastDice() != null && game.getLastDice().isDoublet()
                 && !currentPlayer.isBankrupt() && !currentPlayer.isSkipping() && !currentPlayer.isImprisoned()) {
             nextPlayer = currentPlayer;
         } else {
@@ -225,7 +218,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 removeFieldHouses(field);
             }
             gameEventSender.sendToAllPlayers(
-                    new FieldStateChangeEvent(gameFieldConverter.toListView(playerFieldsLeft)));
+                    new FieldStateChangeEvent(gameFieldMapper.toStateList(playerFieldsLeft)));
         }
         if (!CollectionUtils.isEmpty(moneyStatesToSend)) {
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStatesToSend));
@@ -299,7 +292,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                         if (mortgageTurns == 0) {
                             field.newOwner(null);
                         }
-                        updatedFieldStates.add(gameFieldConverter.toView(field));
+                        updatedFieldStates.add(gameFieldMapper.toState(field));
                     }
                 });
         if (!CollectionUtils.isEmpty(updatedFieldStates)) {

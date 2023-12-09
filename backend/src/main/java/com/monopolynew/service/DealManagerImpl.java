@@ -9,8 +9,6 @@ import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.OfferProcessedEvent;
-import com.monopolynew.event.OfferSentEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -18,17 +16,17 @@ import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
-import com.monopolynew.game.state.Offer;
+import com.monopolynew.game.procedure.Offer;
 import com.monopolynew.map.CompanyField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
+import com.monopolynew.mapper.GameFieldMapper;
 import com.monopolynew.service.api.DealManager;
 import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameFieldConverter;
 import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -46,7 +44,7 @@ import java.util.stream.Collectors;
 public class DealManagerImpl implements DealManager {
 
     private final GameEventGenerator gameEventGenerator;
-    private final GameFieldConverter gameFieldConverter;
+    private final GameFieldMapper gameFieldMapper;
     private final GameEventSender gameEventSender;
     private final GameLogicExecutor gameLogicExecutor;
 
@@ -82,7 +80,6 @@ public class DealManagerImpl implements DealManager {
         game.setOffer(newOffer);
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
-        gameEventSender.sendToPlayer(initiatorId, new OfferSentEvent());
         gameEventSender.sendToAllPlayers(gameEventGenerator.offerProposalEvent(game));
     }
 
@@ -110,7 +107,6 @@ public class DealManagerImpl implements DealManager {
         GameStage stageToReturnTo = offer.getStageToReturnTo();
         gameLogicExecutor.changeGameStage(game, stageToReturnTo);
         String initiatorId = initiator.getId();
-        gameEventSender.sendToPlayer(initiatorId, new OfferProcessedEvent());
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
             gameEventSender.sendToPlayer(initiatorId, new TurnStartEvent(initiatorId));
         }
@@ -226,14 +222,14 @@ public class DealManagerImpl implements DealManager {
                 .map(field -> PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId()))
                 .collect(Collectors.toSet());
         List<GameFieldState> fieldViewsToSend = new ArrayList<>();
-        fieldGroupsToCheck.forEach(group -> fieldViewsToSend.addAll(recalculateFieldGroupPrices(game, group)));
+        fieldGroupsToCheck.forEach(group -> fieldViewsToSend.addAll(recalculateFieldGroupPrices(group)));
 
         if (!CollectionUtils.isEmpty(fieldViewsToSend)) {
             gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(fieldViewsToSend));
         }
     }
 
-    private List<GameFieldState> recalculateFieldGroupPrices(Game game, List<PurchasableField> fieldGroup) {
+    private List<GameFieldState> recalculateFieldGroupPrices(List<PurchasableField> fieldGroup) {
         var ownedFields = fieldGroup.stream()
                 .filter(field -> !field.isFree())
                 .toList();
@@ -258,7 +254,7 @@ public class DealManagerImpl implements DealManager {
                 ((CompanyField) ownedField).setNewRent((int) ownedByTheSameOwner);
             });
         } else if (anyGroupField instanceof UtilityField) {
-            boolean increasedMultiplier = fieldGroup.size() == ownedFields.size()
+            boolean shouldIncreaseMultiplier = fieldGroup.size() == ownedFields.size()
                     && 1 == ownedFields.stream()
                     .map(PurchasableField::getOwner)
                     .distinct()
@@ -266,7 +262,7 @@ public class DealManagerImpl implements DealManager {
             ownedFields.stream()
                     .map(UtilityField.class::cast)
                     .forEach(field -> {
-                        if (increasedMultiplier) {
+                        if (shouldIncreaseMultiplier) {
                             field.increaseMultiplier();
                         } else {
                             field.decreaseMultiplier();
@@ -275,7 +271,7 @@ public class DealManagerImpl implements DealManager {
         } else {
             throw new IllegalStateException("Unsupported field type");
         }
-        return gameFieldConverter.toListView(ownedFields);
+        return gameFieldMapper.toStateList(ownedFields);
     }
 
     private boolean processOfferFieldExchange(List<PurchasableField> fields, Player newOwner) {

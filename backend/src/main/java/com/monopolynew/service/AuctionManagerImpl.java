@@ -7,13 +7,14 @@ import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
-import com.monopolynew.game.state.Auction;
+import com.monopolynew.game.procedure.Auction;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.api.AuctionManager;
 import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -72,10 +73,10 @@ public class AuctionManagerImpl implements AuctionManager {
     }
 
     @Override
-    public void processAuctionBuyProposal(Game game, ProposalAction action) {
+    public void processAuctionBuyProposal(Game game, @NonNull ProposalAction action) {
+        Assert.notNull(action, NULL_ARG_MESSAGE);
         var auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_BUY, auction);
-        Assert.notNull(action, NULL_ARG_MESSAGE);
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             var buyerId = auction.getCurrentParticipant().getId();
@@ -87,10 +88,10 @@ public class AuctionManagerImpl implements AuctionManager {
     }
 
     @Override
-    public void processAuctionRaiseProposal(Game game, ProposalAction action) {
+    public void processAuctionRaiseProposal(Game game, @NonNull ProposalAction action) {
+        Assert.notNull(action, NULL_ARG_MESSAGE);
         Auction auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_RAISE, auction);
-        Assert.notNull(action, NULL_ARG_MESSAGE);
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();

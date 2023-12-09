@@ -1,12 +1,10 @@
 package com.monopolynew.service;
 
 import com.monopolynew.dto.DealOffer;
-import com.monopolynew.dto.DiceResult;
+import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
-import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
@@ -19,7 +17,7 @@ import com.monopolynew.game.Dice;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
-import com.monopolynew.game.state.BuyProposal;
+import com.monopolynew.game.procedure.BuyProposal;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.api.AuctionManager;
@@ -33,13 +31,12 @@ import com.monopolynew.service.api.GameService;
 import com.monopolynew.service.api.PaymentProcessor;
 import com.monopolynew.service.api.StepProcessor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
 
@@ -95,7 +92,7 @@ public class GameServiceImpl implements GameService {
         var currentGameStage = game.getStage();
         var currentPlayer = game.getCurrentPlayer();
         if (lastDice.isDoublet()) {
-            if (GameStage.ROLLED_FOR_TURN.equals(currentGameStage) && !currentPlayer.isAmnestied()) {
+            if (GameStage.ROLLED_FOR_TURN.equals(currentGameStage) && !currentPlayer.isJustAmnestied()) {
                 currentPlayer.incrementDoublets();
             }
         } else {
@@ -170,13 +167,13 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void processBuyProposal(ProposalAction action) {
+    public void processBuyProposal(@NonNull ProposalAction action) {
+        Assert.notNull(action, NULL_ARG_MESSAGE);
         Game game = gameRepository.getGame();
         BuyProposal buyProposal = game.getBuyProposal();
         if (!GameStage.BUY_PROPOSAL.equals(game.getStage()) || buyProposal == null) {
             throw new WrongGameStageException("Cannot call buy proposal endpoint when there's no proposal");
         }
-        Assert.notNull(action, NULL_ARG_MESSAGE);
         // TODO: 'security' risk: check if player id matches the proposal id
         var buyerId = buyProposal.getPlayerId();
         PurchasableField field = buyProposal.getField();
@@ -203,12 +200,12 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void processJailAction(JailAction jailAction) {
+    public void processJailAction(@NonNull JailAction jailAction) {
+        Assert.notNull(jailAction, NULL_ARG_MESSAGE);
         Game game = gameRepository.getGame();
         if (!GameStage.JAIL_RELEASE_START.equals(game.getStage())) {
             throw new WrongGameStageException("Cannot process jail action - wrong game stage");
         }
-        Assert.notNull(jailAction, NULL_ARG_MESSAGE);
         Player currentPlayer = game.getCurrentPlayer();
         if (jailAction.equals(JailAction.PAY)) {
             if (currentPlayer.getMoney() < Rules.JAIL_BAIL) {
@@ -240,30 +237,6 @@ public class GameServiceImpl implements GameService {
         Player player = game.getPlayerById(playerId);
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " gave up"));
         gameLogicExecutor.bankruptPlayer(game, player);
-    }
-
-    @Override
-    public List<FieldManagementAction> availableFieldManagementActions(int fieldIndex, String playerId) {
-        var game = gameRepository.getGame();
-        return fieldManagementService.availableManagementActions(game, fieldIndex, playerId);
-    }
-
-    @Override
-    public List<PlayerManagementAction> availablePlayerManagementActions(String requestingPlayerId, String subjectPlayerId) {
-        var game = gameRepository.getGame();
-        List<PlayerManagementAction> actions = new ArrayList<>(3);
-
-        if (requestingPlayerId.equals(subjectPlayerId)) {
-            actions.add(PlayerManagementAction.GIVE_UP);
-        } else {
-            var currentPlayer = game.getCurrentPlayer();
-            var gameStage = game.getStage();
-            if (currentPlayer.getId().equals(requestingPlayerId) &&
-                    (GameStage.TURN_START.equals(gameStage) || GameStage.JAIL_RELEASE_START.equals(gameStage))) {
-                actions.add(PlayerManagementAction.OFFER);
-            }
-        }
-        return actions;
     }
 
     @Override

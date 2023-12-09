@@ -2,7 +2,7 @@ package com.monopolynew.service.api;
 
 import com.monopolynew.game.Game;
 
-public interface ChanceExecutor {
+public interface ChanceCardProvider {
 
-    void executeChance(Game game);
+    void applyNextCard(Game game);
 }

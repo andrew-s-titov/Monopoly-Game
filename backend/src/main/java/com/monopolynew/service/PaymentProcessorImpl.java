@@ -1,6 +1,6 @@
 package com.monopolynew.service;
 
-import com.monopolynew.dto.CheckToPay;
+import com.monopolynew.game.procedure.CheckToPay;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.ChatMessageEvent;
@@ -39,7 +39,13 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         boolean payable = player.getMoney() >= amount;
         if (payable) {
             gameLogicExecutor.changeGameStage(game, newGameStage);
-            var checkToPay = new CheckToPay(player, beneficiary, amount, true, false, paymentComment);
+            var checkToPay = CheckToPay.builder()
+                    .debtor(player)
+                    .beneficiary(beneficiary)
+                    .debt(amount)
+                    .wiseToGiveUp(false)
+                    .comment(paymentComment)
+                    .build();
             game.setCheckToPay(checkToPay);
             gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.payCommandEvent(checkToPay));
         } else {
@@ -47,8 +53,13 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 gameLogicExecutor.changeGameStage(game, newGameStage);
-                var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.85 < amount,
-                        paymentComment);
+                var checkToPay = CheckToPay.builder()
+                        .debtor(player)
+                        .beneficiary(beneficiary)
+                        .debt(amount)
+                        .wiseToGiveUp(assets * 0.85 < amount)
+                        .comment(paymentComment)
+                        .build();
                 game.setCheckToPay(checkToPay);
                 gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.payCommandEvent(checkToPay));
             } else {

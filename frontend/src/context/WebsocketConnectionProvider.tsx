@@ -95,11 +95,11 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 },
               }
             }, {} as Record<string, PlayerState>),
-            propertyStates: fields.reduce((acc, { id, houses, ownerId, mortgage, priceTag }) => {
+            propertyStates: fields.reduce((acc, { id, houses, ownerId, mortgaged, priceTag }) => {
               return {
                 ...acc,
                 [id]: {
-                  isMortgaged: mortgage,
+                  isMortgaged: mortgaged,
                   ownerId,
                   houses,
                   priceTag,
@@ -191,12 +191,12 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             const newState = {
               ...prevState
             }
-            changes.forEach(({ id, ownerId, houses, mortgage, priceTag }) => {
+            changes.forEach(({ id, ownerId, houses, mortgaged, priceTag }) => {
               newState.propertyStates[id] = {
                 ...newState.propertyStates[id],
                 ownerId,
                 houses,
-                isMortgaged: mortgage,
+                isMortgaged: mortgaged,
                 priceTag,
               }
             })

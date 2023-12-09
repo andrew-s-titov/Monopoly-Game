@@ -95,9 +95,11 @@ public class Player {
      * @return true if player was released from prison because of doublet on dice throw, false if not.
      * If true is returned, next invocation will return false (the flag is dropped)
      */
-    public boolean isAmnestied() {
+    public boolean isJustAmnestied() {
         boolean result = this.amnestied;
-        if (amnestied) this.amnestied = false;
+        if (amnestied) {
+            this.amnestied = false;
+        }
         return result;
     }
 

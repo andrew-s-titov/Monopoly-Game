@@ -58,5 +58,4 @@ public class PurchasableFieldGroups {
     private PurchasableFieldGroups() {
         // NO-OP
     }
-
 }

@@ -1,12 +1,9 @@
 package com.monopolynew.service.api;
 
 import com.monopolynew.dto.DealOffer;
-import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.JailAction;
-import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
-
-import java.util.List;
+import org.springframework.lang.NonNull;
 
 public interface GameService {
 
@@ -26,21 +23,17 @@ public interface GameService {
 
     void afterPlayerMoveAction();
 
-    void processBuyProposal(ProposalAction action);
+    void processBuyProposal(@NonNull ProposalAction action);
 
     void processAuctionBuyProposal(ProposalAction action);
 
     void processAuctionRaiseProposal(ProposalAction action);
 
-    void processJailAction(JailAction jailAction);
+    void processJailAction(@NonNull JailAction jailAction);
 
     void processPayment();
 
     void giveUp(String playerId);
-
-    List<FieldManagementAction> availableFieldManagementActions(int fieldIndex, String playerId);
-
-    List<PlayerManagementAction> availablePlayerManagementActions(String requestingPlayerId, String subjectPlayerId);
 
     void mortgageField(int fieldIndex, String playerId);
 

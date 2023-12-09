@@ -1,6 +1,6 @@
 package com.monopolynew.service.api;
 
-import com.monopolynew.dto.DiceResult;
+import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;

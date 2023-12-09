@@ -1,4 +1,4 @@
-package com.monopolynew.game.state;
+package com.monopolynew.game.procedure;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -27,9 +27,9 @@ public class Auction {
         this.auctionPrice = field.getPrice();
         Player auctionInitiator = game.getCurrentPlayer();
         this.participants = game.getPlayers().stream()
-                .filter(player -> !player.equals(auctionInitiator))
-                .filter(player -> !player.isBankrupt())
-                .filter(player -> player.getMoney() >= auctionPrice)
+                .filter(player -> !player.equals(auctionInitiator)
+                        && !player.isBankrupt()
+                        && player.getMoney() >= auctionPrice)
                 .toList();
         this.playerIterator = participants.iterator();
     }

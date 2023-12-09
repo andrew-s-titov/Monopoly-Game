@@ -1,10 +1,10 @@
 import { UPropertyIndex } from "./unions";
 
-interface FieldView {
+interface FieldState {
   id: UPropertyIndex,
   houses: number,
   ownerId?: string,
-  mortgage: boolean,
+  mortgaged: boolean,
   priceTag: string,
 }
 
@@ -16,7 +16,7 @@ export interface GameMapRefreshEvent {
     position: number,
     bankrupt: boolean,
   }[],
-  fields: FieldView[],
+  fields: FieldState[],
   currentPlayer: string,
 }
 
@@ -46,7 +46,7 @@ export interface MoneyChangeEvent {
 }
 
 export interface FieldChangeEvent {
-  changes: FieldView[],
+  changes: FieldState[],
 }
 
 export interface PayCommandEvent {

@@ -2,8 +2,8 @@ package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.api.ChanceExecutor;
-import com.monopolynew.service.fieldactionexecutors.api.FieldActionExecutor;
+import com.monopolynew.service.api.ChanceCardProvider;
+import com.monopolynew.service.api.FieldActionExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 public class ChanceFieldActionExecutor implements FieldActionExecutor {
 
     @Getter
-    private static final FieldAction fieldAction = FieldAction.CHANCE;
+    private final FieldAction fieldAction = FieldAction.CHANCE;
 
-    private final ChanceExecutor chanceExecutor;
+    private final ChanceCardProvider chanceCardProvider;
 
     @Override
     public void executeAction(Game game) {
-        chanceExecutor.executeChance(game);
+        chanceCardProvider.applyNextCard(game);
     }
 }

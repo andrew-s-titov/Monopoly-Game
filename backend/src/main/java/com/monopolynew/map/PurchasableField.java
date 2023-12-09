@@ -27,4 +27,6 @@ public interface PurchasableField extends GameField {
     int decreaseMortgageTurns();
 
     int getMortgageTurnsLeft();
+
+    String getName();
 }

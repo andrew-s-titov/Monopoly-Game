@@ -45,6 +45,7 @@ public class StepProcessorImpl implements StepProcessor {
             } else if (field instanceof UtilityField utilityField) {
                 rent = utilityField.getRent(game.getLastDice());
             } else {
+                // normally shouldn't happen
                 throw new IllegalStateException("Failed to compute rent - unknown field type");
             }
             initiateRentPayment(game, currentPlayer, field, rent);

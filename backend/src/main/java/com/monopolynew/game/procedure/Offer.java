@@ -1,4 +1,4 @@
-package com.monopolynew.game.state;
+package com.monopolynew.game.procedure;
 
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.game.Player;

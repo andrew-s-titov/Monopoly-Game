@@ -1,4 +1,4 @@
-package com.monopolynew.dto;
+package com.monopolynew.game.procedure;
 
 import lombok.Getter;
 
