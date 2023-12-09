@@ -1,6 +1,6 @@
 package com.monopolynew.game;
 
-import com.monopolynew.dto.DiceResult;
+import com.monopolynew.game.procedure.DiceResult;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;

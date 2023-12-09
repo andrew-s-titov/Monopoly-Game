@@ -2,13 +2,14 @@ package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
-import com.monopolynew.service.PaymentProcessor;
+import com.monopolynew.service.api.PaymentProcessor;
+import com.monopolynew.service.api.FieldActionExecutor;
 
 public abstract class TaxFieldActionExecutor implements FieldActionExecutor {
 
     private final PaymentProcessor paymentProcessor;
 
-    public TaxFieldActionExecutor(PaymentProcessor paymentProcessor) {
+    protected TaxFieldActionExecutor(PaymentProcessor paymentProcessor) {
         this.paymentProcessor = paymentProcessor;
     }
 

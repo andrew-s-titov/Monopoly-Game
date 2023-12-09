@@ -2,7 +2,7 @@ package com.monopolynew.advice;
 
 import com.monopolynew.dto.ErrorDTO;
 import com.monopolynew.exception.BadRequestException;
-import com.monopolynew.exception.ExceptionCode;
+import com.monopolynew.enums.BadRequestCode;
 import com.monopolynew.exception.WrongGameStageException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    private static final String UNEXPECTED = "Unexpected server error: ";
+    private static final String UNEXPECTED = "Unexpected server error";
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     public ErrorDTO resolveBadRequest(HttpMessageNotReadableException exception) {
         return ErrorDTO.builder()
                 .message(exception.getMessage())
-                .code(ExceptionCode.CLIENT_REQUEST.getCode())
+                .code(BadRequestCode.CLIENT_REQUEST.getCode())
                 .build();
     }
 
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     public ErrorDTO resolveServerError(Exception exception) {
         log.error(UNEXPECTED, exception);
         return ErrorDTO.builder()
-                .message(UNEXPECTED + exception.getMessage())
+                .message(UNEXPECTED)
                 .build();
     }
 }

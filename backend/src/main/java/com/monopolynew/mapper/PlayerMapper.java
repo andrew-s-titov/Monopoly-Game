@@ -1,6 +1,6 @@
 package com.monopolynew.mapper;
 
-import com.monopolynew.dto.PlayerShortInfo;
+import com.monopolynew.dto.PlayerGameRoomInfo;
 import com.monopolynew.game.Player;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,7 +13,7 @@ import java.util.List;
 public interface PlayerMapper {
 
     @Mapping(target = "playerId", source = "id")
-    PlayerShortInfo toPlayerShortInfo(Player player);
+    PlayerGameRoomInfo toPlayerShortInfo(Player player);
 
-    List<PlayerShortInfo> toPlayersShortInfoList(Collection<Player> players);
+    List<PlayerGameRoomInfo> toPlayersShortInfoList(Collection<Player> players);
 }

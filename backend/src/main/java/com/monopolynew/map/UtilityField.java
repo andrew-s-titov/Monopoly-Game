@@ -1,6 +1,6 @@
 package com.monopolynew.map;
 
-import com.monopolynew.dto.DiceResult;
+import com.monopolynew.game.procedure.DiceResult;
 import lombok.Getter;
 
 import java.util.Objects;

@@ -1,11 +1,11 @@
 package com.monopolynew.game;
 
-import com.monopolynew.dto.CheckToPay;
-import com.monopolynew.dto.DiceResult;
+import com.monopolynew.game.procedure.CheckToPay;
+import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.enums.GameStage;
-import com.monopolynew.game.state.Auction;
-import com.monopolynew.game.state.BuyProposal;
-import com.monopolynew.game.state.Offer;
+import com.monopolynew.game.procedure.Auction;
+import com.monopolynew.game.procedure.BuyProposal;
+import com.monopolynew.game.procedure.Offer;
 import com.monopolynew.map.GameMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

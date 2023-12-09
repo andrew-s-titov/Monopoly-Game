@@ -15,9 +15,6 @@ public class GameFieldState {
     private final String name;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private final Integer group;
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final Integer houses;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -26,5 +23,5 @@ public class GameFieldState {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final String priceTag;
 
-    private final boolean mortgage;
+    private final boolean mortgaged;
 }

@@ -37,7 +37,7 @@ public class PlayerWsSessionRepositoryImpl implements PlayerWsSessionRepository 
     @Nullable
     public String getPlayerIdBySessionId(String sessionId) {
         return activePlayerSessions.entrySet().stream()
-                .filter(playerSession -> playerSession.getValue().getId().equals(sessionId))
+                .filter(playerSession -> sessionId.equals(playerSession.getValue().getId()))
                 .map(Map.Entry::getKey)
                 .findAny()
                 .orElse(null);
