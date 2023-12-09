@@ -2,11 +2,11 @@ import { CSSProperties, useCallback, useMemo, useRef } from "react";
 
 import { useGameState } from "../context/GameStateProvider";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { GameStages } from "../constants";
 import { Button } from "primereact/button";
 import { GiveUpModal, OfferDealModal } from "./modals";
 import { getLoggedInUserId } from "../utils/auth";
 import { usePopUpModalContext } from "../context/PopUpModalProvider";
+import { isTurnStartStage } from "../utils/property";
 
 interface IPlayerViewProps {
   playerId: string
@@ -23,7 +23,12 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
   const playerColor = playerState ? playerState.color : 'white';
   const playersTurnClass = gameState.currentUserId === playerId ? 'flashing-icon' : '';
   const viewStyle = playerState.bankrupt ? 'bankrupt-player-icon' : 'active-player-icon';
-  const selfView = loggedInUser === playerId;
+  const isGiveUpOnClickAvailable = loggedInUser === playerId;
+  const isOfferDealOnClickAvailable = loggedInUser !== playerId
+    && gameState.currentUserId === loggedInUser
+    && isTurnStartStage(gameState.stage);
+  const shouldRenderOverlayOnClick = !playerState.bankrupt
+    && (isGiveUpOnClickAvailable || isOfferDealOnClickAvailable);
 
   const hideManagementButton = useCallback(
     () => playerManagementOverlay.current?.hide(),
@@ -57,16 +62,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
     <div className='player-view'>
       <div
         className='player-icon-container'
-        onClick={(e) => {
-          if (!playerState.bankrupt) {
-            if (selfView) {
-              playerManagementOverlay.current?.toggle(e);
-            }
-            if (!selfView && gameState.currentUserId === loggedInUser && GameStages.TURN_START === gameState.stage) {
-              playerManagementOverlay.current?.toggle(e);
-            }
-          }
-        }}
+        onClick={(e) => shouldRenderOverlayOnClick && playerManagementOverlay.current?.toggle(e)}
       >
         {!playerState.bankrupt && <div
           className={`player-icon-outline`}
