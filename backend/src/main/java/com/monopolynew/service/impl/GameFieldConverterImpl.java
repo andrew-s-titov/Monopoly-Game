@@ -1,6 +1,6 @@
 package com.monopolynew.service.impl;
 
-import com.monopolynew.dto.GameFieldView;
+import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StaticRentField;
@@ -15,7 +15,7 @@ import java.util.List;
 public class GameFieldConverterImpl implements GameFieldConverter {
 
     @Override
-    public GameFieldView toView(PurchasableField purchasableField) {
+    public GameFieldState toView(PurchasableField purchasableField) {
         int id = purchasableField.getId();
         String priceTag = null;
         String ownerId = null;
@@ -40,7 +40,7 @@ public class GameFieldConverterImpl implements GameFieldConverter {
             houses = streetField.getHouses();
         }
 
-        return GameFieldView.builder()
+        return GameFieldState.builder()
                 .id(id)
                 .name(purchasableField.getName())
                 .group(group)
@@ -52,7 +52,7 @@ public class GameFieldConverterImpl implements GameFieldConverter {
     }
 
     @Override
-    public List<GameFieldView> toListView(List<PurchasableField> gameFieldList) {
+    public List<GameFieldState> toListView(List<PurchasableField> gameFieldList) {
         return gameFieldList.stream()
                 .map(this::toView)
                 .toList();

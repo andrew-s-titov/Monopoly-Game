@@ -9,7 +9,5 @@ public class GameOverEvent implements GameEvent {
 
     private final int code = 315;
 
-    private final String playerId;
-
-    private final String playerName;
+    private final String winnerName;
 }

@@ -8,13 +8,11 @@ import {
   BuyProposalEvent,
   FieldChangeEvent,
   GameMapRefreshEvent,
-  HouseAmountEvent,
   MoneyChangeEvent,
-  MortgageChangeEvent,
   OfferProposalEvent,
   PayCommandEvent
 } from "../types/events";
-import { GameStages, PLAYER_COLORS, PROPERTY_FIELDS_DATA } from "../constants";
+import { PLAYER_COLORS, PROPERTY_FIELDS_DATA } from "../constants";
 import { UPropertyIndex } from "../types/unions";
 import RollDiceButton from "../components/RollDiceButton";
 import Dice from "../components/Dice";
@@ -31,6 +29,7 @@ import {
   PayCommandModal
 } from "../components/modals";
 import WinnerModal from "../components/modals/WinnerModal";
+import { IModalProps } from "../hooks/useModal";
 
 interface IWebsocketContext {
   sendMessage: (chatMessage: ChatMessageBody) => void;
@@ -57,6 +56,14 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
     }))
   };
 
+  const openModalOnlyForLoggedInUser = (modalForPlayerId: string, modalProps: IModalProps) => {
+    if (loggedInUserId === modalForPlayerId) {
+      openEventModal(modalProps);
+    } else {
+      closeEventModal();
+    }
+  }
+
   useEffect(() => {
       websocket.current = new WebSocket(getWebsocketUrl());
       const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -65,7 +72,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
       const clearTimeouts = () => timeouts.forEach(timer => clearTimeout(timer));
 
       const codeActions: Record<number, (data: any) => void> = {
-        100: ({ players }: any) => {
+        100: ({ players }) => {
           setConnectedPlayers(players);
         },
         200: (message: ChatMessageBody) => {
@@ -101,19 +108,16 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             }, {} as Record<UPropertyIndex, PropertyState>)
           }));
         },
-        301: ({ playerId }: any) => {
+        301: ({ playerId }) => {
           changeCurrentPlayer(playerId);
-          if (playerId === loggedInUserId) {
-            openEventModal({
+          clearHousePurchaseRecords();
+          openModalOnlyForLoggedInUser(playerId, {
               header: <RollDiceButton/>,
               draggable: false,
               modal: false,
             });
-          } else {
-            closeEventModal();
-          }
         },
-        302: ({ playerId }: any) => {
+        302: ({ playerId }) => {
           openEventModal({
             header: <Dice/>,
             draggable: false,
@@ -127,7 +131,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             }),
             1500);
         },
-        303: ({ playerId, firstDice, secondDice }: any) => {
+        303: ({ playerId, firstDice, secondDice }) => {
           openEventModal({
             header: <Dice result={[firstDice, secondDice]}/>,
             draggable: false,
@@ -201,8 +205,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         308: ({ playerId }) => {
           changeCurrentPlayer(playerId);
-          if (loggedInUserId === playerId) {
-            openEventModal({
+          clearHousePurchaseRecords();
+          openModalOnlyForLoggedInUser(playerId, {
               header:
                 <div className='modal-title'>
                   Choose a way out:
@@ -213,14 +217,10 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 />,
               modal: false,
             });
-          } else {
-            closeEventModal();
-          }
         },
         309: ({ playerId, fieldIndex, proposal }: AuctionRaiseProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
-          loggedInUserId === playerId && openEventModal(
-            {
+          openModalOnlyForLoggedInUser(playerId, {
               header:
                 <div>
                   {`Do you want to raise ${fieldName} price to $${proposal}?`}
@@ -231,13 +231,11 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                   proposal={proposal}
                 />,
               modal: false,
-            }
-          );
+            });
         },
-        310: ({ fieldIndex, proposal }: AuctionBuyProposalEvent) => {
+        310: ({ playerId, fieldIndex, proposal }: AuctionBuyProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
-          openEventModal(
-            {
+          openModalOnlyForLoggedInUser(playerId, {
               header:
                 <div>
                   {`Do you want to buy ${fieldName} for $${proposal}?`}
@@ -247,8 +245,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                   proposal={proposal}
                 />,
               modal: false,
-            }
-          );
+            });
         },
         311: ({ playerId }) => {
           setGameState(prevState => {
@@ -276,30 +273,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             }
           );
         },
-        313: ({ changes }: MortgageChangeEvent) => {
-          setGameState(prevState => {
-            const newState = {
-              ...prevState,
-            }
-            changes.forEach(({ fieldIndex, turns }) => {
-              newState.propertyStates[fieldIndex].priceTag = turns.toString();
-              newState.propertyStates[fieldIndex].isMortgaged = !!turns;
-            });
-            return newState;
-          })
-        },
-        314: ({ fieldIndex, houses }: HouseAmountEvent) => {
-          setGameState(prevState => {
-            const newState = {
-              ...prevState,
-            }
-            newState.propertyStates[fieldIndex].houses = houses;
-            return newState;
-          })
-        },
-        315: ({ playerId, playerName }) => {
+        315: ({ winnerName }) => {
           openEventModal({
-            header: <WinnerModal name={playerName} />,
+            header: <WinnerModal name={winnerName}/>,
             modal: true,
           });
           changeCurrentPlayer('');
@@ -314,12 +290,13 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         316: ({
                 initiatorName,
+                addresseeId,
                 addresseeMoney,
                 initiatorMoney,
                 initiatorFields,
                 addresseeFields
               }: OfferProposalEvent) => {
-          openEventModal({
+          openModalOnlyForLoggedInUser(addresseeId, {
             header:
               <div className="offer-title">
                 {`${initiatorName} made you an offer:`}
@@ -344,12 +321,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             ...prevState,
             stage: gameStage,
           }));
-          if (GameStages.TURN_START === gameStage || GameStages.JAIL_RELEASE_START === gameStage) {
-            clearHousePurchaseRecords();
-          }
-          if (GameStages.DEAL_OFFER === gameStage) {
-            closeEventModal();
-          }
         }
       }
 

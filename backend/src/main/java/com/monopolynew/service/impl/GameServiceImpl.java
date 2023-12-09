@@ -9,7 +9,6 @@ import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.PlayerManagementAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.ChatMessageEvent;
-import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.TurnStartEvent;
@@ -83,7 +82,7 @@ public class GameServiceImpl implements GameService {
             throw new PlayerInvalidInputException("Cannot start a game without at least 2 players");
         }
         game.startGame();
-        gameEventSender.sendToAllPlayers(gameEventGenerator.newMapRefreshEvent(game));
+        gameEventSender.sendToAllPlayers(gameEventGenerator.mapRefreshEvent(game));
         gameEventSender.sendToAllPlayers(new TurnStartEvent(game.getCurrentPlayer().getId()));
     }
 
@@ -116,8 +115,7 @@ public class GameServiceImpl implements GameService {
             if (lastDice.isDoublet()) {
                 message = message + " (doublet)";
             }
-            gameEventSender.sendToAllPlayers(
-                    new DiceResultEvent(currentPlayer.getId(), lastDice.getFirstDice(), lastDice.getSecondDice()));
+            gameEventSender.sendToAllPlayers(gameEventGenerator.diceResultEvent(game));
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
         }
     }

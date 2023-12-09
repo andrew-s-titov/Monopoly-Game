@@ -13,6 +13,8 @@ public class OfferProposalEvent implements GameEvent {
 
     private final int code = 316;
 
+    private final String addresseeId;
+
     private final String initiatorName;
 
     private final List<Integer> addresseeFields;

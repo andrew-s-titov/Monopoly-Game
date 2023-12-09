@@ -14,13 +14,12 @@ Websocket codes:
 310 - auction buy proposal
 311 - bankruptcy
 312 - pay command
-313 - mortgage change
-314 - street house amount
 315 - game over
 316 - offer received
 317 - offer processed
 318 - offer sent
 350 - game stage changed
+500 - game connection error
 
 Http error code:
 401 - wrong player input

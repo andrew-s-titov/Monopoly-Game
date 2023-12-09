@@ -1,5 +1,7 @@
 import { getLoggedInUserId, getLoggedInUserName, PLAYER_ID_KEY, PLAYER_NAME_KEY } from "../utils/auth";
 
+// local dev endpoint
+// export const BE_ENDPOINT = 'http://localhost:8080';
 export const BE_ENDPOINT = document.location.origin;
 
 export const getWebsocketUrl = () => {

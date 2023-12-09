@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Builder
 @Getter
-public class GameFieldView {
+public class GameFieldState {
 
     private final int id;
 

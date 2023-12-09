@@ -41,7 +41,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             gameLogicExecutor.changeGameStage(game, newGameStage);
             var checkToPay = new CheckToPay(player, beneficiary, amount, true, false, paymentComment);
             game.setCheckToPay(checkToPay);
-            gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
+            gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.payCommandEvent(checkToPay));
         } else {
             var assets = gameLogicExecutor.computePlayerAssets(game, player);
             boolean enoughAssets = assets >= amount;
@@ -50,7 +50,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 var checkToPay = new CheckToPay(player, beneficiary, amount, false, assets * 0.85 < amount,
                         paymentComment);
                 game.setCheckToPay(checkToPay);
-                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.newPayCommandEvent(checkToPay));
+                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.payCommandEvent(checkToPay));
             } else {
                 gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " went bankrupt"));
                 gameLogicExecutor.bankruptPlayer(game, player);

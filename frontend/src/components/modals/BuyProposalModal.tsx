@@ -1,7 +1,6 @@
 import { memo } from "react";
 
 import { Button } from "primereact/button";
-import { useEventModalContext } from "../../context/EventModalProvider";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
 import { BE_ENDPOINT } from "../../api/config";
@@ -15,7 +14,6 @@ const BuyProposalModal = ({ playerId, price }: IBuyProposalProps) => {
 
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[playerId];
-  const { closeEventModal } = useEventModalContext();
   const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= price;
@@ -29,7 +27,6 @@ const BuyProposalModal = ({ playerId, price }: IBuyProposalProps) => {
   const onAuctionHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/buy?action=DECLINE`,
-      onSuccess: closeEventModal,
     });
   }
 

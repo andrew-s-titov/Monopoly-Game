@@ -13,6 +13,7 @@ public class GameRepositoryImpl implements GameRepository {
 
     @Override
     public Game getGame() {
+        // TODO get game by its ID
         return this.game;
     }
 

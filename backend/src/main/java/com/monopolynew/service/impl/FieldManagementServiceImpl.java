@@ -1,13 +1,10 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.dto.MortgageChange;
 import com.monopolynew.enums.FieldManagementAction;
 import com.monopolynew.enums.GameStage;
-import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.MoneyChangeEvent;
-import com.monopolynew.event.MortgageChangeEvent;
-import com.monopolynew.event.StreetHouseAmountEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
@@ -75,8 +72,8 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 currentPlayer.addMoney(gameLogicExecutor.getFieldMortgagePrice(f));
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-                gameEventSender.sendToAllPlayers(new MortgageChangeEvent(
-                        Collections.singletonList(new MortgageChange(f.getId(), f.getMortgageTurnsLeft()))));
+                gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
+                        Collections.singletonList(gameFieldConverter.toView(f))));
                 return;
             }
             throw new ClientBadRequestException("Cannot mortgage street with houses");
@@ -92,9 +89,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
                 currentPlayer.takeMoney(getPropertyRedemptionValue(f));
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-                gameEventSender.sendToAllPlayers(new MortgageChangeEvent(
-                        Collections.singletonList(new MortgageChange(f.getId(), 0))));
-                gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(
+                gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
                         Collections.singletonList(gameFieldConverter.toView(f))));
                 return;
             }
@@ -239,8 +234,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     private void notifyAfterHouseManagementChange(Player currentPlayer, StreetField streetField) {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-        gameEventSender.sendToAllPlayers(new StreetHouseAmountEvent(streetField.getId(), streetField.getHouses()));
-        gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(
+        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
                 Collections.singletonList(gameFieldConverter.toView(streetField))));
     }
 }

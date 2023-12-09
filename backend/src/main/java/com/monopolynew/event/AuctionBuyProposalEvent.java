@@ -9,6 +9,8 @@ public class AuctionBuyProposalEvent implements GameEvent {
 
     private final int code = 310;
 
+    private final String playerId;
+
     private final int fieldIndex;
 
     private final int proposal;

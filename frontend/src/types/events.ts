@@ -33,6 +33,7 @@ export interface AuctionRaiseProposalEvent {
 }
 
 export interface AuctionBuyProposalEvent {
+  playerId: string,
   fieldIndex: UPropertyIndex,
   proposal: number,
 }
@@ -54,20 +55,9 @@ export interface PayCommandEvent {
   wiseToGiveUp: boolean,
 }
 
-export interface MortgageChangeEvent {
-  changes: {
-    fieldIndex: UPropertyIndex,
-    turns: number,
-  }[],
-}
-
-export interface HouseAmountEvent {
-  fieldIndex: UPropertyIndex,
-  houses: number,
-}
-
 export interface OfferProposalEvent {
   initiatorName: string;
+  addresseeId: string;
   addresseeFields: UPropertyIndex[],
   initiatorFields: UPropertyIndex[],
   addresseeMoney: number;

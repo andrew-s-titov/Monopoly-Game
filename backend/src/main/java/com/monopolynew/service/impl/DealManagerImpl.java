@@ -1,12 +1,12 @@
 package com.monopolynew.service.impl;
 
 import com.monopolynew.dto.DealOffer;
-import com.monopolynew.dto.GameFieldView;
+import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.ChatMessageEvent;
-import com.monopolynew.event.FieldViewChangeEvent;
+import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.OfferProcessedEvent;
@@ -83,7 +83,7 @@ public class DealManagerImpl implements DealManager {
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
         gameEventSender.sendToPlayer(initiatorId, new OfferSentEvent());
-        gameEventSender.sendToPlayer(addresseeId, gameEventGenerator.newOfferProposalEvent(game));
+        gameEventSender.sendToAllPlayers(gameEventGenerator.offerProposalEvent(game));
     }
 
     @Override
@@ -109,14 +109,13 @@ public class DealManagerImpl implements DealManager {
         game.setOffer(null);
         GameStage stageToReturnTo = offer.getStageToReturnTo();
         gameLogicExecutor.changeGameStage(game, stageToReturnTo);
-        String offerInitiatorId = initiator.getId();
-        gameEventSender.sendToPlayer(offerInitiatorId, new OfferProcessedEvent());
+        String initiatorId = initiator.getId();
+        gameEventSender.sendToPlayer(initiatorId, new OfferProcessedEvent());
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(offerInitiatorId, new TurnStartEvent(offerInitiatorId));
+            gameEventSender.sendToPlayer(initiatorId, new TurnStartEvent(initiatorId));
         }
         if (GameStage.JAIL_RELEASE_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(offerInitiatorId,
-                    new JailReleaseProcessEvent(offerInitiatorId, initiator.getMoney() >= Rules.JAIL_BAIL));
+            gameEventSender.sendToPlayer(initiatorId, new JailReleaseProcessEvent(initiatorId));
         }
     }
 
@@ -226,15 +225,15 @@ public class DealManagerImpl implements DealManager {
         Set<List<PurchasableField>> fieldGroupsToCheck = exchangedFields.stream()
                 .map(field -> PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId()))
                 .collect(Collectors.toSet());
-        List<GameFieldView> fieldViewsToSend = new ArrayList<>();
+        List<GameFieldState> fieldViewsToSend = new ArrayList<>();
         fieldGroupsToCheck.forEach(group -> fieldViewsToSend.addAll(recalculateFieldGroupPrices(game, group)));
 
         if (!CollectionUtils.isEmpty(fieldViewsToSend)) {
-            gameEventSender.sendToAllPlayers(new FieldViewChangeEvent(fieldViewsToSend));
+            gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(fieldViewsToSend));
         }
     }
 
-    private List<GameFieldView> recalculateFieldGroupPrices(Game game, List<PurchasableField> fieldGroup) {
+    private List<GameFieldState> recalculateFieldGroupPrices(Game game, List<PurchasableField> fieldGroup) {
         var ownedFields = fieldGroup.stream()
                 .filter(field -> !field.isFree())
                 .toList();

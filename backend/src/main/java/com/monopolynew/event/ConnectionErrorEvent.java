@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ErrorEvent implements GameEvent {
+public class ConnectionErrorEvent implements GameEvent {
 
     private final int code = 500;
 
