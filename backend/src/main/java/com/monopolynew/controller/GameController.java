@@ -4,7 +4,7 @@ import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.dto.PlayerStatusDTO;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
-import com.monopolynew.service.GameService;
+import com.monopolynew.service.api.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

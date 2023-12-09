@@ -2,7 +2,7 @@ package com.monopolynew.controller;
 
 import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.enums.FieldManagementAction;
-import com.monopolynew.service.GameService;
+import com.monopolynew.service.api.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
