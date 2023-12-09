@@ -1,4 +1,4 @@
-export const GameStages: Record<string, string> = {
+export const GameStages = {
   TURN_START: 'TURN_START',
   JAIL_RELEASE_START: 'JAIL_RELEASE_START',
   ROLLED_FOR_TURN: 'ROLLED_FOR_TURN',

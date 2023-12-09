@@ -19,7 +19,7 @@ export const isStageAllowsPropertyManagement = (gameStage: string): boolean => {
   ].includes(gameStage);
 }
 
-export const isStageAllowsBuyHouse = (gameStage: string): boolean => {
+export const isTurnStartStage = (gameStage: string): boolean => {
   return [
     GameStages.TURN_START,
     GameStages.JAIL_RELEASE_START,

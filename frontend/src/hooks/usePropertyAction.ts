@@ -5,7 +5,7 @@ import { PROPERTY_FIELDS_DATA } from "../constants";
 import { PROPERTY_GROUPS } from "../constants/mapData";
 import { MAX_HOUSES } from "../constants/rules";
 import { getLoggedInUserId } from "../utils/auth";
-import { isStageAllowsBuyHouse, isStageAllowsPropertyManagement } from "../utils/property";
+import { isTurnStartStage, isStageAllowsPropertyManagement } from "../utils/property";
 
 const defaultPropertyActions: PropertyManagementOptions = {
   showMortgage: false,
@@ -64,7 +64,7 @@ const usePropertyActions = () => {
       }
 
       if (!currentPropertyState.isMortgaged
-        && isStageAllowsBuyHouse(currentGameStage)
+        && isTurnStartStage(currentGameStage)
         && currentPropertyHouses < MAX_HOUSES
         && !housePurchases.includes(propertyGroup)
         && groupFieldsStates
