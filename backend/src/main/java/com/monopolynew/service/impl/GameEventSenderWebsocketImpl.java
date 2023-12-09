@@ -37,7 +37,10 @@ public class GameEventSenderWebsocketImpl implements GameEventSender {
     private void sendToSession(Session session, Object payload) {
         if (session.isOpen()) {
             try {
-                session.getBasicRemote().sendText(objectMapper.writeValueAsString(payload));
+                String messageJson = objectMapper.writeValueAsString(payload);
+                if (session.isOpen()) { // double check as could be closed while writing json
+                    session.getBasicRemote().sendText(messageJson);
+                }
             } catch (IOException ex) {
                 log.error("En error occurred during writing object to websocket:", ex);
             }
