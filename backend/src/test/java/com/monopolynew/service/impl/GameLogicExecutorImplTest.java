@@ -76,7 +76,7 @@ class GameLogicExecutorImplTest {
             var game = mock(Game.class);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
-            var debtor = new Player("id-1", "player-1");
+            var debtor = new Player("id-1", "player-1", "av");
             var field1 = new StreetField(1, "field-1", 60, 50, new int[]{2, 10, 30, 90, 160, 250});
             field1.newOwner(debtor);
             field1.addHouse();
@@ -119,7 +119,7 @@ class GameLogicExecutorImplTest {
             var game = mock(Game.class);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
-            var debtor = new Player("id-1", "player-1");
+            var debtor = new Player("id-1", "player-1", "av");
             var debtorInitialMoney = debtor.getMoney();
             var field1 = new StreetField(1, "field-1", 60, 50, new int[]{2, 10, 30, 90, 160, 250});
             field1.newOwner(debtor);
@@ -141,7 +141,7 @@ class GameLogicExecutorImplTest {
                     + field1.getPrice()
                     + field2.getPrice()
                     + field3.getPrice() / 2;
-            var beneficiary = new Player("id-2", "player-2");
+            var beneficiary = new Player("id-2", "player-2", "av");
             beneficiary.takeMoney(beneficiary.getMoney());
             var checkToPay = CheckToPay.builder()
                     .beneficiary(beneficiary)
@@ -180,7 +180,7 @@ class GameLogicExecutorImplTest {
             var game = mock(Game.class);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
-            var debtor = new Player("id-1", "player-1");
+            var debtor = new Player("id-1", "player-1", "av");
             var debtorInitialMoney = debtor.getMoney();
             var field1 = new StreetField(1, "field-1", 60, 50, new int[]{2, 10, 30, 90, 160, 250});
             field1.newOwner(debtor);
@@ -204,7 +204,7 @@ class GameLogicExecutorImplTest {
                     + field3.getPrice() / 2;
             var debtDifference = 20;
             var debt = debtorAssetsTotal - debtDifference;
-            var beneficiary = new Player("id-2", "player-2");
+            var beneficiary = new Player("id-2", "player-2", "av");
             beneficiary.takeMoney(beneficiary.getMoney());
             var checkToPay = CheckToPay.builder()
                     .beneficiary(beneficiary)

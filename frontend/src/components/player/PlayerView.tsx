@@ -1,12 +1,13 @@
 import { CSSProperties, useCallback, useMemo, useRef } from "react";
 
-import { useGameState } from "../context/GameStateProvider";
+import { useGameState } from "../../context/GameStateProvider";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Button } from "primereact/button";
-import { GiveUpModal, OfferDealModal } from "./modals";
-import { getLoggedInUserId } from "../utils/auth";
-import { usePopUpModalContext } from "../context/PopUpModalProvider";
-import { isTurnStartStage } from "../utils/property";
+import { GiveUpModal, OfferDealModal } from "../modals";
+import { getLoggedInUserId } from "../../utils/auth";
+import { usePopUpModalContext } from "../../context/PopUpModalProvider";
+import { isTurnStartStage } from "../../utils/property";
+import PlayerAvatar from "./PlayerAvatar";
 
 interface IPlayerViewProps {
   playerId: string
@@ -21,8 +22,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
   const playerState = gameState.playerStates[playerId];
   const playerMoney = `$ ${playerState ? playerState.money : '0'}`;
   const playerColor = playerState ? playerState.color : 'white';
-  const playersTurnClass = gameState.currentUserId === playerId ? 'flashing-icon' : '';
-  const viewStyle = playerState.bankrupt ? 'bankrupt-player-icon' : 'active-player-icon';
+  const isPlayersTurn = gameState.currentUserId === playerId;
   const isGiveUpOnClickAvailable = loggedInUser === playerId;
   const isOfferDealOnClickAvailable = loggedInUser !== playerId
     && gameState.currentUserId === loggedInUser
@@ -72,7 +72,10 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
             } as CSSProperties
           }
         ></div>}
-        <div className={`${viewStyle} ${playersTurnClass}`}></div>
+        <PlayerAvatar
+          avatarName={playerState.avatar}
+          className={`avatar-in-game ${isPlayersTurn ? 'flashing-icon' : ''} ${playerState.bankrupt ? 'bankrupt-player' : ''}`}
+        />
 
         <OverlayPanel
           ref={playerManagementOverlay}

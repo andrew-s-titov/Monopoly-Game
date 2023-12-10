@@ -8,6 +8,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -31,12 +32,18 @@ public class SpringWebsocketCustomConfigurer extends ServerEndpointConfig.Config
     public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
         Map<String, List<String>> parameterMap = request.getParameterMap();
         Map<String, Object> socketUserProps = sec.getUserProperties();
-        socketUserProps.put(
-                GlobalConfig.PLAYER_ID_KEY,
-                parameterMap.get(GlobalConfig.PLAYER_ID_KEY).get(0));
-        socketUserProps.put(
-                GlobalConfig.PLAYER_NAME_KEY,
-                parameterMap.get(GlobalConfig.PLAYER_NAME_KEY).get(0));
+        copyParamToSocketProp(parameterMap, socketUserProps, GlobalConfig.PLAYER_ID_KEY);
+        copyParamToSocketProp(parameterMap, socketUserProps, GlobalConfig.PLAYER_NAME_KEY);
+        copyParamToSocketProp(parameterMap, socketUserProps, GlobalConfig.PLAYER_AVATAR_KEY);
         super.modifyHandshake(sec, request, response);
+    }
+
+    private void copyParamToSocketProp(Map<String, List<String>> params, Map<String, Object> props, String paramName) {
+        List<String> paramsByName = params.get(paramName);
+        if (!CollectionUtils.isEmpty(paramsByName)) {
+            props.put(
+                    paramName,
+                    paramsByName.get(0));
+        }
     }
 }

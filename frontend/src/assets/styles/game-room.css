@@ -23,7 +23,6 @@
     width: var(--gr-player-container-width);
     background-repeat: no-repeat no-repeat;
     background-position: center center;
-    background-image: url('../images/user.png')!important;
     background-size: var(--gr-player-container-width);
 }
 

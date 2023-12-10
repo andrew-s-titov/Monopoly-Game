@@ -83,11 +83,12 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             ...prevState,
             currentUserId: currentPlayer,
             gameStarted: true,
-            playerStates: players.reduce((acc, { name, id, money, bankrupt, position }, index) => {
+            playerStates: players.reduce((acc, { name, id, avatar, money, bankrupt, position }, index) => {
               return {
                 ...acc,
                 [id]: {
                   name,
+                  avatar,
                   money,
                   bankrupt,
                   position,

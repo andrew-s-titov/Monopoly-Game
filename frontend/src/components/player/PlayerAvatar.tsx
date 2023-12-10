@@ -1,20 +1,22 @@
 import { memo, MouseEventHandler } from "react";
+import { getAvatarUrl } from "../../utils/playerAvatar";
 
 interface IPlayerAvatarProps {
-  url: string,
-  isSmall?: boolean,
+  avatarName: string,
+  className?: string,
   onClickHandler?: MouseEventHandler<HTMLDivElement>,
 }
 
-const PlayerAvatar = ({ url, isSmall, onClickHandler }: IPlayerAvatarProps) => {
+const PlayerAvatar = ({ avatarName, onClickHandler, className }: IPlayerAvatarProps) => {
   return (
     <div
-      className={isSmall? "login-avatar-small" : "login-avatar"}
+      className="player-avatar"
       onClick={onClickHandler}
     >
       <div
+        className={className}
         style={{
-          backgroundImage: `url(${url})`,
+          backgroundImage: `url(${getAvatarUrl(avatarName)})`,
         }}
       />
     </div>

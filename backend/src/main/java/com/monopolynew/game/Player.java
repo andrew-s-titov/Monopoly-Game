@@ -1,17 +1,18 @@
 package com.monopolynew.game;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
-@RequiredArgsConstructor
 public class Player {
 
     @Getter
     private final String id;
     @Getter
     private final String name;
+    @Getter
+    private final String avatar;
 
     @Getter
     private int money = Rules.START_MONEY_AMOUNT;
@@ -24,8 +25,11 @@ public class Player {
     private int jailTurns = 0;
     private int doubletCount = 0;
 
-    public static Player newPlayer(String id, String name) {
-        return new Player(id, name);
+    @Builder
+    public Player(String id, String name, String avatar) {
+        this.id = id;
+        this.name = name;
+        this.avatar = avatar;
     }
 
     public void changePosition(int newPosition) {
@@ -38,6 +42,7 @@ public class Player {
 
     /**
      * If not enough money - take as much as possible
+     *
      * @param amount of money to take
      * @return money taken
      */
@@ -92,6 +97,7 @@ public class Player {
 
     /**
      * Defines if player was released from prison because of doublet on dice throw
+     *
      * @return true if player was released from prison because of doublet on dice throw, false if not.
      * If true is returned, next invocation will return false (the flag is dropped)
      */

@@ -20,17 +20,6 @@ export const AVATAR_NAMES = [
   'unknown',
 ] as const;
 
-export const AVATARS: Record<string, string> = AVATAR_NAMES.reduce(
-  (result, av) => ({
-    ...result,
-    [av]: require(`../assets/images/avatars/${av}.png`),
-  }),
-  {} as Record<string, string>
-);
+export const getRandomAvatar = () => AVATAR_NAMES[Math.floor(Math.random() * (AVATAR_NAMES.length - 1))];
 
-export const getRandomAvatar = () => {
-  const urls = Object.values(AVATARS);
-  return urls[Math.floor(Math.random() * (urls.length - 1))];
-}
-
-export const getAvatar = (avatar: string) => require(`../assets/images/avatars/${avatar}.png`);
+export const getAvatarUrl = (avatar: string) => require(`../assets/images/avatars/${avatar}.png`);

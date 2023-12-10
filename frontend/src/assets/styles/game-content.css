@@ -49,20 +49,8 @@
     box-shadow: 0 0 0.2vh 0.7vh var(--player-color);
 }
 
-.active-player-icon {
-    background-image: url('../images/user.png');
-}
-
-.bankrupt-player-icon {
-    background-image: url('../images/broke-user.png');
-}
-
-.active-player-icon, .bankrupt-player-icon {
-    height: 100%;
-    width: 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: var(--player-icon-size);
+.bankrupt-player {
+    opacity: 0.4;
 }
 
 .player-management {
@@ -94,31 +82,31 @@
 }
 
 .flashing-icon {
-    animation: iconAnimation 2.5s infinite;
-    -webkit-animation: iconAnimation 2.5s infinite;
-    -moz-animation: iconAnimation 2.5s infinite;
-    -o-animation: iconAnimation 2.5s infinite;
+    animation: iconAnimation 2s infinite;
+    -webkit-animation: iconAnimation 2s infinite;
+    -moz-animation: iconAnimation 2s infinite;
+    -o-animation: iconAnimation 2s infinite;
 }
 
 @keyframes iconAnimation {
-    0%   { opacity: 1; }
-    50%  { opacity: 0.2; }
-    100% { opacity: 1; }
+    0%   { opacity: 1 }
+    50%  { opacity: 0.4 }
+    100% { opacity: 1 }
 }
 @-o-keyframes iconAnimation {
-    0%   { opacity: 1; }
-    50%  { opacity: 0.2; }
-    100% { opacity: 1; }
+    0%   { opacity: 1 }
+    50%  { opacity: 0.4 }
+    100% { opacity: 1 }
 }
 @-moz-keyframes iconAnimation {
-    0%   { opacity: 1; }
-    50%  { opacity: 0.2; }
-    100% { opacity: 1; }
+    0%   { opacity: 1 }
+    50%  { opacity: 0.4 }
+    100% { opacity: 1 }
 }
 @-webkit-keyframes iconAnimation {
-    0%   { opacity: 1; }
-    50%  { opacity: 0.2; }
-    100% { opacity: 1; }
+    0%   { opacity: 1 }
+    50%  { opacity: 0.4 }
+    100% { opacity: 1 }
 }
 
 .modal-content {
@@ -259,4 +247,50 @@
     width: 90vw;
     height: 90vh;
     z-index: -1;
+}
+
+
+.player-avatar {
+    border-radius: 50vh;
+    background: white;
+    overflow: clip;
+}
+
+.player-avatar > div {
+    position: relative;
+    background-repeat: no-repeat no-repeat;
+    background-position: center center;
+}
+
+.avatar-in-login {
+    cursor: pointer;
+    width: 30vh;
+    height: 30vh;
+    background-size: 30vh;
+}
+
+.avatar-in-game {
+    cursor: pointer;
+    width: var(--player-icon-size);
+    height: var(--player-icon-size);
+    background-size: var(--player-icon-size);
+}
+
+.avatar-in-room {
+    width: var(--gr-player-container-width);
+    height: var(--gr-player-container-width);
+    background-size: var(--gr-player-container-width);
+}
+
+.avatar-in-picker {
+    cursor: pointer;
+    width: 10vh;
+    height: 10vh;
+    background-size: 10vh;
+}
+
+.avatar-picker {
+    display: flex;
+    flex-wrap: wrap;
+    width: 120vh;
 }

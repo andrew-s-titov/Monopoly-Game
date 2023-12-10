@@ -44,6 +44,7 @@ public class GameWebSocketHandler {
     public void onOpen(Session session, EndpointConfig config) throws IOException {
         var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
         var playerName = (String) config.getUserProperties().get(GlobalConfig.PLAYER_NAME_KEY);
+        var avatar = (String) config.getUserProperties().get(GlobalConfig.PLAYER_AVATAR_KEY);
 
         Game game = gameRepository.getGame();
         if (game.isInProgress()) {
@@ -64,7 +65,7 @@ public class GameWebSocketHandler {
         }
 
         playerWsSessionRepository.addPlayerSession(playerId, session);
-        game.addPlayer(Player.newPlayer(playerId, playerName));
+        game.addPlayer(new Player(playerId, playerName, avatar));
         gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
     }
 

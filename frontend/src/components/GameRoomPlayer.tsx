@@ -1,13 +1,18 @@
 import { memo } from "react";
+import PlayerAvatar from "./player/PlayerAvatar";
 
 interface IGameRoomPlayerProps {
-  name: string;
+  name: string,
+  avatar: string,
 }
 
-const GameRoomPlayer = ({ name }: IGameRoomPlayerProps) => {
+const GameRoomPlayer = ({ name, avatar }: IGameRoomPlayerProps) => {
   return (
     <div className="gr-player">
-      <div className="gr-player-image"/>
+      <PlayerAvatar
+        avatarName={avatar}
+        className="avatar-in-room"
+      />
       <div className="gr-player-name">{name}</div>
     </div>
   );

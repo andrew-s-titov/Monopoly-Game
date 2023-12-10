@@ -6,14 +6,14 @@ import { InputText } from "primereact/inputtext";
 import StartPageBackground from "./StartPageBackground";
 import StartPageButton from "./StartPageButton";
 import { useAuthContext } from "../context/AuthContextProvider";
-import { AVATARS, getRandomAvatar } from "../utils/playerAvatar";
+import { AVATAR_NAMES, getAvatarUrl, getRandomAvatar } from "../utils/playerAvatar";
 import PlayerAvatar from "./player/PlayerAvatar";
 
 const LoginForm = () => {
 
   const avatarOverlay = useRef<OverlayPanel>(null);
   const [avatar, setAvatar] = useState(getRandomAvatar());
-  const { loginWithName, isLoginInProgress } = useAuthContext();
+  const { login, isLoginInProgress } = useAuthContext();
   const [nameInputValue, setNameInputValue] = useState('');
   const isInputInvalid = !nameInputValue || nameInputValue.length < 3 || nameInputValue.length > 20;
 
@@ -22,7 +22,10 @@ const LoginForm = () => {
   }
 
   const onJoinClickHandler = () => {
-    !isInputInvalid && loginWithName(nameInputValue);
+    !isInputInvalid && login({
+      name: nameInputValue,
+      avatar,
+    });
   }
 
   const onEnterKeyDown = ({ key }: KeyboardEvent<any>) => {
@@ -34,7 +37,8 @@ const LoginForm = () => {
   return (
     <StartPageBackground>
       <PlayerAvatar
-        url={avatar}
+        avatarName={avatar}
+        className="avatar-in-login"
         onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
       />
       <OverlayPanel
@@ -44,14 +48,14 @@ const LoginForm = () => {
       >
         {
           <div className="avatar-picker">
-            {Object.entries(AVATARS).map(
-              ([name, url]) =>
+            {AVATAR_NAMES.map(
+              (avatar) =>
                 <PlayerAvatar
-                  key={name}
-                  url={url}
-                  isSmall={true}
+                  key={avatar}
+                  className="avatar-in-picker"
+                  avatarName={avatar}
                   onClickHandler={() => {
-                    setAvatar(url);
+                    setAvatar(avatar);
                   }}
                 />
             )}

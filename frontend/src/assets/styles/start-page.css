@@ -60,36 +60,3 @@
     background-position: center center;
     background-image: url('../images/start-background.jpg') !important;
 }
-
-.login-avatar, .login-avatar-small {
-    border-radius: 30vh;
-    cursor: pointer;
-    background: white;
-    overflow: clip;
-}
-
-.login-avatar > div, .login-avatar-small > div {
-    position: relative;
-    background-repeat: no-repeat no-repeat;
-    background-position: center center;
-}
-
-.login-avatar > div {
-    width: 30vh;
-    height: 30vh;
-    top: 3vh;
-    background-size: 30vh;
-}
-
-.login-avatar-small > div {
-    width: 10vh;
-    height: 10vh;
-    top: 1vh;
-    background-size: 10vh;
-}
-
-.avatar-picker {
-    display: flex;
-    flex-wrap: wrap;
-    width: 120vh;
-}

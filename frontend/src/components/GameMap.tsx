@@ -2,7 +2,7 @@ import PropertyField from "./PropertyField";
 import ActionField from "./ActionField";
 import { FieldPosition } from "../types/enums";
 import Chat from "./chat/Chat";
-import PlayerChipsContainer from "./PlayerChipsContainer";
+import PlayerChipsContainer from "./player/PlayerChipsContainer";
 
 const GameMap = () => {
 

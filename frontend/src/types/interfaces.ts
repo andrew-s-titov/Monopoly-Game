@@ -1,53 +1,59 @@
 import { UPropertyIndex } from "./unions";
 import { PropertyGroup } from "./enums";
 
+export interface LoginData {
+  name: string,
+  avatar: string,
+}
+
 export interface ChatMessageBody {
-  message: string;
-  playerId?: string;
+  message: string,
+  playerId?: string,
 }
 
 export interface PropertyStaticData {
-  name: string;
-  group: PropertyGroup;
-  price: number;
-  housePrice?: number;
+  name: string,
+  group: PropertyGroup,
+  price: number,
+  housePrice?: number,
 }
 
 export interface PropertyManagementOptions {
-  showMortgage: boolean;
-  showRedeem: boolean;
-  showBuyHouse: boolean;
-  showSellHouse: boolean;
+  showMortgage: boolean,
+  showRedeem: boolean,
+  showBuyHouse: boolean,
+  showSellHouse: boolean,
 }
 
 export interface PropertyState {
-  isMortgaged: boolean;
-  priceTag: string;
-  houses: number;
-  ownerId?: string;
+  isMortgaged: boolean,
+  priceTag: string,
+  houses: number,
+  ownerId?: string,
 }
 
 export interface PlayerState {
-  name: string;
-  color: string;
-  money: number;
-  bankrupt: boolean;
-  position: number;
+  name: string,
+  avatar: string,
+  color: string,
+  money: number,
+  bankrupt: boolean,
+  position: number,
 }
 
 export interface GameState {
-  stage: string;
-  currentUserId: string;
-  propertyStates: Record<UPropertyIndex, PropertyState>;
-  playerStates: Record<string, PlayerState>;
+  stage: string,
+  currentUserId: string,
+  propertyStates: Record<UPropertyIndex, PropertyState>,
+  playerStates: Record<string, PlayerState>,
   gameStarted: boolean,
 }
 
 export interface Deal {
   initiatorFields: UPropertyIndex[],
   addresseeFields: UPropertyIndex[],
-  initiatorMoney: number;
-  addresseeMoney: number;
+  initiatorMoney: number,
+  addresseeMoney: number,
 }
 
 export interface PropertyShortInfo {
@@ -59,9 +65,15 @@ export interface PropertyShortInfo {
 export interface ConnectedPlayer {
   playerId: string,
   name: string,
+  avatar: string,
 }
 
-export interface AuthData {
-  player_id: string,
-  player_name: string,
+export interface LoginResponse {
+  id: string,
+}
+
+export interface PlayerAuthData {
+  id: string,
+  name: string,
+  avatar: string,
 }

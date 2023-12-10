@@ -1,5 +1,5 @@
 import GameMap from "./GameMap";
-import PlayerContainer from "./PlayerContainer";
+import PlayerContainer from "./player/PlayerContainer";
 
 const GameContent = () => {
 

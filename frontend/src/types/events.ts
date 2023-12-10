@@ -12,6 +12,7 @@ export interface GameMapRefreshEvent {
   players: {
     id: string,
     name: string,
+    avatar: string,
     money: number,
     position: number,
     bankrupt: boolean,
