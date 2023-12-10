@@ -10,9 +10,9 @@ const WinnerModal = ({ name }: IWinnerModalProps) => {
   const fireworksContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fireworksContainer = document.getElementById('fireworks');
+    const container = fireworksContainer.current;
 
-    const fireWorks = fireworksContainer && new Fireworks(fireworksContainer,
+    const fireworks = container && new Fireworks(container,
       {
         hue: {
           min: 0,
@@ -48,9 +48,9 @@ const WinnerModal = ({ name }: IWinnerModalProps) => {
         particles: 30,
         intensity: 30,
       });
-    fireWorks && fireWorks.start();
+    fireworks && fireworks.start();
     return () => {
-      fireWorks && fireWorks.stop(true)
+      fireworks && fireworks.stop(true)
     };
   }, []);
 
