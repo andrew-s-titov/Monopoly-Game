@@ -1,13 +1,18 @@
-import { ChangeEvent, KeyboardEvent, memo, useState } from "react";
+import { ChangeEvent, KeyboardEvent, memo, useRef, useState } from "react";
 
+import { OverlayPanel } from "primereact/overlaypanel";
 import { InputText } from "primereact/inputtext";
 
 import StartPageBackground from "./StartPageBackground";
 import StartPageButton from "./StartPageButton";
 import { useAuthContext } from "../context/AuthContextProvider";
+import { AVATARS, getRandomAvatar } from "../utils/playerAvatar";
+import PlayerAvatar from "./player/PlayerAvatar";
 
 const LoginForm = () => {
 
+  const avatarOverlay = useRef<OverlayPanel>(null);
+  const [avatar, setAvatar] = useState(getRandomAvatar());
   const { loginWithName, isLoginInProgress } = useAuthContext();
   const [nameInputValue, setNameInputValue] = useState('');
   const isInputInvalid = !nameInputValue || nameInputValue.length < 3 || nameInputValue.length > 20;
@@ -28,11 +33,36 @@ const LoginForm = () => {
 
   return (
     <StartPageBackground>
+      <PlayerAvatar
+        url={avatar}
+        onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
+      />
+      <OverlayPanel
+        ref={avatarOverlay}
+        dismissable
+        closeOnEscape
+      >
+        {
+          <div className="avatar-picker">
+            {Object.entries(AVATARS).map(
+              ([name, url]) =>
+                <PlayerAvatar
+                  key={name}
+                  url={url}
+                  isSmall={true}
+                  onClickHandler={() => {
+                    setAvatar(url);
+                  }}
+                />
+            )}
+          </div>
+        }
+      </OverlayPanel>
       <InputText
         autoFocus
         value={nameInputValue}
         onChange={onInputChange}
-        className={isInputInvalid ? 'player-name-input player-name-input-invalid' : 'player-name-input'}
+        className="player-name-input"
         placeholder='Enter your nickname'
         onKeyDown={onEnterKeyDown}
       />

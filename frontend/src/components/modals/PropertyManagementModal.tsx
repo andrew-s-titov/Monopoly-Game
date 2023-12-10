@@ -46,7 +46,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'row' }}>
       <img
-        src={fieldIndex && require(`../../assets/images/info${fieldIndex}.png`)}
+        src={fieldIndex && require(`../../assets/images/fields/info${fieldIndex}.png`)}
         alt='property'
         style={{ maxHeight: '70vh', height: '70vh' }}
         draggable='false'
