@@ -278,6 +278,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           openEventModal({
             header: <WinnerModal name={winnerName}/>,
             modal: true,
+            draggable: false,
           });
           changeCurrentPlayer('');
           clearTimeouts();

@@ -5,21 +5,19 @@ interface IPlayerAvatarProps {
   avatarName: string,
   className?: string,
   onClickHandler?: MouseEventHandler<HTMLDivElement>,
+  withPointer?: boolean,
 }
 
-const PlayerAvatar = ({ avatarName, onClickHandler, className }: IPlayerAvatarProps) => {
+const PlayerAvatar = ({ avatarName, onClickHandler, className, withPointer }: IPlayerAvatarProps) => {
   return (
     <div
-      className="player-avatar"
       onClick={onClickHandler}
-    >
-      <div
-        className={className}
-        style={{
-          backgroundImage: `url(${getAvatarUrl(avatarName)})`,
-        }}
-      />
-    </div>
+      className={`player-avatar ${className}`}
+      style={{
+        backgroundImage: `url(${getAvatarUrl(avatarName)})`,
+        cursor: withPointer ? 'pointer' : '',
+      }}
+    />
   );
 }
 

@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Fireworks} from "fireworks-js";
 
 interface IWinnerModalProps {
@@ -6,6 +6,8 @@ interface IWinnerModalProps {
 }
 
 const WinnerModal = ({ name }: IWinnerModalProps) => {
+
+  const fireworksContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fireworksContainer = document.getElementById('fireworks');
@@ -54,7 +56,7 @@ const WinnerModal = ({ name }: IWinnerModalProps) => {
 
   return (
     <div className="winner-modal" id="winner-modal">
-      <div className="fireworks" id="fireworks"/>
+      <div className="fireworks" id="fireworks" ref={fireworksContainer}/>
       <i className="pi pi-star-fill pi-spin icon"/>
         <span>{`${name} is the winner!`}</span>
       <i className="pi pi-star-fill pi-spin animation-backwards"/>

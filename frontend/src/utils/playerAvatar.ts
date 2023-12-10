@@ -8,6 +8,7 @@ export const AVATAR_NAMES = [
   'male7',
   'male8',
   'male9',
+  'male10',
   'female1',
   'female2',
   'female3',
@@ -17,6 +18,7 @@ export const AVATAR_NAMES = [
   'female7',
   'female8',
   'female9',
+  'female10',
   'unknown',
 ] as const;
 

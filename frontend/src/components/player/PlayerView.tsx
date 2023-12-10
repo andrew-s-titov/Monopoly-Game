@@ -73,10 +73,15 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
           }
         ></div>}
         <PlayerAvatar
+          withPointer={shouldRenderOverlayOnClick}
           avatarName={playerState.avatar}
           className={`avatar-in-game ${isPlayersTurn ? 'flashing-icon' : ''} ${playerState.bankrupt ? 'bankrupt-player' : ''}`}
         />
-
+        {
+          playerState.bankrupt && <div
+            className="broke-stamp"
+          />
+        }
         <OverlayPanel
           ref={playerManagementOverlay}
           dismissable

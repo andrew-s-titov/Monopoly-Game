@@ -40,6 +40,7 @@ const LoginForm = () => {
         avatarName={avatar}
         className="avatar-in-login"
         onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
+        withPointer
       />
       <OverlayPanel
         ref={avatarOverlay}
@@ -57,6 +58,7 @@ const LoginForm = () => {
                   onClickHandler={() => {
                     setAvatar(avatar);
                   }}
+                  withPointer
                 />
             )}
           </div>

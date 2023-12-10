@@ -249,28 +249,19 @@
     z-index: -1;
 }
 
-
 .player-avatar {
     border-radius: 50vh;
-    background: white;
-    overflow: clip;
-}
-
-.player-avatar > div {
     position: relative;
-    background-repeat: no-repeat no-repeat;
-    background-position: center center;
+    background: white no-repeat no-repeat center center;
 }
 
 .avatar-in-login {
-    cursor: pointer;
     width: 30vh;
     height: 30vh;
     background-size: 30vh;
 }
 
 .avatar-in-game {
-    cursor: pointer;
     width: var(--player-icon-size);
     height: var(--player-icon-size);
     background-size: var(--player-icon-size);
@@ -283,7 +274,6 @@
 }
 
 .avatar-in-picker {
-    cursor: pointer;
     width: 10vh;
     height: 10vh;
     background-size: 10vh;
@@ -292,5 +282,13 @@
 .avatar-picker {
     display: flex;
     flex-wrap: wrap;
-    width: 120vh;
+    width: 70vh;
+}
+
+.broke-stamp {
+    position: absolute;
+    background-image: url('./../images/broke.png');
+    width: var(--player-icon-size);
+    height: var(--player-icon-size);
+    background-size: var(--player-icon-size);
 }
