@@ -7,9 +7,7 @@ interface IDiceImageProps {
 
 const DiceImage = ({ side, result }: IDiceImageProps) => {
 
-  const src = result
-    ? require(`../assets/images/dice${result}.png`)
-    : require(`../assets/images/dice-${side}.gif`);
+  const src = require(`../assets/images/dice/dice${result ? `${result}.png` : `-${side}.gif`}`);
   const alt = `${side} dice`;
 
   return (

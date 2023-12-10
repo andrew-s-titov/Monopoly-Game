@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Fireworks} from "fireworks-js";
 
 interface IWinnerModalProps {
@@ -7,10 +7,12 @@ interface IWinnerModalProps {
 
 const WinnerModal = ({ name }: IWinnerModalProps) => {
 
-  useEffect(() => {
-    const fireworksContainer = document.getElementById('fireworks');
+  const fireworksContainer = useRef<HTMLDivElement>(null);
 
-    const fireWorks = fireworksContainer && new Fireworks(fireworksContainer,
+  useEffect(() => {
+    const container = fireworksContainer.current;
+
+    const fireworks = container && new Fireworks(container,
       {
         hue: {
           min: 0,
@@ -46,15 +48,15 @@ const WinnerModal = ({ name }: IWinnerModalProps) => {
         particles: 30,
         intensity: 30,
       });
-    fireWorks && fireWorks.start();
+    fireworks && fireworks.start();
     return () => {
-      fireWorks && fireWorks.stop(true)
+      fireworks && fireworks.stop(true)
     };
   }, []);
 
   return (
     <div className="winner-modal" id="winner-modal">
-      <div className="fireworks" id="fireworks"/>
+      <div className="fireworks" id="fireworks" ref={fireworksContainer}/>
       <i className="pi pi-star-fill pi-spin icon"/>
         <span>{`${name} is the winner!`}</span>
       <i className="pi pi-star-fill pi-spin animation-backwards"/>

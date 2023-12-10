@@ -23,10 +23,11 @@ const PreGameRoom = () => {
   return (
     <StartPageBackground>
       <div className="gr-players-container">
-        {connectedPlayers.map(({ playerId, name }) =>
+        {connectedPlayers.map(({ playerId, name, avatar }) =>
           <GameRoomPlayer
             key={playerId}
             name={name}
+            avatar={avatar}
           />
         )}
       </div>

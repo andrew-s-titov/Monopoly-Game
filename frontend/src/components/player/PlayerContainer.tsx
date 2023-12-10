@@ -1,4 +1,4 @@
-import { useGameState } from "../context/GameStateProvider";
+import { useGameState } from "../../context/GameStateProvider";
 import PlayerView from "./PlayerView";
 
 const PlayerContainer = () => {

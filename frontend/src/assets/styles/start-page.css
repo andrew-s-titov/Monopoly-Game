@@ -14,8 +14,9 @@
     color: white;
     text-align: center;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    font-size: 4vh !important;
+    font-size: 3.5vh !important;
     border-bottom: solid 0.4vh rgba(0, 0, 0, 0.4);
+    width: 30vh;
 }
 
 .player-name-input::placeholder {
@@ -24,13 +25,10 @@
     font-size: 2.5vh !important;
 }
 
-.player-name-input-invalid {
-    border-bottom: solid 0.4vh rgba(150, 0, 0);
-}
-
 .player-name-input:focus {
     outline: none;
-    box-shadow: inset 0 0 1.5vh 0.2vh rgba(0, 0, 0, 0.3);
+    box-shadow: none;
+    border-bottom: solid 0.4vh rgba(0, 0, 0);
 }
 
 .non-game-button {

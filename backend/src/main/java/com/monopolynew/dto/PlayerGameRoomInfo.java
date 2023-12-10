@@ -1,4 +1,4 @@
 package com.monopolynew.dto;
 
-public record PlayerGameRoomInfo(String playerId, String name) {
+public record PlayerGameRoomInfo(String playerId, String name, String avatar) {
 }

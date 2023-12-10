@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { useGameState } from "../context/GameStateProvider";
+import { useGameState } from "../../context/GameStateProvider";
 import PlayerChip from "./PlayerChip";
 
 const getNumberProperty = (style: CSSStyleDeclaration, propertyName: string) => {
