@@ -1,12 +1,12 @@
-import {KeyboardEvent, memo, useRef} from 'react';
-import {InputText} from 'primereact/inputtext';
-import {Button} from 'primereact/button';
+import { KeyboardEvent, memo, useRef } from 'react';
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
 
 interface IChatInputProps {
   sendMessage: (message: string) => void;
 }
 
-const ChatInput = ({sendMessage}: IChatInputProps) => {
+const ChatInput = ({ sendMessage }: IChatInputProps) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -17,7 +17,7 @@ const ChatInput = ({sendMessage}: IChatInputProps) => {
     }
   }
 
-  const onEnterKeyDown = ({key}: KeyboardEvent<any>) => {
+  const onEnterKeyDown = ({ key }: KeyboardEvent<any>) => {
     if (key === 'Enter') {
       onSendClick();
     }

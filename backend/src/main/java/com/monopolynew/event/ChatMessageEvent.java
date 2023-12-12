@@ -1,11 +1,13 @@
 package com.monopolynew.event;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 @Getter
+@Builder
 public class ChatMessageEvent {
 
     private final int code = 200;

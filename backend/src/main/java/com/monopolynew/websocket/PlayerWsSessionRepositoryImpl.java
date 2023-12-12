@@ -34,16 +34,6 @@ public class PlayerWsSessionRepositoryImpl implements PlayerWsSessionRepository 
     }
 
     @Override
-    @Nullable
-    public String getPlayerIdBySessionId(String sessionId) {
-        return activePlayerSessions.entrySet().stream()
-                .filter(playerSession -> sessionId.equals(playerSession.getValue().getId()))
-                .map(Map.Entry::getKey)
-                .findAny()
-                .orElse(null);
-    }
-
-    @Override
     @NonNull
     public Collection<Session> getAllSessions() {
         return activePlayerSessions.values();

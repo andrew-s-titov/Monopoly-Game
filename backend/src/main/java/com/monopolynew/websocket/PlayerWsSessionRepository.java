@@ -15,9 +15,6 @@ public interface PlayerWsSessionRepository {
     @Nullable
     Session getPlayerSession(String playerId);
 
-    @Nullable
-    String getPlayerIdBySessionId(String sessionId);
-
     @NonNull
     Collection<Session> getAllSessions();
 }

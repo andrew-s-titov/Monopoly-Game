@@ -1,6 +1,5 @@
 package com.monopolynew.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ConnectionErrorEvent;
@@ -26,6 +25,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 
+import static com.monopolynew.config.GlobalConfig.PLAYER_ID_KEY;
+
 @RequiredArgsConstructor
 @Slf4j
 @Component
@@ -33,7 +34,6 @@ import java.io.IOException;
 @ServerEndpoint(value = "/ws", configurator = SpringWebsocketCustomConfigurer.class)
 public class GameWebSocketHandler {
 
-    private final ObjectMapper objectMapper;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
     private final PlayerWsSessionRepository playerWsSessionRepository;
@@ -42,7 +42,7 @@ public class GameWebSocketHandler {
 
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) throws IOException {
-        var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
+        var playerId = (String) config.getUserProperties().get(PLAYER_ID_KEY);
         var playerName = (String) config.getUserProperties().get(GlobalConfig.PLAYER_NAME_KEY);
         var avatar = (String) config.getUserProperties().get(GlobalConfig.PLAYER_AVATAR_KEY);
 
@@ -70,40 +70,43 @@ public class GameWebSocketHandler {
     }
 
     @OnMessage
-    public void onMessage(String message) {
-        try {
-            ChatMessageEvent playerMessage = objectMapper.readValue(message, ChatMessageEvent.class);
-            gameEventSender.sendToAllPlayers(playerMessage);
-        } catch (IOException e) {
-            // TODO: process exception gracefully
-            throw new RuntimeException(e);
-        }
+    public void onMessage(Session session, String message) {
+        var playerId = getPlayerIdFromSession(session);
+        var newMessage = ChatMessageEvent.builder()
+                .message(message)
+                .playerId(playerId)
+                .build();
+        gameEventSender.sendToAllPlayers(newMessage);
     }
 
     @OnClose
     public void onClose(Session session, CloseReason reason) {
-        var sessionId = session.getId();
+        var playerId = getPlayerIdFromSession(session);
         var game = gameRepository.getGame();
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
-            var playerId = playerWsSessionRepository.getPlayerIdBySessionId(sessionId);
-            if (playerId != null) {
-                game.removePlayer(playerId);
-                gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
-            }
+            game.removePlayer(playerId);
+            gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
         // if a game is in progress - do not remove to let the player reconnect with another session
-
         CloseReason.CloseCode closeCode = reason.getCloseCode();
         if (!closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE)
                 && !closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
-            log.warn("Not a normal websocket close on session {}, reason: {}", sessionId, reason);
+            log.warn("Not a normal websocket close for user {}, reason: {}", playerId, reason);
         }
     }
 
     @OnError
     public void onError(Session session, Throwable ex) {
-        String sessionId = session.getId();
-        log.error("An error occurred during websocket exchange within session " + sessionId, ex);
+        var playerId = getPlayerIdFromSession(session);
+        log.error("An error occurred during websocket exchange for user " + playerId, ex);
+    }
+
+    private String getPlayerIdFromSession(Session session) {
+        Object playerId = session.getUserProperties().get(PLAYER_ID_KEY);
+        if (playerId instanceof String playerIfString) {
+            return playerIfString;
+        }
+        return "";
     }
 }
