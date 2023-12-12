@@ -1,9 +1,11 @@
 package com.monopolynew.websocket;
 
 import com.monopolynew.config.GlobalConfig;
+import com.monopolynew.exception.ClientBadRequestException;
 import jakarta.websocket.HandshakeResponse;
 import jakarta.websocket.server.HandshakeRequest;
 import jakarta.websocket.server.ServerEndpointConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -12,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class SpringWebsocketCustomConfigurer extends ServerEndpointConfig.Configurator implements ApplicationContextAware {
@@ -32,18 +35,23 @@ public class SpringWebsocketCustomConfigurer extends ServerEndpointConfig.Config
     public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
         Map<String, List<String>> parameterMap = request.getParameterMap();
         Map<String, Object> socketUserProps = sec.getUserProperties();
-        copyParamToSocketProp(parameterMap, socketUserProps, GlobalConfig.PLAYER_ID_KEY);
-        copyParamToSocketProp(parameterMap, socketUserProps, GlobalConfig.PLAYER_NAME_KEY);
-        copyParamToSocketProp(parameterMap, socketUserProps, GlobalConfig.PLAYER_AVATAR_KEY);
+        extractUserIdToSocketProps(parameterMap, socketUserProps);
         super.modifyHandshake(sec, request, response);
     }
 
-    private void copyParamToSocketProp(Map<String, List<String>> params, Map<String, Object> props, String paramName) {
-        List<String> paramsByName = params.get(paramName);
+    private void extractUserIdToSocketProps(Map<String, List<String>> params, Map<String, Object> props) {
+        List<String> paramsByName = params.get(GlobalConfig.PLAYER_ID_KEY);
         if (!CollectionUtils.isEmpty(paramsByName)) {
-            props.put(
-                    paramName,
-                    paramsByName.get(0));
+            String playerId = paramsByName.get(0);
+            if (StringUtils.isBlank(playerId)) {
+                throw new ClientBadRequestException("Player ID has invalid format");
+            }
+            try {
+                var userId = UUID.fromString(playerId);
+                props.put(GlobalConfig.PLAYER_ID_KEY, userId);
+            } catch (IllegalArgumentException uuidParsException) {
+                throw new ClientBadRequestException("Player ID has invalid format");
+            }
         }
     }
 }

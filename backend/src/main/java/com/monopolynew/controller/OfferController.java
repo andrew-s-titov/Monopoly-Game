@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/game/offer")
@@ -21,14 +23,14 @@ public class OfferController {
     private final GameService gameService;
 
     @PostMapping("/{addresseeId}/send")
-    public void sendOffer(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) String initiatorId,
-                          @PathVariable("addresseeId") String addresseeId,
+    public void sendOffer(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) UUID initiatorId,
+                          @PathVariable("addresseeId") UUID addresseeId,
                           @RequestBody DealOffer dealOffer) {
         gameService.createOffer(initiatorId, addresseeId, dealOffer);
     }
 
     @PostMapping("/process")
-    public void processOffer(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) String callerId,
+    public void processOffer(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) UUID callerId,
                              @RequestParam("action") ProposalAction proposalAction) {
         gameService.processOfferAnswer(callerId, proposalAction);
     }

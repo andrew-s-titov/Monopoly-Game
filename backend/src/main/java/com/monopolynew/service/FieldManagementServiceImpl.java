@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     private final GameLogicExecutor gameLogicExecutor;
 
     @Override
-    public void mortgageField(Game game, int fieldIndex, String playerId) {
+    public void mortgageField(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (mortgageAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
@@ -50,7 +51,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void redeemMortgagedProperty(Game game, int fieldIndex, String playerId) {
+    public void redeemMortgagedProperty(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (redemptionAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
@@ -67,7 +68,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void buyHouse(Game game, int fieldIndex, String playerId) {
+    public void buyHouse(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
             if (field instanceof StreetField streetField) {
                 Player currentPlayer = aGame.getCurrentPlayer();
@@ -85,7 +86,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
     }
 
     @Override
-    public void sellHouse(Game game, int fieldIndex, String playerId) {
+    public void sellHouse(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (aGame, field) -> {
             if (field instanceof StreetField streetField && houseSaleAvailable(aGame, streetField)) {
                 streetField.sellHouse();
@@ -162,7 +163,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         return purchasableField.getPrice() * 55 / 100;
     }
 
-    private void doFieldManagement(Game game, String playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
+    private void doFieldManagement(Game game, UUID playerId, int fieldIndex, BiConsumer<Game, PurchasableField> action) {
         checkFieldExists(fieldIndex);
         checkFieldManagementAvailability(game, playerId);
 
@@ -176,7 +177,7 @@ public class FieldManagementServiceImpl implements FieldManagementService {
         }
     }
 
-    private void checkFieldManagementAvailability(Game game, String playerId) {
+    private void checkFieldManagementAvailability(Game game, UUID playerId) {
         GameStage stage = game.getStage();
         if (managementNotAvailable(stage)) {
             throw new WrongGameStageException("Cannot perform field management - wrong game stage");

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class GameEventSenderWebsocketImpl implements GameEventSender {
     }
 
     @Override
-    public void sendToPlayer(String playerId, Object gameEvent) {
+    public void sendToPlayer(UUID playerId, Object gameEvent) {
         Session wsSession = playerWsSessionRepository.getPlayerSession(playerId);
         if (wsSession == null) {
             log.warn("No session was found for playerId={} on this server", playerId);

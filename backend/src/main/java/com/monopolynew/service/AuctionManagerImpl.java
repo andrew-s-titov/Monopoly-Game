@@ -16,11 +16,10 @@ import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.List;
 
-import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
+import static com.monopolynew.util.Utils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component
@@ -74,7 +73,7 @@ public class AuctionManagerImpl implements AuctionManager {
 
     @Override
     public void processAuctionBuyProposal(Game game, @NonNull ProposalAction action) {
-        Assert.notNull(action, NULL_ARG_MESSAGE);
+        requireNotNullArgs(game, action);
         var auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_BUY, auction);
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
@@ -89,7 +88,7 @@ public class AuctionManagerImpl implements AuctionManager {
 
     @Override
     public void processAuctionRaiseProposal(Game game, @NonNull ProposalAction action) {
-        Assert.notNull(action, NULL_ARG_MESSAGE);
+        requireNotNullArgs(game, action);
         Auction auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_RAISE, auction);
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);

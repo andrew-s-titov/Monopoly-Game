@@ -1,7 +1,6 @@
 package com.monopolynew.service;
 
 import com.monopolynew.dto.DealOffer;
-import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
@@ -18,6 +17,7 @@ import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.procedure.BuyProposal;
+import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.service.api.AuctionManager;
@@ -33,12 +33,12 @@ import com.monopolynew.service.api.StepProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
-import static com.monopolynew.util.Message.NULL_ARG_MESSAGE;
+import static com.monopolynew.util.Utils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component
@@ -58,17 +58,6 @@ public class GameServiceImpl implements GameService {
     @Override
     public boolean isGameStarted() {
         return gameRepository.getGame().isInProgress();
-    }
-
-    @Override
-    public boolean usernameTaken(String username) {
-        return gameRepository.getGame().isUsernameTaken(username);
-    }
-
-    @Override
-    public String getPlayerName(String playerId) {
-        var player = gameRepository.getGame().getPlayerById(playerId);
-        return player == null ? null : player.getName();
     }
 
     @Override
@@ -168,7 +157,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void processBuyProposal(@NonNull ProposalAction action) {
-        Assert.notNull(action, NULL_ARG_MESSAGE);
+        requireNotNullArgs(action);
         Game game = gameRepository.getGame();
         BuyProposal buyProposal = game.getBuyProposal();
         if (!GameStage.BUY_PROPOSAL.equals(game.getStage()) || buyProposal == null) {
@@ -201,7 +190,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void processJailAction(@NonNull JailAction jailAction) {
-        Assert.notNull(jailAction, NULL_ARG_MESSAGE);
+        requireNotNullArgs(jailAction);
         Game game = gameRepository.getGame();
         if (!GameStage.JAIL_RELEASE_START.equals(game.getStage())) {
             throw new WrongGameStageException("Cannot process jail action - wrong game stage");
@@ -231,7 +220,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void giveUp(String playerId) {
+    public void giveUp(UUID playerId) {
         // TODO: check if game is in progress
         Game game = gameRepository.getGame();
         Player player = game.getPlayerById(playerId);
@@ -240,37 +229,37 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void mortgageField(int fieldIndex, String playerId) {
+    public void mortgageField(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.mortgageField(game, fieldIndex, playerId);
     }
 
     @Override
-    public void redeemMortgagedProperty(int fieldIndex, String playerId) {
+    public void redeemMortgagedProperty(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.redeemMortgagedProperty(game, fieldIndex, playerId);
     }
 
     @Override
-    public void buyHouse(int fieldIndex, String playerId) {
+    public void buyHouse(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.buyHouse(game, fieldIndex, playerId);
     }
 
     @Override
-    public void sellHouse(int fieldIndex, String playerId) {
+    public void sellHouse(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.sellHouse(game, fieldIndex, playerId);
     }
 
     @Override
-    public void createOffer(String initiatorId, String addresseeId, DealOffer offer) {
+    public void createOffer(UUID initiatorId, UUID addresseeId, DealOffer offer) {
         var game = gameRepository.getGame();
         dealManager.createOffer(game, initiatorId, addresseeId, offer);
     }
 
     @Override
-    public void processOfferAnswer(String callerId, ProposalAction proposalAction) {
+    public void processOfferAnswer(UUID callerId, ProposalAction proposalAction) {
         var game = gameRepository.getGame();
         dealManager.processOfferAnswer(game, callerId, proposalAction);
     }

@@ -1,6 +1,5 @@
 package com.monopolynew.websocket;
 
-import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ConnectionErrorEvent;
 import com.monopolynew.game.Game;
@@ -10,8 +9,9 @@ import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.service.api.GameMapRefresher;
 import com.monopolynew.service.api.GameRepository;
+import com.monopolynew.user.GameUser;
+import com.monopolynew.user.UserRepository;
 import jakarta.websocket.CloseReason;
-import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static com.monopolynew.config.GlobalConfig.PLAYER_ID_KEY;
 
@@ -34,6 +35,7 @@ import static com.monopolynew.config.GlobalConfig.PLAYER_ID_KEY;
 @ServerEndpoint(value = "/ws", configurator = SpringWebsocketCustomConfigurer.class)
 public class GameWebSocketHandler {
 
+    private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
     private final PlayerWsSessionRepository playerWsSessionRepository;
@@ -41,10 +43,9 @@ public class GameWebSocketHandler {
     private final GameEventGenerator gameEventGenerator;
 
     @OnOpen
-    public void onOpen(Session session, EndpointConfig config) throws IOException {
-        var playerId = (String) config.getUserProperties().get(PLAYER_ID_KEY);
-        var playerName = (String) config.getUserProperties().get(GlobalConfig.PLAYER_NAME_KEY);
-        var avatar = (String) config.getUserProperties().get(GlobalConfig.PLAYER_AVATAR_KEY);
+    public void onOpen(Session session) throws IOException {
+        var playerId = getUserIdFromSession(session);
+        GameUser user = userRepository.getUser(playerId);
 
         Game game = gameRepository.getGame();
         if (game.isInProgress()) {
@@ -65,13 +66,13 @@ public class GameWebSocketHandler {
         }
 
         playerWsSessionRepository.addPlayerSession(playerId, session);
-        game.addPlayer(new Player(playerId, playerName, avatar));
+        game.addPlayer(Player.fromUser(user));
         gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
     }
 
     @OnMessage
     public void onMessage(Session session, String message) {
-        var playerId = getPlayerIdFromSession(session);
+        var playerId = getUserIdFromSession(session);
         var newMessage = ChatMessageEvent.builder()
                 .message(message)
                 .playerId(playerId)
@@ -81,11 +82,12 @@ public class GameWebSocketHandler {
 
     @OnClose
     public void onClose(Session session, CloseReason reason) {
-        var playerId = getPlayerIdFromSession(session);
+        var playerId = getUserIdFromSession(session);
         var game = gameRepository.getGame();
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
             game.removePlayer(playerId);
+            playerWsSessionRepository.removePlayerSession(playerId);
             gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
         // if a game is in progress - do not remove to let the player reconnect with another session
@@ -97,16 +99,12 @@ public class GameWebSocketHandler {
     }
 
     @OnError
-    public void onError(Session session, Throwable ex) {
-        var playerId = getPlayerIdFromSession(session);
+    public void onError(Session session, Throwable ex) throws Exception {
+        var playerId = getUserIdFromSession(session);
         log.error("An error occurred during websocket exchange for user " + playerId, ex);
     }
 
-    private String getPlayerIdFromSession(Session session) {
-        Object playerId = session.getUserProperties().get(PLAYER_ID_KEY);
-        if (playerId instanceof String playerIfString) {
-            return playerIfString;
-        }
-        return "";
+    private UUID getUserIdFromSession(Session session) {
+        return (UUID) session.getUserProperties().get(PLAYER_ID_KEY);
     }
 }

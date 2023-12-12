@@ -5,15 +5,17 @@ import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 
+import java.util.UUID;
+
 public interface FieldManagementService {
 
-    void mortgageField(Game game, int fieldIndex, String playerId);
+    void mortgageField(Game game, int fieldIndex, UUID playerId);
 
-    void redeemMortgagedProperty(Game game, int fieldIndex, String playerId);
+    void redeemMortgagedProperty(Game game, int fieldIndex, UUID playerId);
 
-    void buyHouse(Game game, int fieldIndex, String playerId);
+    void buyHouse(Game game, int fieldIndex, UUID playerId);
 
-    void sellHouse(Game game, int fieldIndex, String playerId);
+    void sellHouse(Game game, int fieldIndex, UUID playerId);
 
     boolean housePurchaseAvailable(Game game, Player player, StreetField streetField);
 

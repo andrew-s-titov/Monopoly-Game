@@ -13,6 +13,7 @@ import org.mapstruct.Named;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface GameFieldMapper {
@@ -42,7 +43,7 @@ public interface GameFieldMapper {
     }
 
     @Named("getOwnerId")
-    default String getOwnerId(Player player) {
+    default UUID getOwnerId(Player player) {
         return player == null ? null : player.getId();
     }
 

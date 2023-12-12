@@ -6,16 +6,18 @@ import lombok.Getter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 public class ChatMessageEvent {
 
     private final int code = 200;
     private final String message;
-    private final String playerId;
+    private final UUID playerId;
 
     @JsonCreator
-    public ChatMessageEvent(@NonNull String message, @Nullable String playerId) {
+    public ChatMessageEvent(@NonNull String message, @Nullable UUID playerId) {
         this.message = message;
         this.playerId = playerId;
     }

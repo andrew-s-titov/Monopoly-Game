@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
@@ -71,7 +72,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     @Override
     public void sendBuyProposal(Game game, Player player, PurchasableField field, boolean payable) {
-        String buyerId = player.getId();
+        var buyerId = player.getId();
         var buyProposal = new BuyProposal(buyerId, field, payable);
         game.setBuyProposal(buyProposal);
         changeGameStage(game, GameStage.BUY_PROPOSAL);
@@ -79,7 +80,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
     }
 
     @Override
-    public void doBuyField(Game game, PurchasableField field, int price, String buyerId) {
+    public void doBuyField(Game game, PurchasableField field, int price, UUID buyerId) {
         var buyer = game.getPlayerById(buyerId);
         field.newOwner(buyer);
         buyer.takeMoney(price);
@@ -173,7 +174,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         } else {
             nextPlayer = toNextPlayer(game);
         }
-        String nextPlayerId = nextPlayer.getId();
+        var nextPlayerId = nextPlayer.getId();
         if (nextPlayer.isImprisoned()) {
             changeGameStage(game, GameStage.JAIL_RELEASE_START);
             gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(nextPlayerId));

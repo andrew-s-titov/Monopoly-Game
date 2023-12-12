@@ -63,7 +63,7 @@ export interface PropertyShortInfo {
 }
 
 export interface ConnectedPlayer {
-  playerId: string,
+  id: string,
   name: string,
   avatar: string,
 }

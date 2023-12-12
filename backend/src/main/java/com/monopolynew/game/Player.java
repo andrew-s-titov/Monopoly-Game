@@ -1,14 +1,16 @@
 package com.monopolynew.game;
 
+import com.monopolynew.user.GameUser;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class Player {
 
     @Getter
-    private final String id;
+    private final UUID id;
     @Getter
     private final String name;
     @Getter
@@ -26,10 +28,18 @@ public class Player {
     private int doubletCount = 0;
 
     @Builder
-    public Player(String id, String name, String avatar) {
+    public Player(UUID id, String name, String avatar) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
+    }
+
+    public static Player fromUser(GameUser user) {
+        return Player.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .avatar(user.getAvatar())
+                .build();
     }
 
     public void changePosition(int newPosition) {

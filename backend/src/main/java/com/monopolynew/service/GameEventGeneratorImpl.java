@@ -92,7 +92,7 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
 
     @Override
     public GameRoomEvent gameRoomEvent(Game game) {
-        return new GameRoomEvent(playerMapper.toPlayersShortInfoList(game.getPlayers()));
+        return new GameRoomEvent(playerMapper.toUserInfoList(game.getPlayers()));
     }
 
     @Override
