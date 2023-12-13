@@ -1,6 +1,8 @@
 import { useMessageContext } from "../context/MessageProvider";
 import { useState } from "react";
-import { getLoggedInUserId, PLAYER_ID_KEY } from "../utils/auth";
+import { getLoggedInUserId } from "../utils/auth";
+
+const USER_ID_KEY_HEADER = 'user_id';
 
 interface IQueryProps {
   method: 'GET' | 'POST';
@@ -29,7 +31,7 @@ const fetchParams = (method: string, body?: any): RequestInit => {
     mode: 'cors',
     credentials: 'include',
     headers: {
-      [PLAYER_ID_KEY]: getLoggedInUserId(),
+      [USER_ID_KEY_HEADER]: getLoggedInUserId(),
     }
   };
   return body

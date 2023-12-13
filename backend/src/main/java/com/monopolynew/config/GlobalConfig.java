@@ -8,7 +8,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 @Configuration
 public class GlobalConfig {
 
-    public static final String PLAYER_ID_KEY = "player_id";
+    public static final String USER_ID_HEADER = "user_id";
 
     @Bean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder jacksonBootDefault) {

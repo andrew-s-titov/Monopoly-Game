@@ -1,4 +1,4 @@
-import { websocketRequestParams } from "../utils/auth";
+import { getLoggedInUserId } from "../utils/auth";
 
 // local dev endpoint
 // export const BE_ENDPOINT = 'http://localhost:8080';
@@ -6,10 +6,10 @@ export const BE_ENDPOINT = document.location.origin;
 
 export const getWebsocketUrl = () => {
   const wsUri = getWebsocketEndpoint();
-  return `${wsUri}?${websocketRequestParams()}`;
+  return `${wsUri}/${getLoggedInUserId()}`;
 }
 
 const getWebsocketEndpoint = () => {
   const host = BE_ENDPOINT.split('://')[1];
-  return `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}/ws`;
+  return `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}`;
 }

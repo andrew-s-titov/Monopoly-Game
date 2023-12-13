@@ -3,7 +3,7 @@ package com.monopolynew.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.websocket.PlayerWsSessionRepository;
+import com.monopolynew.websocket.UserWsSessionRepository;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,19 +18,19 @@ import java.util.function.Consumer;
 @Component
 public class GameEventSenderWebsocketImpl implements GameEventSender {
 
-    private final PlayerWsSessionRepository playerWsSessionRepository;
+    private final UserWsSessionRepository userWsSessionRepository;
     private final ObjectMapper objectMapper;
 
     @Override
     public void sendToAllPlayers(Object gameEvent) {
         handleGameEvent(gameEvent,
-                event -> playerWsSessionRepository.getAllSessions()
+                event -> userWsSessionRepository.getAllSessions()
                         .forEach(session -> sendToSession(session, event)));
     }
 
     @Override
     public void sendToPlayer(UUID playerId, Object gameEvent) {
-        Session wsSession = playerWsSessionRepository.getPlayerSession(playerId);
+        Session wsSession = userWsSessionRepository.getUserSession(playerId);
         if (wsSession == null) {
             log.warn("No session was found for playerId={} on this server", playerId);
             return;
