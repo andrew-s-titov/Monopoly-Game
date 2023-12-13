@@ -15,7 +15,7 @@ const PayCommandModal = ({ playerId, sum, wiseToGiveUp }: IPayCommandModalProps)
 
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[playerId];
-  const { get } = useQuery();
+  const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= sum;
 
@@ -35,6 +35,8 @@ const PayCommandModal = ({ playerId, sum, wiseToGiveUp }: IPayCommandModalProps)
     <div className='modal-button-group'>
       <Button
         disabled={!payable}
+        loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         className="modal-button"
         label='Pay'
         severity="secondary"
@@ -44,6 +46,8 @@ const PayCommandModal = ({ playerId, sum, wiseToGiveUp }: IPayCommandModalProps)
       {wiseToGiveUp &&
         <Button
           className="modal-button"
+          loading={isLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
           severity="danger"
           label='Give up'
           icon="pi pi-flag modal-button-icon"

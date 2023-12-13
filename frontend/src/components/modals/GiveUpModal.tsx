@@ -28,6 +28,7 @@ const GiveUpModal = () => {
       />
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         className='modal-button'
         label='Give up'
         severity='danger'

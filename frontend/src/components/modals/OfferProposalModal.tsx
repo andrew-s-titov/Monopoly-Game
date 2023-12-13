@@ -86,6 +86,7 @@ const OfferProposalModal = ({
       <div className='modal-button-group'>
         <Button
           loading={isLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
           label='Accept'
           severity='success'
@@ -94,6 +95,7 @@ const OfferProposalModal = ({
         />
         <Button
           loading={isLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
           label='Decline'
           severity='secondary'

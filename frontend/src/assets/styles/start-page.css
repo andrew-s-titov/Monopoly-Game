@@ -38,11 +38,15 @@
     color: white;
     width: 30vh;
     height: 7vh;
+    justify-content: center;
 }
 
 .non-game-button .p-button-icon-left {
-    margin-right: 0 !important;
-    margin-left: 2vh !important;
+    margin-right: 2vh !important;
+}
+
+.non-game-button .p-button-label {
+    flex: none !important;
 }
 
 .full-size-background {
