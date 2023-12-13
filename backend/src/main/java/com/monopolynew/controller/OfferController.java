@@ -23,14 +23,14 @@ public class OfferController {
     private final GameService gameService;
 
     @PostMapping("/{addresseeId}/send")
-    public void sendOffer(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) UUID initiatorId,
+    public void sendOffer(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID initiatorId,
                           @PathVariable("addresseeId") UUID addresseeId,
                           @RequestBody DealOffer dealOffer) {
         gameService.createOffer(initiatorId, addresseeId, dealOffer);
     }
 
     @PostMapping("/process")
-    public void processOffer(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) UUID callerId,
+    public void processOffer(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID callerId,
                              @RequestParam("action") ProposalAction proposalAction) {
         gameService.processOfferAnswer(callerId, proposalAction);
     }

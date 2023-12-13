@@ -18,7 +18,7 @@ public class PlayerController {
     private final GameService gameService;
 
     @GetMapping("/give_up")
-    public void giveUp(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) UUID playerId) {
+    public void giveUp(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
         gameService.giveUp(playerId);
     }
 }
