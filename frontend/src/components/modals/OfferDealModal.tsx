@@ -199,6 +199,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
         />
         <Button
           loading={isLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
           label='Send offer'
           severity='success'

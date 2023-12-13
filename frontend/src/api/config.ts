@@ -1,8 +1,8 @@
 import { getLoggedInUserId } from "../utils/auth";
 
 // local dev endpoint
-// export const BE_ENDPOINT = 'http://localhost:8080';
-export const BE_ENDPOINT = document.location.origin;
+export const BE_ENDPOINT = 'http://localhost:8080';
+// export const BE_ENDPOINT = document.location.origin;
 
 export const getWebsocketUrl = () => {
   const wsUri = getWebsocketEndpoint();

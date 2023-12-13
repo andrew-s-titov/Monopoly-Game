@@ -73,7 +73,7 @@ const LoginForm = () => {
         onKeyDown={onEnterKeyDown}
       />
       <StartPageButton
-        label='Join the game'
+        label='Join'
         icon="pi-user"
         isLoading={isLoginInProgress}
         isDisabled={isInputInvalid}

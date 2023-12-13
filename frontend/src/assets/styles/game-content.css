@@ -66,6 +66,7 @@
 
 .modal-button-icon {
     font-size: 2vh;
+    text-shadow: none;
 }
 
 .player-name {

@@ -17,7 +17,7 @@ const StartPageButton = ({ label, icon, isLoading, isDisabled, onClickHandler }:
       loading={isLoading}
       disabled={isDisabled}
       onClick={onClickHandler}
-      loadingIcon="pi pi-spin pi-spinner icon"
+      loadingIcon="pi pi-spin pi-box icon"
       className="non-game-button"
       label={label}
       text

@@ -33,6 +33,7 @@ const JailReleaseModal = ({ playerId }: IJailReleaseModalProps) => {
     <div className='modal-button-group'>
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         disabled={!payable}
         className='modal-button'
         label='Pay $50'
@@ -42,6 +43,7 @@ const JailReleaseModal = ({ playerId }: IJailReleaseModalProps) => {
       />
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         className='modal-button'
         label='Try luck'
         icon='pi pi-box modal-button-icon'

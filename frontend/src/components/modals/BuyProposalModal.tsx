@@ -34,6 +34,7 @@ const BuyProposalModal = ({ playerId, price }: IBuyProposalProps) => {
     <div className='modal-button-group'>
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         disabled={!payable}
         className='modal-button'
         label='Buy'
@@ -43,6 +44,7 @@ const BuyProposalModal = ({ playerId, price }: IBuyProposalProps) => {
       />
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         className='modal-button'
         label='Auction'
         severity='danger'

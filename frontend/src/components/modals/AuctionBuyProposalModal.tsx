@@ -35,6 +35,7 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
     <div className='modal-button-group'>
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         disabled={!payable}
         className='modal-button'
         label='Buy'
@@ -44,6 +45,7 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
       />
       <Button
         loading={isLoading}
+        loadingIcon="pi pi-spin pi-box modal-button-icon"
         className='modal-button'
         label='Decline'
         severity='secondary'
