@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -18,5 +19,5 @@ public class GameMapRefreshEvent implements GameEvent {
 
     private final List<GameFieldState> fields;
 
-    private final String currentPlayer;
+    private final UUID currentPlayer;
 }

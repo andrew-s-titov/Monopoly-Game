@@ -9,6 +9,8 @@ import com.monopolynew.service.api.GameMapRefresher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @Component
 public class GameMapRefresherImpl implements GameMapRefresher {
@@ -17,7 +19,7 @@ public class GameMapRefresherImpl implements GameMapRefresher {
     private final GameEventSender gameEventSender;
 
     @Override
-    public void restoreGameStateForPlayer(Game game, String playerId) {
+    public void restoreGameStateForPlayer(Game game, UUID playerId) {
         var currentPlayerId = game.getCurrentPlayer().getId();
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.mapRefreshEvent(game));
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.gameRoomEvent(game));

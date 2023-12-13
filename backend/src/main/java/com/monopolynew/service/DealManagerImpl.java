@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -49,7 +50,7 @@ public class DealManagerImpl implements DealManager {
     private final GameLogicExecutor gameLogicExecutor;
 
     @Override
-    public void createOffer(Game game, String initiatorId, String addresseeId, DealOffer offer) {
+    public void createOffer(Game game, UUID initiatorId, UUID addresseeId, DealOffer offer) {
         checkCanCreateOffer(game);
         checkDealSides(game, initiatorId, addresseeId);
         var currentPlayer = game.getCurrentPlayer();
@@ -84,7 +85,7 @@ public class DealManagerImpl implements DealManager {
     }
 
     @Override
-    public void processOfferAnswer(Game game, String addresseeId, ProposalAction proposalAction) {
+    public void processOfferAnswer(Game game, UUID addresseeId, ProposalAction proposalAction) {
         var currentGameStage = game.getStage();
         if (!GameStage.DEAL_OFFER.equals(currentGameStage)) {
             throw new WrongGameStageException("Cannot process offer - wrong game stage");
@@ -106,7 +107,7 @@ public class DealManagerImpl implements DealManager {
         game.setOffer(null);
         GameStage stageToReturnTo = offer.getStageToReturnTo();
         gameLogicExecutor.changeGameStage(game, stageToReturnTo);
-        String initiatorId = initiator.getId();
+        var initiatorId = initiator.getId();
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
             gameEventSender.sendToPlayer(initiatorId, new TurnStartEvent(initiatorId));
         }
@@ -115,7 +116,7 @@ public class DealManagerImpl implements DealManager {
         }
     }
 
-    private void checkDealSides(Game game, String offerInitiatorId, String offerAddresseeId) {
+    private void checkDealSides(Game game, UUID offerInitiatorId, UUID offerAddresseeId) {
         checkOfferInitiator(game, offerInitiatorId);
         getOfferAddressee(game, offerAddresseeId);
     }
@@ -127,13 +128,13 @@ public class DealManagerImpl implements DealManager {
         }
     }
 
-    private void checkOfferInitiator(Game game, String offerInitiatorId) {
+    private void checkOfferInitiator(Game game, UUID offerInitiatorId) {
         if (!game.getCurrentPlayer().getId().equals(offerInitiatorId)) {
             throw new ClientBadRequestException("only current player can initiate deal process");
         }
     }
 
-    private Player getOfferAddressee(Game game, String offerAddresseeId) {
+    private Player getOfferAddressee(Game game, UUID offerAddresseeId) {
         var offerAddressee = game.getPlayerById(offerAddresseeId);
         if (offerAddressee == null) {
             throw new ClientBadRequestException(String.format("player with id %s doesn't exist", offerAddresseeId));

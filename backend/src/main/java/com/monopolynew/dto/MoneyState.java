@@ -4,11 +4,13 @@ import com.monopolynew.game.Player;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @Getter
 public class MoneyState {
 
-    private final String playerId;
+    private final UUID playerId;
 
     private final int money;
 

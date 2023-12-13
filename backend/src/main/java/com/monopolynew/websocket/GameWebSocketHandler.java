@@ -1,7 +1,5 @@
 package com.monopolynew.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ConnectionErrorEvent;
 import com.monopolynew.game.Game;
@@ -11,8 +9,9 @@ import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.service.api.GameMapRefresher;
 import com.monopolynew.service.api.GameRepository;
+import com.monopolynew.user.GameUser;
+import com.monopolynew.user.UserRepository;
 import jakarta.websocket.CloseReason;
-import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
@@ -25,6 +24,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.UUID;
+
+import static com.monopolynew.config.GlobalConfig.PLAYER_ID_KEY;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -33,7 +35,7 @@ import java.io.IOException;
 @ServerEndpoint(value = "/ws", configurator = SpringWebsocketCustomConfigurer.class)
 public class GameWebSocketHandler {
 
-    private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
     private final PlayerWsSessionRepository playerWsSessionRepository;
@@ -41,10 +43,9 @@ public class GameWebSocketHandler {
     private final GameEventGenerator gameEventGenerator;
 
     @OnOpen
-    public void onOpen(Session session, EndpointConfig config) throws IOException {
-        var playerId = (String) config.getUserProperties().get(GlobalConfig.PLAYER_ID_KEY);
-        var playerName = (String) config.getUserProperties().get(GlobalConfig.PLAYER_NAME_KEY);
-        var avatar = (String) config.getUserProperties().get(GlobalConfig.PLAYER_AVATAR_KEY);
+    public void onOpen(Session session) throws IOException {
+        var playerId = getUserIdFromSession(session);
+        GameUser user = userRepository.getUser(playerId);
 
         Game game = gameRepository.getGame();
         if (game.isInProgress()) {
@@ -65,45 +66,45 @@ public class GameWebSocketHandler {
         }
 
         playerWsSessionRepository.addPlayerSession(playerId, session);
-        game.addPlayer(new Player(playerId, playerName, avatar));
+        game.addPlayer(Player.fromUser(user));
         gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
     }
 
     @OnMessage
-    public void onMessage(String message) {
-        try {
-            ChatMessageEvent playerMessage = objectMapper.readValue(message, ChatMessageEvent.class);
-            gameEventSender.sendToAllPlayers(playerMessage);
-        } catch (IOException e) {
-            // TODO: process exception gracefully
-            throw new RuntimeException(e);
-        }
+    public void onMessage(Session session, String message) {
+        var playerId = getUserIdFromSession(session);
+        var newMessage = ChatMessageEvent.builder()
+                .message(message)
+                .playerId(playerId)
+                .build();
+        gameEventSender.sendToAllPlayers(newMessage);
     }
 
     @OnClose
     public void onClose(Session session, CloseReason reason) {
-        var sessionId = session.getId();
+        var playerId = getUserIdFromSession(session);
         var game = gameRepository.getGame();
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
-            var playerId = playerWsSessionRepository.getPlayerIdBySessionId(sessionId);
-            if (playerId != null) {
-                game.removePlayer(playerId);
-                gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
-            }
+            game.removePlayer(playerId);
+            playerWsSessionRepository.removePlayerSession(playerId);
+            gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
         // if a game is in progress - do not remove to let the player reconnect with another session
-
         CloseReason.CloseCode closeCode = reason.getCloseCode();
         if (!closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE)
                 && !closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
-            log.warn("Not a normal websocket close on session {}, reason: {}", sessionId, reason);
+            log.warn("Not a normal websocket close for user {}, reason: {}", playerId, reason);
         }
     }
 
     @OnError
-    public void onError(Session session, Throwable ex) {
-        String sessionId = session.getId();
-        log.error("An error occurred during websocket exchange within session " + sessionId, ex);
+    public void onError(Session session, Throwable ex) throws Exception {
+        var playerId = getUserIdFromSession(session);
+        log.error("An error occurred during websocket exchange for user " + playerId, ex);
+    }
+
+    private UUID getUserIdFromSession(Session session) {
+        return (UUID) session.getUserProperties().get(PLAYER_ID_KEY);
     }
 }

@@ -3,21 +3,40 @@ package com.monopolynew.websocket;
 import jakarta.websocket.Session;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-public interface PlayerWsSessionRepository {
+@Component
+public class PlayerWsSessionRepository {
 
-    void addPlayerSession(String playerId, Session session);
+    private final Map<UUID, Session> activePlayerSessions = new HashMap<>();
 
-    void refreshPlayerSession(String playerId, Session session);
+    public void addPlayerSession(UUID playerId, Session session) {
+        activePlayerSessions.put(playerId, session);
+    }
+
+    public void removePlayerSession(UUID playerId) {
+        activePlayerSessions.remove(playerId);
+    }
+
+    public void refreshPlayerSession(UUID playerId, Session session) {
+        Session playerSession = activePlayerSessions.get(playerId);
+        if (playerSession == null || !playerSession.equals(session)) {
+            activePlayerSessions.put(playerId, session);
+        }
+    }
 
     @Nullable
-    Session getPlayerSession(String playerId);
-
-    @Nullable
-    String getPlayerIdBySessionId(String sessionId);
+    public Session getPlayerSession(UUID playerId) {
+        return activePlayerSessions.get(playerId);
+    }
 
     @NonNull
-    Collection<Session> getAllSessions();
+    public Collection<Session> getAllSessions() {
+        return activePlayerSessions.values();
+    }
 }

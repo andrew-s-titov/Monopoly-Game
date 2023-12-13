@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @AllArgsConstructor
 public class BuyProposal {
 
-    private final String playerId;
+    private final UUID playerId;
 
     private final PurchasableField field;
 

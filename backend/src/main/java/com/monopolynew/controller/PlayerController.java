@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/game/player")
@@ -16,7 +18,7 @@ public class PlayerController {
     private final GameService gameService;
 
     @GetMapping("/give_up")
-    public void giveUp(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) String playerId) {
+    public void giveUp(@RequestHeader(GlobalConfig.PLAYER_ID_KEY) UUID playerId) {
         gameService.giveUp(playerId);
     }
 }

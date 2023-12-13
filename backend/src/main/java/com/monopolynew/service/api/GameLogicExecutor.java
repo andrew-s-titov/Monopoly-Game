@@ -7,6 +7,8 @@ import com.monopolynew.game.Player;
 import com.monopolynew.map.PurchasableField;
 import org.springframework.lang.Nullable;
 
+import java.util.UUID;
+
 public interface GameLogicExecutor {
 
     void movePlayer(Game game, Player player, int newPositionIndex, boolean forward);
@@ -15,7 +17,7 @@ public interface GameLogicExecutor {
 
     void sendBuyProposal(Game game, Player player, PurchasableField field, boolean payable);
 
-    void doBuyField(Game game, PurchasableField field, int price, String buyerId);
+    void doBuyField(Game game, PurchasableField field, int price, UUID buyerId);
 
     int computePlayerAssets(Game game, Player player);
 

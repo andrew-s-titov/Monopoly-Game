@@ -32,7 +32,7 @@ import WinnerModal from "../components/modals/WinnerModal";
 import { IModalProps } from "../hooks/useModal";
 
 interface IWebsocketContext {
-  sendMessage: (chatMessage: ChatMessageBody) => void;
+  sendMessage: (chatMessage: string) => void;
 }
 
 const WebsocketContext = createContext<IWebsocketContext>({} as IWebsocketContext);
@@ -314,10 +314,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             modal: true,
           });
         },
-        317: () => {
-        },
-        318: () => {
-        },
         350: ({ gameStage }) => {
           setGameState(prevState => ({
             ...prevState,
@@ -344,14 +340,14 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         clearTimeouts();
         websocket.current
         && websocket.current?.readyState === websocket.current?.OPEN
-        && websocket.current.close(1000, 'connection closed on React component unload');
+        && websocket.current.close(1000, 'player left the game room / the game');
       }
     }, []
   );
 
-  const sendMessage = (chatMessage: ChatMessageBody) => {
+  const sendMessage = (chatMessage: string) => {
     if (websocket.current && websocket.current.readyState === websocket.current.OPEN) {
-      websocket.current.send(JSON.stringify(chatMessage));
+      websocket.current.send(chatMessage);
     }
   }
 

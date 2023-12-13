@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -13,7 +14,7 @@ public class OfferProposalEvent implements GameEvent {
 
     private final int code = 316;
 
-    private final String addresseeId;
+    private final UUID addresseeId;
 
     private final String initiatorName;
 

@@ -5,13 +5,11 @@ import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import org.springframework.lang.NonNull;
 
+import java.util.UUID;
+
 public interface GameService {
 
     boolean isGameStarted();
-
-    boolean usernameTaken(String username);
-
-    String getPlayerName(String playerId);
 
     void startGame();
 
@@ -33,17 +31,17 @@ public interface GameService {
 
     void processPayment();
 
-    void giveUp(String playerId);
+    void giveUp(UUID playerId);
 
-    void mortgageField(int fieldIndex, String playerId);
+    void mortgageField(int fieldIndex, UUID playerId);
 
-    void redeemMortgagedProperty(int fieldIndex, String playerId);
+    void redeemMortgagedProperty(int fieldIndex, UUID playerId);
 
-    void buyHouse(int fieldIndex, String playerId);
+    void buyHouse(int fieldIndex, UUID playerId);
 
-    void sellHouse(int fieldIndex, String playerId);
+    void sellHouse(int fieldIndex, UUID playerId);
 
-    void createOffer(String offerInitiatorId, String offerAddresseeId, DealOffer offer);
+    void createOffer(UUID offerInitiatorId, UUID offerAddresseeId, DealOffer offer);
 
-    void processOfferAnswer(String callerId, ProposalAction proposalAction);
+    void processOfferAnswer(UUID callerId, ProposalAction proposalAction);
 }
