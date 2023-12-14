@@ -30,12 +30,16 @@ const ChatHistory = ({ messages }: IChatContainerProps) => {
         container.scrollTop = container.scrollHeight;
       }
     }
+    defineShowScrollButtonVisibility(container);
   }, [messages]);
 
+  const defineShowScrollButtonVisibility = (div: HTMLDivElement | null) => {
+    div && setShowScrollButton(
+      div.scrollTop < (div.scrollHeight - div.clientHeight) * 0.8);
+  }
+
   const handleScroll = () => {
-    containerRef.current && setShowScrollButton(
-      containerRef.current.scrollTop <
-      (containerRef.current.scrollHeight - containerRef.current.clientHeight) * 0.8);
+    defineShowScrollButtonVisibility(containerRef.current);
   }
 
   const scrollDown = () => {
