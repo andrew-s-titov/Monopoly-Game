@@ -169,6 +169,11 @@ div::-webkit-scrollbar {
     width: 1vh;
 }
 
+div {
+    /* FF partial styling support */
+    scrollbar-width: thin;
+}
+
 div::-webkit-scrollbar-track {
     border-radius: 1.2vh;
 }
