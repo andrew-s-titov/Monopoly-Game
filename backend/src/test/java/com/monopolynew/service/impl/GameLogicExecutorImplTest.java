@@ -112,7 +112,7 @@ class GameLogicExecutorImplTest {
         @DisplayName("""
                 when bankrupt for another player and debt > debtor assets price - expect:
                 - debtor with 0 money and bankrupt status;
-                - beneficiary received money and debtor fields equal to debt
+                - beneficiary all debtor's money received and all debtor's fields
                 - all debtor's fields not owned, not mortgaged and without houses;
                 - needed events sent;
                 """)
@@ -136,7 +136,7 @@ class GameLogicExecutorImplTest {
             List<GameField> playerFields = List.of(field1, field2, field3);
             when(gameMap.getFields()).thenReturn(playerFields);
 
-            var debtorAssetsTotal = debtor.getMoney()
+            var debtorAssetsTotal = debtorInitialMoney
                     + field1.getHouses() * field1.getHousePrice()
                     + field2.getHouses() * field2.getHousePrice()
                     + field3.getHouses() * field3.getHousePrice()
@@ -173,8 +173,7 @@ class GameLogicExecutorImplTest {
                 when bankrupt for another player and debt < debtor assets price - expect:
                 - debtor with 0 money and bankrupt status;
                 - beneficiary received money and debtor fields equal to debt
-                - spare fields are not owned and not mortgaged;
-                - all debtor's fields not owned, not mortgaged and without houses;
+                - spare fields are not owned and not mortgaged and have no houses;
                 - needed events sent;
                 """)
         void bankruptForAnotherPlayerWithEnoughProperty() {
@@ -197,7 +196,7 @@ class GameLogicExecutorImplTest {
             List<GameField> playerFields = List.of(field1, field2, field3);
             when(gameMap.getFields()).thenReturn(playerFields);
 
-            var debtorAssetsTotal = debtor.getMoney()
+            var debtorAssetsTotal = debtorInitialMoney
                     + field1.getHouses() * field1.getHousePrice()
                     + field2.getHouses() * field2.getHousePrice()
                     + field3.getHouses() * field3.getHousePrice()

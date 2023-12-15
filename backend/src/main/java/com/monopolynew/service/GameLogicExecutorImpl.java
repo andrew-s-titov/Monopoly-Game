@@ -316,23 +316,23 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             for (PurchasableField field : playerFieldsLeft) {
                 field.newOwner(beneficiary);
                 removeFieldHouses(field);
-                playerFieldsToProcess.remove(field);
             }
+            playerFieldsToProcess.clear();
         } else {
             var housePriceToTransfer = Math.min(debtorPropertyPrice.getHousesPrice(), debt);
-            debt = debt - housePriceToTransfer;
+            var remainingDebt = debt - housePriceToTransfer;
             var fieldsIterator = playerFieldsLeft.iterator();
-            while (debt > 0 && fieldsIterator.hasNext()) {
+            while (remainingDebt > 0 && fieldsIterator.hasNext()) {
                 var field = fieldsIterator.next();
                 removeFieldHouses(field);
-                var price = field.isMortgaged() ? getFieldMortgagePrice(field) : field.getPrice();
-                if (debt >= price) {
-                    debt = debt - price;
-                    field.newOwner(beneficiary);
+                var fieldPrice = field.isMortgaged() ? getFieldMortgagePrice(field) : field.getPrice();
+                if (remainingDebt >= fieldPrice) {
+                    remainingDebt = remainingDebt - fieldPrice;
+                    field.newOwner(beneficiary); // street instead of money equivalent to street's price
                     playerFieldsToProcess.remove(field);
                 } else {
-                    beneficiary.addMoney(debt);
-                    debt = 0;
+                    beneficiary.addMoney(remainingDebt); // partial money sum instead of whole street
+                    remainingDebt = 0;
                 }
             }
         }
