@@ -28,9 +28,9 @@ import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -192,7 +192,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         var playerMoneyLeft = debtor.getMoney();
         var playerFieldsLeft = getPlayerFields(game, debtor);
         var playerFieldsToProcess = new ArrayList<>(playerFieldsLeft);
-        var shouldProcessFields = !CollectionUtils.isEmpty(playerFieldsLeft);
+        var shouldProcessFields = CollectionUtils.isNotEmpty(playerFieldsLeft);
         if (playerMoneyLeft > 0) {
             debtor.takeMoney(playerMoneyLeft);
             moneyStatesToSend.add(MoneyState.fromPlayer(debtor));
@@ -221,7 +221,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             gameEventSender.sendToAllPlayers(
                     new FieldStateChangeEvent(gameFieldMapper.toStateList(playerFieldsLeft)));
         }
-        if (!CollectionUtils.isEmpty(moneyStatesToSend)) {
+        if (CollectionUtils.isNotEmpty(moneyStatesToSend)) {
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStatesToSend));
         }
         if (!isGameFinished(game) && debtor.equals(game.getCurrentPlayer())) {
@@ -296,7 +296,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                         updatedFieldStates.add(gameFieldMapper.toState(field));
                     }
                 });
-        if (!CollectionUtils.isEmpty(updatedFieldStates)) {
+        if (CollectionUtils.isNotEmpty(updatedFieldStates)) {
             gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(updatedFieldStates));
         }
     }
@@ -316,23 +316,23 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
             for (PurchasableField field : playerFieldsLeft) {
                 field.newOwner(beneficiary);
                 removeFieldHouses(field);
-                playerFieldsToProcess.remove(field);
             }
+            playerFieldsToProcess.clear();
         } else {
             var housePriceToTransfer = Math.min(debtorPropertyPrice.getHousesPrice(), debt);
-            debt = debt - housePriceToTransfer;
+            var remainingDebt = debt - housePriceToTransfer;
             var fieldsIterator = playerFieldsLeft.iterator();
-            while (debt > 0 && fieldsIterator.hasNext()) {
+            while (remainingDebt > 0 && fieldsIterator.hasNext()) {
                 var field = fieldsIterator.next();
                 removeFieldHouses(field);
-                var price = field.isMortgaged() ? getFieldMortgagePrice(field) : field.getPrice();
-                if (debt >= price) {
-                    debt = debt - price;
-                    field.newOwner(beneficiary);
+                var fieldPrice = field.isMortgaged() ? getFieldMortgagePrice(field) : field.getPrice();
+                if (remainingDebt >= fieldPrice) {
+                    remainingDebt = remainingDebt - fieldPrice;
+                    field.newOwner(beneficiary); // street instead of money equivalent to street's price
                     playerFieldsToProcess.remove(field);
                 } else {
-                    beneficiary.addMoney(debt);
-                    debt = 0;
+                    beneficiary.addMoney(remainingDebt); // partial money sum instead of whole street
+                    remainingDebt = 0;
                 }
             }
         }

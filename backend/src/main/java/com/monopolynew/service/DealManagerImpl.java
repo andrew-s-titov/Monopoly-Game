@@ -29,8 +29,8 @@ import com.monopolynew.service.api.GameEventGenerator;
 import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,7 +100,7 @@ public class DealManagerImpl implements DealManager {
         if (ProposalAction.DECLINE.equals(proposalAction)) {
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(addressee.getName() + " declined the offer"));
         } else {
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(addressee.getName() + " accepted the offer"));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(createOfferAcceptMessage(offer)));
             processOfferPayments(offer, initiator, addressee);
             processOfferPropertyExchange(game, offer, initiator, addressee);
         }
@@ -181,7 +181,7 @@ public class DealManagerImpl implements DealManager {
     }
 
     private void checkNoHouses(List<PurchasableField> fields) {
-        if (!CollectionUtils.isEmpty(fields) && fields.stream()
+        if (CollectionUtils.isNotEmpty(fields) && fields.stream()
                 .filter(StreetField.class::isInstance)
                 .map(StreetField.class::cast)
                 .anyMatch(field -> field.getHouses() > 0)) {
@@ -225,7 +225,7 @@ public class DealManagerImpl implements DealManager {
         List<GameFieldState> fieldViewsToSend = new ArrayList<>();
         fieldGroupsToCheck.forEach(group -> fieldViewsToSend.addAll(recalculateFieldGroupPrices(group)));
 
-        if (!CollectionUtils.isEmpty(fieldViewsToSend)) {
+        if (CollectionUtils.isNotEmpty(fieldViewsToSend)) {
             gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(fieldViewsToSend));
         }
     }
@@ -276,7 +276,7 @@ public class DealManagerImpl implements DealManager {
     }
 
     private boolean processOfferFieldExchange(List<PurchasableField> fields, Player newOwner) {
-        if (!CollectionUtils.isEmpty(fields)) {
+        if (CollectionUtils.isNotEmpty(fields)) {
             for (PurchasableField field : fields) {
                 field.newOwner(newOwner);
             }
@@ -293,6 +293,47 @@ public class DealManagerImpl implements DealManager {
                 && CollectionUtils.isEmpty(offer.getAddresseeFields())
                 && CollectionUtils.isEmpty(offer.getInitiatorFields())) {
             throw new PlayerInvalidInputException("Cannot send an empty offer");
+        }
+    }
+
+    private String createOfferAcceptMessage(Offer offer) {
+        Integer initiatorMoney = offer.getInitiatorMoney();
+        Integer addresseeMoney = offer.getAddresseeMoney();
+        List<PurchasableField> initiatorFields = offer.getInitiatorFields();
+        List<PurchasableField> addresseeFields = offer.getAddresseeFields();
+        var strBuilder = new StringBuilder();
+        var shouldAddInitiatorResult = (addresseeMoney != null && addresseeMoney > 0)
+                || CollectionUtils.isNotEmpty(addresseeFields);
+        var shouldAddAddresseeResult = (initiatorMoney != null && initiatorMoney > 0)
+                || CollectionUtils.isNotEmpty(initiatorFields);
+        if (shouldAddInitiatorResult) {
+            addReceivedInfo(offer.getInitiator().getName(), addresseeFields, addresseeMoney,
+                    strBuilder);
+        }
+        if (shouldAddInitiatorResult && shouldAddAddresseeResult) {
+            strBuilder.append(". ");
+        }
+        if (shouldAddAddresseeResult) {
+            addReceivedInfo(offer.getAddressee().getName(), initiatorFields, initiatorMoney,
+                    strBuilder);
+        }
+        return strBuilder.append(".").toString();
+    }
+
+    private void addReceivedInfo(String partyName, List<PurchasableField> fields, Integer money,
+                                 StringBuilder builder) {
+        builder.append(partyName).append(" received: ");
+        if (CollectionUtils.isNotEmpty(fields)) {
+            builder.append(fields.stream()
+                    .map(PurchasableField::getName)
+                    .collect(Collectors.joining(", ")));
+
+            if (money != null && money > 0) {
+                builder.append(" and ");
+            }
+        }
+        if (money != null && money > 0) {
+            builder.append("$").append(money);
         }
     }
 }
