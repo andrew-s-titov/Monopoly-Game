@@ -21,9 +21,8 @@ import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.websocket.WsSession;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -59,7 +58,7 @@ public class GameWebSocketHandler {
         }
 
         var allActiveSessions = userWsSessionRepository.getAllSessions();
-        if (!CollectionUtils.isEmpty(allActiveSessions) && allActiveSessions.size() >= Rules.MAX_PLAYERS) {
+        if (CollectionUtils.isNotEmpty(allActiveSessions) && allActiveSessions.size() >= Rules.MAX_PLAYERS) {
             gameEventSender.sendToPlayer(playerId,
                     new ConnectionErrorEvent("Only " + Rules.MAX_PLAYERS + " are allowed to play"));
             return;
@@ -83,28 +82,24 @@ public class GameWebSocketHandler {
     @OnClose
     public void onClose(Session session, CloseReason reason, @PathParam("userId") String userId) {
         UUID playerId = UUID.fromString(userId);
+        userWsSessionRepository.removeUserSession(playerId);
         var game = gameRepository.getGame();
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
             game.removePlayer(playerId);
-            userWsSessionRepository.removeUserSession(playerId);
             gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
-        // if a game is in progress - do not remove to let the player reconnect with another session
+        // if a game is in progress - do not remove from game to let the player reconnect with another session
         CloseReason.CloseCode closeCode = reason.getCloseCode();
         if (!closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE)
                 && !closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
-            String httpSessionId = null;
-            if (session instanceof WsSession wsSession) {
-                httpSessionId = wsSession.getHttpSessionId();
-            }
-            log.warn("Not a normal websocket close: userId={}, reason={}, sessionId={}, httpSessionId={}",
-                    playerId, reason, session.getId(), httpSessionId);
+            log.warn("Not a normal websocket close: userId={}, reason=({}), sessionId={}",
+                    playerId, reason, session.getId());
         }
     }
 
     @OnError
-    public void onError(Session session, Throwable ex, @PathParam("userId") String userId) throws Exception {
-        log.error("An error occurred during websocket connection for userId " + userId, ex);
+    public void onError(Throwable ex, @PathParam("userId") String userId) throws Exception {
+        log.error("Websocket error, userId=" + userId, ex);
     }
 }
