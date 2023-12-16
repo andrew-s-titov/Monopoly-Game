@@ -211,6 +211,7 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                 }
                 moneyStatesToSend.add(MoneyState.fromPlayer(beneficiary));
             }
+            game.setCheckToPay(null);
         }
         if (shouldProcessFields) {
             for (PurchasableField field : playerFieldsToProcess) {
