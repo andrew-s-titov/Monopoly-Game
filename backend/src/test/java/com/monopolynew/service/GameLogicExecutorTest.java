@@ -1,19 +1,17 @@
-package com.monopolynew.service.impl;
+package com.monopolynew.service;
 
-import com.monopolynew.game.procedure.CheckToPay;
 import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
+import com.monopolynew.game.procedure.CheckToPay;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.mapper.GameFieldMapper;
-import com.monopolynew.service.GameLogicExecutorImpl;
-import com.monopolynew.service.api.GameEventSender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,7 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class GameLogicExecutorImplTest {
+class GameLogicExecutorTest {
 
     @Mock
     GameEventSender gameEventSender;
@@ -50,7 +48,7 @@ class GameLogicExecutorImplTest {
     ArgumentCaptor<FieldStateChangeEvent> fieldStateChangeEventCaptor;
 
     @InjectMocks
-    GameLogicExecutorImpl gameLogicExecutor;
+    GameLogicExecutor gameLogicExecutor;
 
 
     @Nested

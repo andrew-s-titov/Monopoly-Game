@@ -2,7 +2,6 @@ package com.monopolynew.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.monopolynew.service.api.GameEventSender;
 import com.monopolynew.websocket.UserWsSessionRepository;
 import jakarta.websocket.Session;
 import lombok.RequiredArgsConstructor;
@@ -16,19 +15,17 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 @Slf4j
 @Component
-public class GameEventSenderWebsocketImpl implements GameEventSender {
+public class GameEventSender {
 
     private final UserWsSessionRepository userWsSessionRepository;
     private final ObjectMapper objectMapper;
 
-    @Override
     public void sendToAllPlayers(Object gameEvent) {
         handleGameEvent(gameEvent,
                 event -> userWsSessionRepository.getAllSessions()
                         .forEach(session -> sendToSession(session, event)));
     }
 
-    @Override
     public void sendToPlayer(UUID playerId, Object gameEvent) {
         Session wsSession = userWsSessionRepository.getUserSession(playerId);
         if (wsSession == null) {

@@ -19,14 +19,12 @@ import com.monopolynew.game.Rules;
 import com.monopolynew.game.procedure.BuyProposal;
 import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.map.CompanyField;
+import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
 import com.monopolynew.map.UtilityField;
 import com.monopolynew.mapper.GameFieldMapper;
-import com.monopolynew.service.api.GameEventGenerator;
-import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.lang.Nullable;
@@ -37,16 +35,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Component
-public class GameLogicExecutorImpl implements GameLogicExecutor {
+public class GameLogicExecutor {
 
     private final GameEventSender gameEventSender;
     private final GameFieldMapper gameFieldMapper;
     private final GameEventGenerator gameEventGenerator;
 
-    @Override
     public void movePlayer(Game game, Player player, int newPositionIndex, boolean forward) {
         int currentPosition = player.getPosition();
         changePlayerPosition(player, newPositionIndex, true);
@@ -60,7 +59,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         }
     }
 
-    @Override
     public void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason) {
         player.resetDoublets();
         player.imprison();
@@ -70,7 +68,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         endTurn(game);
     }
 
-    @Override
     public void sendBuyProposal(Game game, Player player, PurchasableField field, boolean payable) {
         var buyerId = player.getId();
         var buyProposal = new BuyProposal(buyerId, field, payable);
@@ -79,7 +76,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToPlayer(buyerId, gameEventGenerator.buyProposalEvent(buyProposal));
     }
 
-    @Override
     public void doBuyField(Game game, PurchasableField field, int price, UUID buyerId) {
         var buyer = game.getPlayerById(buyerId);
         field.newOwner(buyer);
@@ -89,75 +85,26 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
 
-        List<GameFieldState> newPriceStates;
-        List<PurchasableField> fieldGroup = PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId());
-        if (field instanceof StreetField streetField) {
-            boolean allGroupOwnedByTheSameOwner = fieldGroup.stream()
-                    .noneMatch(PurchasableField::isFree)
-                    && 1 == fieldGroup.stream()
-                    .map(PurchasableField::getOwner)
-                    .distinct().count();
-            if (allGroupOwnedByTheSameOwner) {
-                fieldGroup.stream()
-                        .map(StreetField.class::cast)
-                        .forEach(strField -> strField.setNewRent(true));
-                newPriceStates = gameFieldMapper.toStateList(fieldGroup);
-            } else {
-                streetField.setNewRent(false);
-                newPriceStates = Collections.singletonList(gameFieldMapper.toState(field));
-            }
-        } else if (field instanceof CompanyField companyField) {
-            List<CompanyField> playerCompanyFields = fieldGroup.stream()
-                    .filter(f -> !f.isFree())
-                    .filter(f -> f.getOwner().equals(field.getOwner()))
-                    .map(f -> (CompanyField) f)
-                    .toList();
-            int ownedByTheSamePlayer = playerCompanyFields.size();
-            if (ownedByTheSamePlayer > 1) {
-                playerCompanyFields
-                        .forEach(compField -> compField.setNewRent(ownedByTheSamePlayer));
-                newPriceStates = gameFieldMapper.toStateList(playerCompanyFields);
-            } else {
-                companyField.setNewRent(ownedByTheSamePlayer);
-                newPriceStates = Collections.singletonList(gameFieldMapper.toState(field));
-            }
-        } else if (field instanceof UtilityField) {
-            boolean increasedMultiplier = fieldGroup.stream()
-                    .noneMatch(PurchasableField::isFree)
-                    && fieldGroup.stream()
-                    .allMatch(f -> buyer.equals(f.getOwner()));
-            if (increasedMultiplier) {
-                fieldGroup.stream()
-                        .map(UtilityField.class::cast)
-                        .forEach(UtilityField::increaseMultiplier);
-                newPriceStates = gameFieldMapper.toStateList(fieldGroup);
-            } else {
-                newPriceStates = Collections.singletonList(gameFieldMapper.toState(field));
-            }
-        } else {
-            throw new IllegalStateException("Unsupported field type");
-        }
-        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newPriceStates));
+        var processedOwnedFields = processOwnershipChange(game, field);
+        List<GameFieldState> newFieldStates = gameFieldMapper.toStateList(processedOwnedFields);
+        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newFieldStates));
     }
 
-    @Override
     public int computePlayerAssets(Game game, Player player) {
         return getPlayerFields(game, player).stream()
                 .filter(field -> !field.isMortgaged())
                 .map(field -> field instanceof StreetField streetField
                         ? streetField.getHousePrice() * streetField.getHouses() + field.getPrice() / 2
-                        : field.getPrice() / 2 )
+                        : field.getPrice() / 2)
                 .reduce(player.getMoney(), Integer::sum);
     }
 
-    @Override
     public int computeNewPlayerPosition(Player player, DiceResult diceResult) {
         int result = player.getPosition() + diceResult.getSum();
         boolean newCircle = result > Rules.LAST_FIELD_INDEX;
         return newCircle ? result - Rules.NUMBER_OF_FIELDS : result;
     }
 
-    @Override
     public void endTurn(Game game) {
         if (!GameStage.ROLLED_FOR_JAIL.equals(game.getStage())) {
             // as there was no actual turn when turn ended after rolled for jail (tried luck but failed)
@@ -184,7 +131,6 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         }
     }
 
-    @Override
     public void bankruptPlayer(Game game, Player debtor) {
         debtor.goBankrupt();
         gameEventSender.sendToAllPlayers(new BankruptcyEvent(debtor.getId()));
@@ -230,15 +176,75 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
         }
     }
 
-    @Override
     public void changeGameStage(Game game, GameStage newGameStage) {
         game.setStage(newGameStage);
         gameEventSender.sendToAllPlayers(new GameStageEvent(newGameStage));
     }
 
-    @Override
     public int getFieldMortgagePrice(PurchasableField field) {
         return field.getPrice() / 2;
+    }
+
+    /**
+     * Refreshes rents for all owned fields in the group, to which passed fields belong
+     *
+     * @param game          - game to which fields belong
+     * @param changedFields - fields for which owner changed
+     * @return list of all owned fields where rent refresh is processed (related to passed fields by group)
+     */
+    public List<PurchasableField> processOwnershipChange(Game game, Collection<PurchasableField> changedFields) {
+        return changedFields.stream()
+                .map(GameField::getId)
+                .map(id -> PurchasableFieldGroups.getGroupByFieldIndex(game, id))
+                .map(this::processOwnershipChangeForGroup)
+                .flatMap(List::stream)
+                .toList();
+    }
+
+    public List<PurchasableField> processOwnershipChange(Game game, PurchasableField field) {
+        List<PurchasableField> fieldGroup = PurchasableFieldGroups.getGroupByFieldIndex(game, field.getId());
+        return processOwnershipChangeForGroup(fieldGroup);
+    }
+
+    private List<PurchasableField> processOwnershipChangeForGroup(List<PurchasableField> fieldGroup) {
+        var ownedFields = fieldGroup.stream()
+                .filter(field -> !field.isFree())
+                .toList();
+        var anyFieldFromGroup = fieldGroup.get(0);
+        Consumer<List<PurchasableField>> fieldProcessor;
+        if (anyFieldFromGroup instanceof StreetField) {
+            boolean allGroupHasSameOwner = fieldGroup.size() == ownedFields.size()
+                    && 1 == fieldGroup.stream()
+                    .map(PurchasableField::getOwner)
+                    .distinct().count();
+            fieldProcessor = group -> group.stream()
+                    .map(StreetField.class::cast)
+                    .forEach(streetField -> streetField.refreshRent(allGroupHasSameOwner));
+        } else if (anyFieldFromGroup instanceof CompanyField) {
+            fieldProcessor = group -> group.stream()
+                    .map(CompanyField.class::cast)
+                    .forEach(companyField -> {
+                        var owningPlayer = companyField.getOwner();
+                        int ownedBySameOwner = (int) ownedFields.stream()
+                                .filter(field -> owningPlayer.equals(field.getOwner()))
+                                .count();
+                        companyField.refreshRent(ownedBySameOwner);
+                    });
+        } else if (anyFieldFromGroup instanceof UtilityField) {
+            boolean allUtilitiesOwned = fieldGroup.size() == ownedFields.size()
+                    && 1 == ownedFields.stream()
+                    .map(PurchasableField::getOwner)
+                    .distinct()
+                    .count();
+            fieldProcessor = group -> group.stream()
+                    .map(UtilityField.class::cast)
+                    .forEach(field -> field.refreshRent(allUtilitiesOwned));
+        } else {
+            throw new IllegalStateException("Unsupported field type");
+        }
+        // NOTE: processing only ownedFields, as for empty fields rent is reset to default
+        fieldProcessor.accept(ownedFields);
+        return ownedFields;
     }
 
     private List<PurchasableField> getPlayerFields(Game game, Player player) {
@@ -283,7 +289,8 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
 
     private void processMortgage(Game game) {
         Player currentPlayer = game.getCurrentPlayer();
-        List<GameFieldState> updatedFieldStates = new ArrayList<>(30);
+        List<PurchasableField> fieldsWithDecreasedMortgage = new ArrayList<>(30);
+        List<PurchasableField> fieldsLost = new ArrayList<>(30);
         game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
@@ -293,18 +300,27 @@ public class GameLogicExecutorImpl implements GameLogicExecutor {
                         int mortgageTurns = field.decreaseMortgageTurns();
                         if (mortgageTurns == 0) {
                             field.newOwner(null);
+                            fieldsLost.add(field);
+                        } else {
+                            fieldsWithDecreasedMortgage.add(field);
                         }
-                        updatedFieldStates.add(gameFieldMapper.toState(field));
                     }
                 });
-        if (CollectionUtils.isNotEmpty(updatedFieldStates)) {
-            gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(updatedFieldStates));
+        List<PurchasableField> processedOwnedFields = processOwnershipChange(game, fieldsLost);
+
+        var changedFieldStates = Stream.of(fieldsWithDecreasedMortgage, fieldsLost, processedOwnedFields)
+                .flatMap(List::stream)
+                .distinct()
+                .map(gameFieldMapper::toState)
+                .toList();
+        if (CollectionUtils.isNotEmpty(changedFieldStates)) {
+            gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(changedFieldStates));
         }
     }
 
     private void removeFieldHouses(PurchasableField field) {
         if (field instanceof StreetField streetField && streetField.getHouses() > 0) {
-            streetField.sellAllHouses();
+            streetField.removeHouses();
         }
     }
 

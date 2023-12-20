@@ -1,6 +1,5 @@
 package com.monopolynew.service;
 
-import com.monopolynew.game.procedure.CheckToPay;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.ChatMessageEvent;
@@ -9,10 +8,7 @@ import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
-import com.monopolynew.service.api.GameEventGenerator;
-import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameLogicExecutor;
-import com.monopolynew.service.api.PaymentProcessor;
+import com.monopolynew.game.procedure.CheckToPay;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
@@ -23,13 +19,12 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class PaymentProcessorImpl implements PaymentProcessor {
+public class PaymentProcessor {
 
     private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
     private final GameEventGenerator gameEventGenerator;
 
-    @Override
     public void startPaymentProcess(Game game, @NonNull Player player, Player beneficiary,
                                     int amount, String paymentComment) {
         var currentGameStage = game.getStage();
@@ -69,7 +64,6 @@ public class PaymentProcessorImpl implements PaymentProcessor {
         }
     }
 
-    @Override
     public void processPayment(Game game) {
         var currentGameStage = game.getStage();
         verifyPaymentProcessingAvailable(currentGameStage);

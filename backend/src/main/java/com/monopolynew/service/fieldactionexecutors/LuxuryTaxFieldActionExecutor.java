@@ -3,7 +3,7 @@ package com.monopolynew.service.fieldactionexecutors;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.api.PaymentProcessor;
+import com.monopolynew.service.PaymentProcessor;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 

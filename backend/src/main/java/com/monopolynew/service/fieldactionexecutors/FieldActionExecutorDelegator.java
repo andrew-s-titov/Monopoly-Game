@@ -1,8 +1,7 @@
-package com.monopolynew.service;
+package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.api.FieldActionExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
