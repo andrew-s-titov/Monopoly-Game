@@ -2,8 +2,7 @@ package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
-import com.monopolynew.service.api.PaymentProcessor;
-import com.monopolynew.service.api.FieldActionExecutor;
+import com.monopolynew.service.PaymentProcessor;
 
 public abstract class TaxFieldActionExecutor implements FieldActionExecutor {
 

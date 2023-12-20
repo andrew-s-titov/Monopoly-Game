@@ -1,5 +1,6 @@
 package com.monopolynew.map;
 
+import com.monopolynew.game.Player;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -15,9 +16,16 @@ public class CompanyField extends BasePurchasableField implements StaticRentFiel
         super(id, name, price);
         this.defaultRent = defaultRent;
     }
+    @Override
+    public void newOwner(Player newOwner) {
+        super.newOwner(newOwner);
+        if (newOwner == null) {
+            this.currentRent = defaultRent;
+        }
+    }
 
-    public void setNewRent(int ownedByTheSamePlayer) {
-        this.currentRent = (int) (this.defaultRent * Math.pow(2, ownedByTheSamePlayer - 1));
+    public void refreshRent(int ownedGroupCount) {
+        this.currentRent = (int) (this.defaultRent * Math.pow(2, ownedGroupCount - 1));
     }
 
     @Override

@@ -7,23 +7,19 @@ import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.StaticRentField;
 import com.monopolynew.map.UtilityField;
-import com.monopolynew.service.api.AuctionManager;
-import com.monopolynew.service.api.GameLogicExecutor;
-import com.monopolynew.service.api.PaymentProcessor;
-import com.monopolynew.service.api.StepProcessor;
+import com.monopolynew.service.fieldactionexecutors.FieldActionExecutorDelegator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class StepProcessorImpl implements StepProcessor {
+public class StepProcessor {
 
     private final GameLogicExecutor gameLogicExecutor;
     private final AuctionManager auctionManager;
     private final PaymentProcessor paymentProcessor;
     private final FieldActionExecutorDelegator fieldActionExecutor;
 
-    @Override
     public void processStepOnField(Game game, GameField field) {
         if (field instanceof PurchasableField purchasableField) {
             processStepOnPurchasableField(game, purchasableField);

@@ -4,8 +4,6 @@ import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
-import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameMapRefresher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +11,11 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
-public class GameMapRefresherImpl implements GameMapRefresher {
+public class GameMapRefresher {
 
-    private final GameEventGeneratorImpl gameEventGenerator;
+    private final GameEventGenerator gameEventGenerator;
     private final GameEventSender gameEventSender;
 
-    @Override
     public void restoreGameStateForPlayer(Game game, UUID playerId) {
         var currentPlayerId = game.getCurrentPlayer().getId();
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.mapRefreshEvent(game));

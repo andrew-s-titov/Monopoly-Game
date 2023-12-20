@@ -1,9 +1,8 @@
 package com.monopolynew.service.fieldactionexecutors;
 
+import com.monopolynew.chance.ChanceCardProvider;
 import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.api.ChanceCardProvider;
-import com.monopolynew.service.api.FieldActionExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

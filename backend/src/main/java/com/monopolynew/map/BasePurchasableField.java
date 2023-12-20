@@ -24,7 +24,7 @@ public abstract class BasePurchasableField implements PurchasableField {
         return owner == null;
     }
 
-    public final void newOwner(Player player) {
+    public void newOwner(Player player) {
         this.owner = player;
     }
 

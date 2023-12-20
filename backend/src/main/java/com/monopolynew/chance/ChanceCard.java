@@ -1,4 +1,4 @@
-package com.monopolynew.service.api;
+package com.monopolynew.chance;
 
 import com.monopolynew.game.Game;
 

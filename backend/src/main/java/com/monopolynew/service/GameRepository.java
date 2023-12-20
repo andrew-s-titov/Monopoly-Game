@@ -1,17 +1,15 @@
 package com.monopolynew.service;
 
 import com.monopolynew.game.Game;
-import com.monopolynew.service.api.GameRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
-public class GameRepositoryImpl implements GameRepository {
+public class GameRepository {
 
     private final Game game = new Game(false);
 
-    @Override
     public Game getGame() {
         // TODO get game by its ID
         return this.game;

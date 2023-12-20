@@ -9,10 +9,6 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.procedure.Auction;
 import com.monopolynew.map.PurchasableField;
-import com.monopolynew.service.api.AuctionManager;
-import com.monopolynew.service.api.GameEventGenerator;
-import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameLogicExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -23,13 +19,12 @@ import static com.monopolynew.util.Utils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component
-public class AuctionManagerImpl implements AuctionManager {
+public class AuctionManager {
 
     private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
     private final GameEventGenerator gameEventGenerator;
 
-    @Override
     public void startNewAuction(Game game, PurchasableField field) {
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         var currentPlayer = game.getCurrentPlayer();
@@ -38,7 +33,6 @@ public class AuctionManagerImpl implements AuctionManager {
         auctionStep(game);
     }
 
-    @Override
     public void auctionStep(Game game) {
         var auction = game.getAuction();
         List<Player> participants = auction.getParticipants();
@@ -71,7 +65,6 @@ public class AuctionManagerImpl implements AuctionManager {
         }
     }
 
-    @Override
     public void processAuctionBuyProposal(Game game, @NonNull ProposalAction action) {
         requireNotNullArgs(game, action);
         var auction = game.getAuction();
@@ -86,7 +79,6 @@ public class AuctionManagerImpl implements AuctionManager {
         finishAuction(game);
     }
 
-    @Override
     public void processAuctionRaiseProposal(Game game, @NonNull ProposalAction action) {
         requireNotNullArgs(game, action);
         Auction auction = game.getAuction();
