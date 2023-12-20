@@ -6,8 +6,10 @@ import com.monopolynew.game.Rules;
 import com.monopolynew.map.PurchasableField;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Auction {
     @Getter
@@ -30,7 +32,7 @@ public class Auction {
                 .filter(player -> !player.equals(auctionInitiator)
                         && !player.isBankrupt()
                         && player.getMoney() >= auctionPrice)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
         this.playerIterator = participants.iterator();
     }
 
