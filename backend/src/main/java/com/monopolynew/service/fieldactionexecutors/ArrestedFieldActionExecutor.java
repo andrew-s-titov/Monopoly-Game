@@ -2,8 +2,7 @@ package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;
-import com.monopolynew.service.api.GameLogicExecutor;
-import com.monopolynew.service.api.FieldActionExecutor;
+import com.monopolynew.service.GameLogicExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

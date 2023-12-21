@@ -1,9 +1,6 @@
-package com.monopolynew.service;
+package com.monopolynew.chance;
 
 import com.monopolynew.game.Game;
-import com.monopolynew.service.api.ChanceCard;
-import com.monopolynew.service.api.ChanceCardProvider;
-import com.monopolynew.service.api.ChanceContainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,13 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 @Component
-public class ChanceCardProviderImpl implements ChanceCardProvider {
+public class ChanceCardProvider {
 
     private final ChanceContainer chanceContainer;
 
     private final Map<UUID, Queue<ChanceCard>> chanceDecks = new ConcurrentHashMap<>();
 
-    @Override
     public void applyNextCard(Game game) {
         Queue<ChanceCard> chanceDeck = getDeck(game);
         ChanceCard selectedChance = chanceDeck.poll();

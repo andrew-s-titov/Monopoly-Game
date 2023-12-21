@@ -1,5 +1,6 @@
 package com.monopolynew.map;
 
+import com.monopolynew.game.Player;
 import com.monopolynew.game.procedure.DiceResult;
 import lombok.Getter;
 
@@ -20,12 +21,16 @@ public class UtilityField extends BasePurchasableField {
         this.currentMultiplier = standardMultiplier;
     }
 
-    public void increaseMultiplier() {
-        this.currentMultiplier = highMultiplier;
+    @Override
+    public void newOwner(Player newOwner) {
+        super.newOwner(newOwner);
+        if (newOwner == null) {
+            this.currentMultiplier = standardMultiplier;
+        }
     }
 
-    public void decreaseMultiplier() {
-        this.currentMultiplier = standardMultiplier;
+    public void refreshRent(boolean allOwned) {
+        this.currentMultiplier = allOwned ? highMultiplier : standardMultiplier;
     }
 
     public int getRent(DiceResult diceResult) {

@@ -3,7 +3,7 @@ package com.monopolynew.controller;
 import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.enums.ProposalAction;
-import com.monopolynew.service.api.GameService;
+import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;

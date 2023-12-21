@@ -20,16 +20,6 @@ import com.monopolynew.game.procedure.BuyProposal;
 import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
-import com.monopolynew.service.api.AuctionManager;
-import com.monopolynew.service.api.DealManager;
-import com.monopolynew.service.api.FieldManagementService;
-import com.monopolynew.service.api.GameEventGenerator;
-import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameLogicExecutor;
-import com.monopolynew.service.api.GameRepository;
-import com.monopolynew.service.api.GameService;
-import com.monopolynew.service.api.PaymentProcessor;
-import com.monopolynew.service.api.StepProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -42,7 +32,7 @@ import static com.monopolynew.util.Utils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component
-public class GameServiceImpl implements GameService {
+public class GameService {
 
     private final GameRepository gameRepository;
     private final Dice dice;
@@ -55,12 +45,10 @@ public class GameServiceImpl implements GameService {
     private final FieldManagementService fieldManagementService;
     private final DealManager dealManager;
 
-    @Override
     public boolean isGameStarted() {
         return gameRepository.getGame().isInProgress();
     }
 
-    @Override
     public void startGame() {
         Game game = gameRepository.getGame();
         Collection<Player> players = game.getPlayers();
@@ -72,7 +60,6 @@ public class GameServiceImpl implements GameService {
         gameEventSender.sendToAllPlayers(new TurnStartEvent(game.getCurrentPlayer().getId()));
     }
 
-    @Override
     public void startDiceRolling() {
         Game game = gameRepository.getGame();
         notifyAboutDiceRolling(game);
@@ -89,7 +76,6 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    @Override
     public void broadcastDiceResult() {
         Game game = gameRepository.getGame();
         GameStage stage = game.getStage();
@@ -106,7 +92,6 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    @Override
     public void afterDiceRollAction() {
         Game game = gameRepository.getGame();
         DiceResult lastDice = game.getLastDice();
@@ -144,7 +129,6 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    @Override
     public void afterPlayerMoveAction() {
         Game game = gameRepository.getGame();
         if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
@@ -155,7 +139,6 @@ public class GameServiceImpl implements GameService {
         stepProcessor.processStepOnField(game, currentField);
     }
 
-    @Override
     public void processBuyProposal(@NonNull ProposalAction action) {
         requireNotNullArgs(action);
         Game game = gameRepository.getGame();
@@ -176,19 +159,16 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    @Override
     public void processAuctionBuyProposal(ProposalAction action) {
         var game = gameRepository.getGame();
         auctionManager.processAuctionBuyProposal(game, action);
     }
 
-    @Override
     public void processAuctionRaiseProposal(ProposalAction action) {
         var game = gameRepository.getGame();
         auctionManager.processAuctionRaiseProposal(game, action);
     }
 
-    @Override
     public void processJailAction(@NonNull JailAction jailAction) {
         requireNotNullArgs(jailAction);
         Game game = gameRepository.getGame();
@@ -213,13 +193,11 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    @Override
     public void processPayment() {
         Game game = gameRepository.getGame();
         paymentProcessor.processPayment(game);
     }
 
-    @Override
     public void giveUp(UUID playerId) {
         // TODO: check if game is in progress
         Game game = gameRepository.getGame();
@@ -228,37 +206,31 @@ public class GameServiceImpl implements GameService {
         gameLogicExecutor.bankruptPlayer(game, player);
     }
 
-    @Override
     public void mortgageField(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.mortgageField(game, fieldIndex, playerId);
     }
 
-    @Override
     public void redeemMortgagedProperty(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.redeemMortgagedProperty(game, fieldIndex, playerId);
     }
 
-    @Override
     public void buyHouse(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.buyHouse(game, fieldIndex, playerId);
     }
 
-    @Override
     public void sellHouse(int fieldIndex, UUID playerId) {
         var game = gameRepository.getGame();
         fieldManagementService.sellHouse(game, fieldIndex, playerId);
     }
 
-    @Override
     public void createOffer(UUID initiatorId, UUID addresseeId, DealOffer offer) {
         var game = gameRepository.getGame();
         dealManager.createOffer(game, initiatorId, addresseeId, offer);
     }
 
-    @Override
     public void processOfferAnswer(UUID callerId, ProposalAction proposalAction) {
         var game = gameRepository.getGame();
         dealManager.processOfferAnswer(game, callerId, proposalAction);

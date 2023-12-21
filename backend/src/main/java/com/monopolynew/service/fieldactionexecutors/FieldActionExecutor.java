@@ -1,4 +1,4 @@
-package com.monopolynew.service.api;
+package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;

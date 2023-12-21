@@ -1,4 +1,4 @@
-package com.monopolynew.service;
+package com.monopolynew.chance;
 
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.event.ChatMessageEvent;
@@ -12,10 +12,8 @@ import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
 import com.monopolynew.map.StreetField;
-import com.monopolynew.service.api.ChanceCard;
-import com.monopolynew.service.api.ChanceContainer;
-import com.monopolynew.service.api.GameEventSender;
-import com.monopolynew.service.api.GameLogicExecutor;
+import com.monopolynew.service.GameEventSender;
+import com.monopolynew.service.GameLogicExecutor;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,7 @@ import java.util.Random;
 import static com.monopolynew.map.PurchasableFieldGroups.COMPANY_FIELD_GROUP;
 
 @Component
-public class ChanceContainerImpl implements ChanceContainer {
+public class ChanceContainer {
 
     @Getter
     private final List<ChanceCard> chances;
@@ -41,7 +39,7 @@ public class ChanceContainerImpl implements ChanceContainer {
     private final Random random = new Random();
 
     @Autowired
-    public ChanceContainerImpl(GameLogicExecutor gameLogicExecutor, GameEventSender gameEventSender) {
+    public ChanceContainer(GameLogicExecutor gameLogicExecutor, GameEventSender gameEventSender) {
         this.gameLogicExecutor = gameLogicExecutor;
         this.gameEventSender = gameEventSender;
         this.chances = initializeChances();

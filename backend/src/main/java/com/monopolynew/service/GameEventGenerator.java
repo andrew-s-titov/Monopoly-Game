@@ -18,18 +18,16 @@ import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.mapper.GameFieldMapper;
 import com.monopolynew.mapper.PlayerMapper;
-import com.monopolynew.service.api.GameEventGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class GameEventGeneratorImpl implements GameEventGenerator {
+public class GameEventGenerator {
 
     private final GameFieldMapper gameFieldMapper;
     private final PlayerMapper playerMapper;
 
-    @Override
     public GameMapRefreshEvent mapRefreshEvent(Game game) {
         var purchasableFields = game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
@@ -39,7 +37,6 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
         return new GameMapRefreshEvent(game.getPlayers(), gameFieldViews, game.getCurrentPlayer().getId());
     }
 
-    @Override
     public OfferProposalEvent offerProposalEvent(Game game) {
         var offer = game.getOffer();
 
@@ -54,7 +51,6 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
                 .build();
     }
 
-    @Override
     public AuctionBuyProposalEvent auctionBuyProposalEvent(Auction auction) {
         return new AuctionBuyProposalEvent(
                 auction.getCurrentParticipant().getId(),
@@ -63,7 +59,6 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
         );
     }
 
-    @Override
     public AuctionRaiseProposalEvent auctionRaiseProposalEvent(Auction auction) {
         return new AuctionRaiseProposalEvent(
                 auction.getCurrentParticipant().getId(),
@@ -72,7 +67,6 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
         );
     }
 
-    @Override
     public BuyProposalEvent buyProposalEvent(BuyProposal buyProposal) {
         var purchasableField = buyProposal.getField();
         return BuyProposalEvent.builder()
@@ -83,19 +77,16 @@ public class GameEventGeneratorImpl implements GameEventGenerator {
                 .build();
     }
 
-    @Override
     public PayCommandEvent payCommandEvent(CheckToPay checkToPay) {
         var debtor = checkToPay.getDebtor();
         var debt = checkToPay.getDebt();
         return new PayCommandEvent(debtor.getId(), debt, debtor.getMoney() >= debt, checkToPay.isWiseToGiveUp());
     }
 
-    @Override
     public GameRoomEvent gameRoomEvent(Game game) {
         return new GameRoomEvent(playerMapper.toUserInfoList(game.getPlayers()));
     }
 
-    @Override
     public DiceResultEvent diceResultEvent(Game game) {
         DiceResult lastDice = game.getLastDice();
         return new DiceResultEvent(game.getCurrentPlayer().getId(),

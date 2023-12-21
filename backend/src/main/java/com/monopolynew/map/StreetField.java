@@ -1,5 +1,6 @@
 package com.monopolynew.map;
 
+import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import lombok.Getter;
 
@@ -24,7 +25,15 @@ public class StreetField extends BasePurchasableField implements StaticRentField
         this.rents = rents;
     }
 
-    public void setNewRent(boolean allGroupOwnedByTheSamePlayer) {
+    @Override
+    public void newOwner(Player newOwner) {
+        super.newOwner(newOwner);
+        if (newOwner == null) {
+            this.currentRent = rents[0];
+        }
+    }
+
+    public void refreshRent(boolean allGroupOwnedByTheSamePlayer) {
         if (houses == 0) {
             this.currentRent = allGroupOwnedByTheSamePlayer ? this.rents[0] * 2 : this.rents[0];
         } else {
@@ -45,16 +54,18 @@ public class StreetField extends BasePurchasableField implements StaticRentField
             throw new IllegalStateException("Cannot add new house - limit is reached");
         }
         this.houses++;
+        this.currentRent = this.rents[this.houses];
     }
 
     public void sellHouse() {
         if (houses == 0) {
-            throw new IllegalStateException("Cannot add new house - limit is reached");
+            throw new IllegalStateException("Cannot sell a house - zero houses");
         }
         this.houses--;
+        this.currentRent = this.rents[this.houses];
     }
 
-    public void sellAllHouses() {
+    public void removeHouses() {
         this.houses = 0;
     }
 
