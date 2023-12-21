@@ -11,45 +11,40 @@ import com.monopolynew.service.GameMapRefresher;
 import com.monopolynew.service.GameRepository;
 import com.monopolynew.user.GameUser;
 import com.monopolynew.user.UserRepository;
-import jakarta.websocket.CloseReason;
-import jakarta.websocket.OnClose;
-import jakarta.websocket.OnError;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.Session;
-import jakarta.websocket.server.PathParam;
-import jakarta.websocket.server.ServerEndpoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
 @Component
 // TODO: define path as '/{gameId} to choose game, refactor session repo as game<->session map
-@ServerEndpoint(value = "/{userId}", configurator = SpringWebsocketCustomConfigurer.class)
-public class GameWebSocketHandler {
+public class GameWebSocketHandler extends TextWebSocketHandler {
 
+    private final UserWsSessionRepository userSessionRepository;
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
-    private final UserWsSessionRepository userWsSessionRepository;
     private final GameEventSender gameEventSender;
     private final GameEventGenerator gameEventGenerator;
 
-    @OnOpen
-    public void onOpen(Session session, @PathParam("userId") String userId) throws IOException {
-        var playerId = UUID.fromString(userId);
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        var playerId = GameWsInterceptor.extractUserId(session);
+
         GameUser user = userRepository.getUser(playerId);
 
         Game game = gameRepository.getGame();
         if (game.isInProgress()) {
             if (game.playerExists(playerId)) {
-                userWsSessionRepository.addUserSession(playerId, session);
+                userSessionRepository.addUserSession(playerId, session);
                 gameMapRefresher.restoreGameStateForPlayer(game, playerId);
             } else {
                 gameEventSender.sendToPlayer(playerId, new ConnectionErrorEvent("Game in progress"));
@@ -57,32 +52,22 @@ public class GameWebSocketHandler {
             return;
         }
 
-        var allActiveSessions = userWsSessionRepository.getAllSessions();
+        var allActiveSessions = userSessionRepository.getAllSessions();
         if (CollectionUtils.isNotEmpty(allActiveSessions) && allActiveSessions.size() >= Rules.MAX_PLAYERS) {
             gameEventSender.sendToPlayer(playerId,
                     new ConnectionErrorEvent("Only " + Rules.MAX_PLAYERS + " are allowed to play"));
             return;
         }
 
-        userWsSessionRepository.addUserSession(playerId, session);
+        userSessionRepository.addUserSession(playerId, session);
         game.addPlayer(Player.fromUser(user));
         gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
     }
 
-    @OnMessage
-    public void onMessage(Session session, String message, @PathParam("userId") String userId) {
-        var playerId = UUID.fromString(userId);
-        var newMessage = ChatMessageEvent.builder()
-                .message(message)
-                .playerId(playerId)
-                .build();
-        gameEventSender.sendToAllPlayers(newMessage);
-    }
-
-    @OnClose
-    public void onClose(Session session, CloseReason reason, @PathParam("userId") String userId) {
-        UUID playerId = UUID.fromString(userId);
-        userWsSessionRepository.removeUserSession(playerId);
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        var playerId = GameWsInterceptor.extractUserId(session);
+        userSessionRepository.removeUserSession(playerId);
         var game = gameRepository.getGame();
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
@@ -90,16 +75,26 @@ public class GameWebSocketHandler {
             gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
         // if a game is in progress - do not remove from game to let the player reconnect with another session
-        CloseReason.CloseCode closeCode = reason.getCloseCode();
-        if (!closeCode.equals(CloseReason.CloseCodes.NORMAL_CLOSURE)
-                && !closeCode.equals(CloseReason.CloseCodes.GOING_AWAY)) {
+        if (!status.equals(CloseStatus.NORMAL) && !status.equals(CloseStatus.GOING_AWAY)) {
             log.warn("Not a normal websocket close: userId={}, reason=({}), sessionId={}",
-                    playerId, reason, session.getId());
+                    playerId, status, session.getId());
         }
     }
 
-    @OnError
-    public void onError(Throwable ex, @PathParam("userId") String userId) throws Exception {
-        log.error("Websocket error, userId=" + userId, ex);
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        var userId = GameWsInterceptor.extractUserId(session);
+        log.error("Websocket error, userId=" + userId, exception);
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message)
+            throws InterruptedException, IOException {
+        var playerId = GameWsInterceptor.extractUserId(session);
+        var newMessage = ChatMessageEvent.builder()
+                .message(message.getPayload())
+                .playerId(playerId)
+                .build();
+        gameEventSender.sendToAllPlayers(newMessage);
     }
 }
