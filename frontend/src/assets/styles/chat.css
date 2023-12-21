@@ -40,16 +40,15 @@
 }
 
 .chat-input-container {
-    height: 10%;
+    height: 7vh;
+    padding: 0.6vh;
 }
 
 .chat-input-container > input, .chat-input-container > button {
-    border-radius: 0;
     padding: 1.5vh 1.5vh;
 }
 
 .chat-input {
-    font-size: 2.5vh;
     width: 90%;
 }
 
