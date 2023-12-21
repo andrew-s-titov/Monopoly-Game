@@ -1,6 +1,5 @@
 package com.monopolynew.websocket;
 
-import jakarta.websocket.Session;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -22,15 +21,6 @@ public class UserWsSessionRepository {
 
     public void removeUserSession(@NonNull UUID userId) {
         activeUserSessions.remove(userId);
-    }
-
-    @Nullable
-    public UUID getUserIdBySession(@NonNull Session session) {
-        return activeUserSessions.entrySet().stream()
-                .filter(userSession -> userSession.getValue().equals(session))
-                .map(Map.Entry::getKey)
-                .findAny()
-                .orElse(null);
     }
 
     @Nullable
