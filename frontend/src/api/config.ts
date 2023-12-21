@@ -6,10 +6,10 @@ export const BE_ENDPOINT = document.location.origin;
 
 export const getWebsocketUrl = () => {
   const wsUri = getWebsocketEndpoint();
-  return `${wsUri}/${getLoggedInUserId()}`;
+  return `${wsUri}?user_id=${getLoggedInUserId()}`;
 }
 
 const getWebsocketEndpoint = () => {
   const host = BE_ENDPOINT.split('://')[1];
-  return `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}`;
+  return `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}/ws`;
 }
