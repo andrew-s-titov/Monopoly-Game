@@ -9,6 +9,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 public class GlobalConfig {
 
     public static final String USER_ID_HEADER = "user_id";
+    public static final String GAME_ID_KEY = "game_id";
 
     @Bean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder jacksonBootDefault) {

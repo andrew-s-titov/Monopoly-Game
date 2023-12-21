@@ -1,14 +1,24 @@
 package com.monopolynew.config;
 
-import org.springframework.context.annotation.Bean;
+import com.monopolynew.websocket.GameWebSocketHandler;
+import com.monopolynew.websocket.GameWsInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 @Configuration
-public class WebSocketConfig {
+@EnableWebSocket
+@RequiredArgsConstructor
+public class WebSocketConfig implements WebSocketConfigurer {
 
-    @Bean
-    public ServerEndpointExporter endpointExporter() {
-        return new ServerEndpointExporter();
+    private final GameWebSocketHandler gameWebsocketHandler;
+    private final GameWsInterceptor handshakeInterceptor;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(gameWebsocketHandler, "/ws")
+                .addInterceptors(handshakeInterceptor);
     }
 }
