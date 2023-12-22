@@ -293,3 +293,23 @@
     height: var(--player-icon-size);
     background-size: var(--player-icon-size);
 }
+
+.chance-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 35vh;
+    height: 50vh;
+    font-size: 3vh;
+    background-color: white;
+}
+
+.center-popup {
+    width: unset !important;
+    max-width: unset !important;
+}
+
+.center-popup-content {
+    border-radius: 2vh;
+    background-color: white;
+}

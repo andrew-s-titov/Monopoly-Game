@@ -1,7 +1,10 @@
 package com.monopolynew.service.fieldactionexecutors;
 
+import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.game.Game;
+import com.monopolynew.game.Player;
 import com.monopolynew.map.FieldAction;
+import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameLogicExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +18,13 @@ public class ArrestedFieldActionExecutor implements FieldActionExecutor {
     private final FieldAction fieldAction = FieldAction.ARRESTED;
 
     private final GameLogicExecutor gameLogicExecutor;
+    private final GameEventSender gameEventSender;
 
     @Override
     public void executeAction(Game game) {
-        gameLogicExecutor.sendToJailAndEndTurn(game, game.getCurrentPlayer(), null);
+        Player currentPlayer = game.getCurrentPlayer();
+        gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer);
+        gameEventSender.sendToAllPlayers(
+                new ChatMessageEvent(currentPlayer.getName() + " was sent to jail"));
     }
 }

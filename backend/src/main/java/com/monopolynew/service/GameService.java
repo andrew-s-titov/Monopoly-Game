@@ -103,7 +103,9 @@ public class GameService {
         if (GameStage.ROLLED_FOR_TURN.equals(stage)) {
             if (currentPlayer.committedFraud()) {
                 currentPlayer.resetDoublets();
-                gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer, "for fraud");
+                gameEventSender.sendToAllPlayers(
+                        new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));
+                gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer);
             } else {
                 doRegularMove(game);
             }
