@@ -7,9 +7,7 @@ interface IChanceCardProps {
 const ChanceCard = ({ text }: IChanceCardProps) => {
 
   return (
-    <div
-      className="chance-card"
-    >
+    <div className="chance-card">
       {text}
     </div>
   );
