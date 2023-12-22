@@ -19,6 +19,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(gameWebsocketHandler, "/ws")
+                .setAllowedOriginPatterns(
+                        "https://*.ngrok.io",
+                        "https://*.ngrok-free.app",
+                        "http://localhost:3000")
                 .addInterceptors(handshakeInterceptor);
     }
 }
