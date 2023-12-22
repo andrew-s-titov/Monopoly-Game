@@ -17,7 +17,14 @@ const PlayerAvatar = ({ avatarName, onClickHandler, className, withPointer }: IP
         backgroundImage: `url(${getAvatarUrl(avatarName)})`,
         cursor: withPointer ? 'pointer' : '',
       }}
-    />
+    >
+        <div
+            className={className}
+            style={{
+                backgroundImage: `url(${require('../../assets/images/avatars/ny-cap.png')})`
+            }}
+        />
+    </div>
   );
 }
 
