@@ -37,7 +37,7 @@ export const MessageProvider = ({ children }: PropsWithChildren) => {
       <Toast
         className="center-popup"
         ref={centerToast}
-        position="center"
+        position="bottom-center"
       />
       {children}
     </MessageContext.Provider>
