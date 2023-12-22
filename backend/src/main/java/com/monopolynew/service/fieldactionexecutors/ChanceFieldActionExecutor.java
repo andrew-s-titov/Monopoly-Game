@@ -1,6 +1,6 @@
 package com.monopolynew.service.fieldactionexecutors;
 
-import com.monopolynew.chance.ChanceCardProvider;
+import com.monopolynew.game.chance.ChanceCardProvider;
 import com.monopolynew.game.Game;
 import com.monopolynew.map.FieldAction;
 import lombok.Getter;

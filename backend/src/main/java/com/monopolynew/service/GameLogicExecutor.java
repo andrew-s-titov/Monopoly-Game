@@ -59,11 +59,9 @@ public class GameLogicExecutor {
         }
     }
 
-    public void sendToJailAndEndTurn(Game game, Player player, @Nullable String reason) {
+    public void sendToJailAndEndTurn(Game game, Player player) {
         player.resetDoublets();
         player.imprison();
-        gameEventSender.sendToAllPlayers(
-                new ChatMessageEvent(player.getName() + " was sent to jail " + (reason == null ? "" : reason)));
         changePlayerPosition(player, Rules.JAIL_FIELD_NUMBER, false);
         endTurn(game);
     }

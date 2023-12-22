@@ -14,6 +14,7 @@ Websocket codes:
 310 - auction buy proposal
 311 - bankruptcy
 312 - pay command
+313 - chance card
 315 - game over
 316 - offer received
 317 - offer processed

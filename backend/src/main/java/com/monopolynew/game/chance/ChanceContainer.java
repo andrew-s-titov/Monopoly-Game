@@ -1,12 +1,12 @@
-package com.monopolynew.chance;
+package com.monopolynew.game.chance;
 
 import com.monopolynew.dto.MoneyState;
+import com.monopolynew.event.ChanceCardEvent;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.map.CompanyField;
-import com.monopolynew.map.FieldAction;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
@@ -30,6 +30,8 @@ import static com.monopolynew.map.PurchasableFieldGroups.COMPANY_FIELD_GROUP;
 @Component
 public class ChanceContainer {
 
+    private static final String YOU = "You";
+
     @Getter
     private final List<ChanceCard> chances;
 
@@ -49,20 +51,20 @@ public class ChanceContainer {
         return List.of(
                 moneyChance(50, true, "%s found $%s on the pavement"),
                 moneyChance(70, true, "%s won $%s in the lottery"),
-                moneyChance(10, true, "%s won last place in a beauty contest and got $ %s"),
+                moneyChance(10, true, "%s won last place in a beauty contest and got $%s"),
                 moneyChance(100, true, "%s received $%s due to a bank error"),
                 moneyChance(50, true, "%s received $%s dividend"),
                 moneyChance(30, true, "%s won $%s in a casino"),
                 moneyChance(100, true, "%s received $%s from an unknown admirer"),
-                moneyChance(20, true, "%s received $%s income tax refund "),
+                moneyChance(20, true, "%s received $%s income tax refund"),
 
                 moneyChance(30, false, "%s lost $%s somewhere"),
                 moneyChance(50, false, "%s payed $%s for medical services"),
                 moneyChance(50, false, "%s payed $%s for additional education"),
                 moneyChance(40, false, "%s lost $%s in a casino"),
 
-                skipTurnsChance(1, "%s got ill and is skipping %s turn(s)"),
-                skipTurnsChance(2, "%s got hit by a car and is skipping %s turn(s)"),
+                skipTurnsChance(1, "%s got ill and must skip %s turn(s)"),
+                skipTurnsChance(2, "%s got hit by a car and must skip %s turn(s)"),
 
                 everyonePaysYouForBirthDay(),
                 payEveryoneForElection(),
@@ -74,7 +76,7 @@ public class ChanceContainer {
         );
     }
 
-    private ChanceCard skipTurnsChance(int turns, String formatMessage) {
+    private ChanceCard skipTurnsChance(int turns, String messageTemplate) {
         return game -> {
             var currentPlayer = game.getCurrentPlayer();
             var lastDice = game.getLastDice();
@@ -86,13 +88,15 @@ public class ChanceContainer {
             } else {
                 currentPlayer.skipTurns(turns);
             }
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format(formatMessage, currentPlayer.getName(), turns)));
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName(), turns);
+            var cardMessage = messageTemplate.formatted(YOU, turns);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.endTurn(game);
         };
     }
 
-    private ChanceCard moneyChance(int amount, boolean give, String formatMessage) {
+    private ChanceCard moneyChance(int amount, boolean give, String messageTemplate) {
         return game -> {
             var currentPlayer = game.getCurrentPlayer();
             if (give) {
@@ -100,10 +104,12 @@ public class ChanceContainer {
             } else {
                 currentPlayer.takeMoney(amount);
             }
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format(formatMessage, currentPlayer.getName(), amount)));
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName(), amount);
+            var cardMessage = messageTemplate.formatted(YOU, amount);
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.endTurn(game);
         };
     }
@@ -121,12 +127,14 @@ public class ChanceContainer {
                     moneyStates.add(MoneyState.fromPlayer(otherPlayer));
                 }
             }
+            var messageTemplate = "%1$s has a birthday - every player is paying %1$s $%s";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName(), giftSize);
+            var cardMessage = messageTemplate.formatted(YOU, giftSize);
             currentPlayer.addMoney(giftTotal);
             moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format("%s has a birthday - every player is paying him/her $%s",
-                            currentPlayer.getName(), giftSize)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.endTurn(game);
         };
     }
@@ -149,10 +157,12 @@ public class ChanceContainer {
                 }
             }
             moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format("%s is paying everyone $%s for help with election campaign",
-                            currentPlayer.getName(), rewardRate)));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+            var messageTemplate = "%s is paying everyone $%s for help with election campaign";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName(), rewardRate);
+            var cardMessage = messageTemplate.formatted(YOU, rewardRate);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.endTurn(game);
         };
     }
@@ -173,14 +183,16 @@ public class ChanceContainer {
             for (Integer houses : housesOnStreets) {
                 tax += houses == Rules.MAX_HOUSES_ON_STREET ? perHotel : houses * perHouse;
             }
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format("%s failed tax audit and is paying $%s per house and $%s per hotel owned",
-                            currentPlayer.getName(), perHouse, perHotel)));
             if (tax > 0) {
                 currentPlayer.takeMoney(tax);
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
             }
+            var messageTemplate = "%s failed tax audit and is paying $%s per house and $%s per hotel owned";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName(), perHouse, perHotel);
+            var cardMessage = messageTemplate.formatted(YOU, perHouse, perHotel);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.endTurn(game);
         };
     }
@@ -205,8 +217,11 @@ public class ChanceContainer {
                     .orElseThrow(() -> new IllegalStateException("wrong distance calculations"))
                     .getKey();
 
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName()
-                    + " was urgently called on a business trip and is proceeding to the nearest airport"));
+            var messageTemplate = "%s missed the train on business trip and must proceed to the nearest airport";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName());
+            var cardMessage = messageTemplate.formatted(YOU);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.movePlayer(game, currentPlayer, nearestField.getId(), false);
         };
     }
@@ -214,18 +229,20 @@ public class ChanceContainer {
     private ChanceCard goToStart() {
         return game -> {
             var currentPlayer = game.getCurrentPlayer();
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format("%s unexpectedly ended up on the %s field after a booze",
-                            currentPlayer.getName(), FieldAction.START.getName())));
-            boolean forward = currentPlayer.getPosition() > Rules.NUMBER_OF_FIELDS / 2;
-            gameLogicExecutor.movePlayer(game, currentPlayer, 0, forward);
+            boolean isMovingForward = currentPlayer.getPosition() > Rules.NUMBER_OF_FIELDS / 2;
+            currentPlayer.skipTurns(1);
+            var messageTemplate = "%s got drunk and landed on the Start field, missing 1 turn";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName());
+            var cardMessage = messageTemplate.formatted(YOU);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
+            gameLogicExecutor.movePlayer(game, currentPlayer, 0, isMovingForward);
         };
     }
 
     private ChanceCard teleport() {
         return game -> {
             var currentPlayer = game.getCurrentPlayer();
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is TELEPORTING!"));
             GameMap gameMap = game.getGameMap();
             List<Integer> purchasableFieldsIndexes = gameMap.getFields().stream()
                     .filter(PurchasableField.class::isInstance)
@@ -233,6 +250,11 @@ public class ChanceContainer {
                     .toList();
             var randomArrayIndex = random.nextInt(purchasableFieldsIndexes.size());
             Integer randomFieldIndex = purchasableFieldsIndexes.get(randomArrayIndex);
+            var messageTemplate = "%s got kidnapped and teleported by aliens";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName());
+            var cardMessage = messageTemplate.formatted(YOU);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
             gameLogicExecutor.movePlayer(game, currentPlayer, randomFieldIndex, false);
         };
     }
@@ -240,7 +262,12 @@ public class ChanceContainer {
     private ChanceCard goToJail() {
         return game -> {
             var currentPlayer = game.getCurrentPlayer();
-            gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer, "for bribing a traffic police officer");
+            var messageTemplate = "%s got sent to jail for bribing a traffic police officer";
+            var chatMessage = messageTemplate.formatted(currentPlayer.getName());
+            var cardMessage = messageTemplate.formatted(YOU);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new ChanceCardEvent(cardMessage));
+            gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer);
         };
     }
 }
