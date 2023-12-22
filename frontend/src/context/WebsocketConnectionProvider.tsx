@@ -30,6 +30,8 @@ import {
 } from "../components/modals";
 import WinnerModal from "../components/modals/WinnerModal";
 import { IModalProps } from "../hooks/useModal";
+import { useMessageContext } from "./MessageProvider";
+import ChanceCard from "../components/ChanceCard";
 
 interface IWebsocketContext {
   sendMessage: (chatMessage: string) => void;
@@ -45,6 +47,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
   } = useGameState();
   const { get } = useQuery();
   const { openEventModal, closeEventModal } = useEventModalContext();
+  const { showCenterPopUp } = useMessageContext();
 
   const loggedInUserId = useMemo(getLoggedInUserId, []);
   const websocket = useRef<WebSocket>();
@@ -113,10 +116,10 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           changeCurrentPlayer(playerId);
           clearHousePurchaseRecords();
           openModalOnlyForLoggedInUser(playerId, {
-              header: <RollDiceButton/>,
-              draggable: false,
-              modal: false,
-            });
+            header: <RollDiceButton/>,
+            draggable: false,
+            modal: false,
+          });
         },
         302: ({ playerId }) => {
           openEventModal({
@@ -208,45 +211,45 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           changeCurrentPlayer(playerId);
           clearHousePurchaseRecords();
           openModalOnlyForLoggedInUser(playerId, {
-              header:
-                <div className='modal-title'>
-                  Choose a way out:
-                </div>,
-              modalContent:
-                <JailReleaseModal
-                  playerId={playerId}
-                />,
-              modal: false,
-            });
+            header:
+              <div className='modal-title'>
+                Choose a way out:
+              </div>,
+            modalContent:
+              <JailReleaseModal
+                playerId={playerId}
+              />,
+            modal: false,
+          });
         },
         309: ({ playerId, fieldIndex, proposal }: AuctionRaiseProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
           openModalOnlyForLoggedInUser(playerId, {
-              header:
-                <div>
-                  {`Do you want to raise ${fieldName} price to $${proposal}?`}
-                </div>,
-              modalContent:
-                <AuctionModal
-                  playerId={playerId}
-                  proposal={proposal}
-                />,
-              modal: false,
-            });
+            header:
+              <div>
+                {`Do you want to raise ${fieldName} price to $${proposal}?`}
+              </div>,
+            modalContent:
+              <AuctionModal
+                playerId={playerId}
+                proposal={proposal}
+              />,
+            modal: false,
+          });
         },
         310: ({ playerId, fieldIndex, proposal }: AuctionBuyProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
           openModalOnlyForLoggedInUser(playerId, {
-              header:
-                <div>
-                  {`Do you want to buy ${fieldName} for $${proposal}?`}
-                </div>,
-              modalContent:
-                <AuctionBuyProposalModal
-                  proposal={proposal}
-                />,
-              modal: false,
-            });
+            header:
+              <div>
+                {`Do you want to buy ${fieldName} for $${proposal}?`}
+              </div>,
+            modalContent:
+              <AuctionBuyProposalModal
+                proposal={proposal}
+              />,
+            modal: false,
+          });
         },
         311: ({ playerId }) => {
           setGameState(prevState => {
@@ -273,6 +276,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               modal: false,
             }
           );
+        },
+        313: ({ text }) => {
+          showCenterPopUp(<ChanceCard text={text}/>);
         },
         315: ({ winnerName }) => {
           openEventModal({

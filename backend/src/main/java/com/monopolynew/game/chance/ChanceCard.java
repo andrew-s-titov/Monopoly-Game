@@ -1,4 +1,4 @@
-package com.monopolynew.chance;
+package com.monopolynew.game.chance;
 
 import com.monopolynew.game.Game;
 
