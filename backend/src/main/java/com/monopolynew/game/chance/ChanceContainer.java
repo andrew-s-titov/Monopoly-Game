@@ -127,7 +127,7 @@ public class ChanceContainer {
                     moneyStates.add(MoneyState.fromPlayer(otherPlayer));
                 }
             }
-            var messageTemplate = "%1$s has a birthday - every player is paying %1$s $%s";
+            var messageTemplate = "%1$s has a birthday - every player must pay %1$s $%s";
             var chatMessage = messageTemplate.formatted(currentPlayer.getName(), giftSize);
             var cardMessage = messageTemplate.formatted(YOU, giftSize);
             currentPlayer.addMoney(giftTotal);
@@ -158,7 +158,7 @@ public class ChanceContainer {
             }
             moneyStates.add(MoneyState.fromPlayer(currentPlayer));
             gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
-            var messageTemplate = "%s is paying everyone $%s for help with election campaign";
+            var messageTemplate = "%s must pay everyone $%s for help with the election campaign";
             var chatMessage = messageTemplate.formatted(currentPlayer.getName(), rewardRate);
             var cardMessage = messageTemplate.formatted(YOU, rewardRate);
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
@@ -188,7 +188,7 @@ public class ChanceContainer {
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
             }
-            var messageTemplate = "%s failed tax audit and is paying $%s per house and $%s per hotel owned";
+            var messageTemplate = "%s failed tax audit and must pay $%s per house and $%s per hotel owned";
             var chatMessage = messageTemplate.formatted(currentPlayer.getName(), perHouse, perHotel);
             var cardMessage = messageTemplate.formatted(YOU, perHouse, perHotel);
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
