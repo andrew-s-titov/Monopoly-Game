@@ -49,7 +49,7 @@ public class StreetField extends BasePurchasableField implements StaticRentField
         super.mortgage();
     }
 
-    public void addHouse() {
+    public void buyHouse() {
         if (houses == Rules.MAX_HOUSES_ON_STREET) {
             throw new IllegalStateException("Cannot add new house - limit is reached");
         }
@@ -62,7 +62,9 @@ public class StreetField extends BasePurchasableField implements StaticRentField
             throw new IllegalStateException("Cannot sell a house - zero houses");
         }
         this.houses--;
-        this.currentRent = this.rents[this.houses];
+        this.currentRent = this.houses == 0
+                ? this.rents[0] * 2
+                : this.rents[this.houses];
     }
 
     public void removeHouses() {

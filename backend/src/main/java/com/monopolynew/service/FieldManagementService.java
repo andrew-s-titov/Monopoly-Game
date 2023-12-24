@@ -67,7 +67,7 @@ public class FieldManagementService {
             if (field instanceof StreetField streetField) {
                 Player currentPlayer = aGame.getCurrentPlayer();
                 if (housePurchaseAvailable(aGame, currentPlayer, streetField)) {
-                    streetField.addHouse();
+                    streetField.buyHouse();
                     aGame.getGameMap().setPurchaseMadeFlag(PurchasableFieldGroups.getGroupIdByFieldIndex(fieldIndex));
                     currentPlayer.takeMoney(streetField.getHousePrice());
                     notifyAfterHouseManagementChange(currentPlayer, streetField);
