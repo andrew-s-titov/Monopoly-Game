@@ -27,7 +27,7 @@ export const MessageProvider = ({ children }: PropsWithChildren) => {
 
   const showCenterPopUp = (content: ReactNode) => centerToast.current?.show({
     className: "center-popup-content",
-    life: 10000,
+    life: 3000,
     content,
   });
 
