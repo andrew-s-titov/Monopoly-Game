@@ -124,12 +124,13 @@
     cursor: pointer;
     display: flex;
     justify-content: center;
-    margin-right: 1.5vh;
+    margin-right: 1vh;
     background-image: url('../images/smiley-face.png');
     background-size: 3.5vh;
     background-position: center center;
     background-repeat: no-repeat no-repeat;
     width: 4vh !important;
+    opacity: 0.6;
 }
 
 .emoji-picker-button > span {
