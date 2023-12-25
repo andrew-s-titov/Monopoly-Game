@@ -71,10 +71,6 @@
     opacity: 0.7;
 }
 
-.chat-input:focus-visible {
-    /*outline: none !important;*/
-}
-
 .send-message {
     width: 10%;
     cursor: pointer;
