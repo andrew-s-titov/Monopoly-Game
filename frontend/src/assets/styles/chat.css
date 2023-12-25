@@ -24,6 +24,12 @@
     margin-left: 0.5vh;
 }
 
+.chat-message-author {
+    align-self: start;
+    font-weight: 700;
+    min-width: max-content;
+}
+
 .own-message {
     align-self: end;
 }
@@ -40,8 +46,11 @@
 }
 
 .chat-input-container {
-    height: 7vh;
-    padding: 0.6vh;
+    height: 5.6vh;
+    margin: 0.6vh;
+    display: flex;
+    background: white;
+    border-radius: 2vh;
 }
 
 .chat-input-container > input, .chat-input-container > button {
@@ -50,10 +59,40 @@
 
 .chat-input {
     width: 90%;
+    border: none;
+    outline: none;
+    background-color: transparent !important;
+    font-size: 2.5vh;
+    color: var(--gray-700);
+}
+
+.chat-input::placeholder {
+    font-size: 2vh;
+    opacity: 0.7;
 }
 
 .send-message {
     width: 10%;
+    cursor: pointer;
+    color: white;
+    background-color: var(--gray-700);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+}
+
+.send-message:hover {
+    background-color: var(--gray-800) !important;
+}
+
+.send-message:active {
+    background-color: var(--map-background-color) !important;
 }
 
 .chat-filler {
@@ -75,4 +114,28 @@
 
 .scroll-down-icon {
     font-size: 5vh;
+}
+
+.emoji-picker-button {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    margin-right: 1vh;
+    background-image: url('../images/smiley-face.png');
+    background-size: 3.5vh;
+    background-position: center center;
+    background-repeat: no-repeat no-repeat;
+    width: 4vh !important;
+    opacity: 0.6;
+}
+
+.emoji-picker-button > span {
+    background-image: url('../images/smiley-face.png');
+    background-size: 3vh;
+    background-position: center center;
+    background-repeat: no-repeat no-repeat;
+    font-size: 3vh !important;
+    z-index: 1;
+    height: 3vh !important;
+    width: 3vh !important;
 }
