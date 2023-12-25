@@ -10,8 +10,8 @@ const Chat = () => {
 
   return (
     <>
-      <ChatHistory messages={ messages }/>
-      <ChatInput sendMessage={ sendMessage }/>
+      <ChatHistory messages={messages}/>
+      <ChatInput sendMessage={sendMessage}/>
     </>
   );
 }

@@ -1,6 +1,7 @@
-import { KeyboardEvent, memo, useRef } from 'react';
+import { KeyboardEvent, memo, useRef, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
+import EmojiPicker, { EmojiStyle, SuggestionMode } from "emoji-picker-react";
+import { OverlayPanel } from "primereact/overlaypanel";
 
 interface IChatInputProps {
   sendMessage: (message: string) => void;
@@ -8,12 +9,14 @@ interface IChatInputProps {
 
 const ChatInput = ({ sendMessage }: IChatInputProps) => {
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<OverlayPanel>(null);
+  const [message, setMessage] = useState('');
 
   const onSendClick = () => {
-    if (inputRef.current && inputRef.current.value) {
-      sendMessage(inputRef.current.value);
-      inputRef.current.value = '';
+    if (message) {
+      emojiPickerRef.current?.hide();
+      sendMessage(message);
+      setMessage('');
     }
   }
 
@@ -24,19 +27,41 @@ const ChatInput = ({ sendMessage }: IChatInputProps) => {
   };
 
   return (
-    <div className='p-inputgroup chat-input-container' onKeyDown={onEnterKeyDown}>
+    <div className='chat-input-container' onKeyDown={onEnterKeyDown}>
       <InputText
+        unstyled
         className='chat-input'
-        ref={inputRef}
+        value={message}
+        onChange={e => setMessage(e.target.value)}
         placeholder='Enter your message here...'
       />
-      <Button
-        className='send-message'
-        icon='pi pi-send icon'
-        severity='secondary'
-        onClick={onSendClick}
-        onKeyDown={onEnterKeyDown}
+
+      <div
+        onClick={(e) => emojiPickerRef.current?.toggle(e)}
+        className="emoji-picker-button"
       />
+      <OverlayPanel
+        ref={emojiPickerRef}
+        dismissable
+        closeOnEscape
+      >
+        <EmojiPicker
+          suggestedEmojisMode={SuggestionMode.RECENT}
+          emojiVersion={"5.0"}
+          emojiStyle={EmojiStyle.NATIVE}
+          lazyLoadEmojis={true}
+          previewConfig={{
+            showPreview: false,
+          }}
+          onEmojiClick={e => setMessage(m => m + e.emoji)}
+        />
+      </OverlayPanel>
+      <button
+        className='send-message'
+        onClick={onSendClick}
+      >
+        <p className="pi pi-send icon"/>
+      </button>
     </div>
   );
 }
