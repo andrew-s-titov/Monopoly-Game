@@ -25,13 +25,13 @@ const ChatMessage = ({text, author, ownMessage, color}: IProps) => {
   } else {
     const content = (
       <>
-        <span style={{fontWeight: '700'}}>{`${author}: `}</span>
+        <span className="chat-message-author">{`${author}: `}</span>
         {textContent}
       </>
     );
     return (
       <Message
-        className='chat-message player-message'
+        className="chat-message player-message"
         content={content}
         style={{background: color}}
       />
