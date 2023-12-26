@@ -38,6 +38,7 @@ export const MessageProvider = ({ children }: PropsWithChildren) => {
         className="center-popup"
         ref={centerToast}
         position="bottom-center"
+        onClick={message => centerToast.current?.remove(message)}
       />
       {children}
     </MessageContext.Provider>
