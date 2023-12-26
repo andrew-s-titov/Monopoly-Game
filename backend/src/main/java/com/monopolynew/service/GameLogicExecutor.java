@@ -27,7 +27,6 @@ import com.monopolynew.map.UtilityField;
 import com.monopolynew.mapper.GameFieldMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -277,7 +276,7 @@ public class GameLogicExecutor {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isBankrupt() || nextPlayer.isSkipping()) {
             if (nextPlayer.isSkipping()) {
-                gameEventSender.sendToAllPlayers(new ChatMessageEvent(nextPlayer.getName() + " is skipping his/her turn"));
+                gameEventSender.sendToAllPlayers(new ChatMessageEvent(nextPlayer.getName() + " is skipping a turn"));
                 nextPlayer.skip();
             }
             nextPlayer = toNextPlayer(game);
