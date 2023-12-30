@@ -8,12 +8,12 @@ import java.util.Map;
 
 public class PurchasableFieldGroups {
 
-    public static final int COMPANY_FIELD_GROUP = 1;
+    public static final int AIRPORT_FIELD_GROUP = 1;
     public static final int UTILITY_FIELD_GROUP = 4;
 
     private static final Map<Integer, List<Integer>> FIELD_GROUPS = Map.of(
             0, List.of(1, 3),
-            COMPANY_FIELD_GROUP, List.of(5, 15, 25, 35),
+            AIRPORT_FIELD_GROUP, List.of(5, 15, 25, 35),
             2, List.of(6, 8, 9),
             3, List.of(11, 13, 14),
             UTILITY_FIELD_GROUP, List.of(12, 28),

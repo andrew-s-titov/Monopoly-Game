@@ -112,7 +112,7 @@ public class GameLogicExecutor {
         Player currentPlayer = game.getCurrentPlayer();
 
         Player nextPlayer;
-        if (!currentPlayer.isJustAmnestied() && game.getLastDice() != null && game.getLastDice().isDoublet()
+        if (!currentPlayer.isJustAmnestied() && game.getLastDice() != null && currentPlayer.getDoubletCount() > 0
                 && !currentPlayer.isBankrupt() && !currentPlayer.isSkipping() && !currentPlayer.isImprisoned()) {
             nextPlayer = currentPlayer;
         } else {
