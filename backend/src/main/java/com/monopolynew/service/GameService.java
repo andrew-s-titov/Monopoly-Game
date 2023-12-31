@@ -101,7 +101,7 @@ public class GameService {
         Player currentPlayer = game.getCurrentPlayer();
         GameStage stage = game.getStage();
         if (GameStage.ROLLED_FOR_TURN.equals(stage)) {
-            if (currentPlayer.committedFraud()) {
+            if (currentPlayer.getDoubletCount() == Rules.DOUBLETS_LIMIT) {
                 currentPlayer.resetDoublets();
                 gameEventSender.sendToAllPlayers(
                         new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));

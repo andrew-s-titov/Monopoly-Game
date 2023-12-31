@@ -25,6 +25,7 @@ public class Player {
     private boolean amnestied = false;
     private int skipsTurns = 0;
     private int jailTurns = 0;
+    @Getter
     private int doubletCount = 0;
 
     @Builder
@@ -125,10 +126,6 @@ public class Player {
 
     public void resetDoublets() {
         this.doubletCount = 0;
-    }
-
-    public boolean committedFraud() {
-        return this.doubletCount == Rules.MAX_DOUBLETS;
     }
 
     public void goBankrupt() {

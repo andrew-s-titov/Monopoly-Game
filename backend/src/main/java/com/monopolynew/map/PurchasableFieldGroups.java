@@ -2,18 +2,20 @@ package com.monopolynew.map;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.Map;
 
+@UtilityClass
 public class PurchasableFieldGroups {
 
-    public static final int COMPANY_FIELD_GROUP = 1;
+    public static final int AIRPORT_FIELD_GROUP = 1;
     public static final int UTILITY_FIELD_GROUP = 4;
 
     private static final Map<Integer, List<Integer>> FIELD_GROUPS = Map.of(
             0, List.of(1, 3),
-            COMPANY_FIELD_GROUP, List.of(5, 15, 25, 35),
+            AIRPORT_FIELD_GROUP, List.of(5, 15, 25, 35),
             2, List.of(6, 8, 9),
             3, List.of(11, 13, 14),
             UTILITY_FIELD_GROUP, List.of(12, 28),
@@ -50,12 +52,9 @@ public class PurchasableFieldGroups {
         if (fieldGroupId < 0 || fieldGroupId > 9) {
             throw new IllegalArgumentException("No group exists for id " + fieldGroupId);
         }
+        GameMap gameMap = game.getGameMap();
         return FIELD_GROUPS.get(fieldGroupId).stream()
-                .map(fieldIndex -> (PurchasableField) game.getGameMap().getField(fieldIndex))
+                .map(fieldIndex -> (PurchasableField) gameMap.getField(fieldIndex))
                 .toList();
-    }
-
-    private PurchasableFieldGroups() {
-        // NO-OP
     }
 }
