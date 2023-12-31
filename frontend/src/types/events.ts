@@ -28,13 +28,11 @@ export interface BuyProposalEvent {
 }
 
 export interface AuctionRaiseProposalEvent {
-  playerId: string,
   fieldIndex: UPropertyIndex,
   proposal: number,
 }
 
 export interface AuctionBuyProposalEvent {
-  playerId: string,
   fieldIndex: UPropertyIndex,
   proposal: number,
 }
@@ -58,7 +56,6 @@ export interface PayCommandEvent {
 
 export interface OfferProposalEvent {
   initiatorName: string;
-  addresseeId: string;
   addresseeFields: UPropertyIndex[],
   initiatorFields: UPropertyIndex[],
   addresseeMoney: number;

@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Dialog } from "primereact/dialog";
+import { ModalId } from "../components/modals";
 
 export interface IModalProps {
   header: React.JSX.Element;
   modalContent?: React.JSX.Element;
-  draggable?: boolean
   modal?: boolean;
   transparent?: boolean,
+  modalId?: ModalId,
 }
 
 const useModal = (isClosable?: boolean) => {
+  const lastModal = useRef<ModalId>();
   const [modalContent, setModalContent] = useState<React.JSX.Element>();
   const [modalHeader, setModalHeader] = useState<React.JSX.Element>();
-  const [draggable, setDraggable] = useState(true);
   const [isOpened, setIsOpened] = useState(false);
   const [isModal, setIsModal] = useState(true);
   const [isTransparent, setIsTransparent] = useState(false);
@@ -20,18 +21,21 @@ const useModal = (isClosable?: boolean) => {
   const openModal = ({
                        header,
                        modalContent,
-                       draggable = true,
                        modal = true,
-                       transparent = false
+                       transparent = false,
+                       modalId
                      }: IModalProps) => {
+    lastModal.current = modalId;
     setModalHeader(header);
     setModalContent(modalContent);
-    setDraggable(draggable);
     setIsModal(modal);
     setIsTransparent(transparent);
     setIsOpened(true);
   }
-  const closeModal = () => {
+  const closeModal = (modalId?: ModalId) => {
+    if (modalId && modalId !== lastModal.current) {
+      return;
+    }
     setIsOpened(false);
   };
 
@@ -49,7 +53,7 @@ const useModal = (isClosable?: boolean) => {
       dismissableMask={isClosable}
       closable={false}
       resizable={false}
-      draggable={draggable}
+      draggable={false}
       modal={isModal}
       className={isTransparent ? "transparent-dialog" : ""}
       headerClassName={isTransparent ? "transparent-dialog" : ""}

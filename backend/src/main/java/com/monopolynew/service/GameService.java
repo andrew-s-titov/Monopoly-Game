@@ -8,6 +8,7 @@ import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.NewPlayerTurn;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.PlayerInvalidInputException;
@@ -57,7 +58,9 @@ public class GameService {
         }
         game.startGame();
         gameEventSender.sendToAllPlayers(gameEventGenerator.mapRefreshEvent(game));
-        gameEventSender.sendToAllPlayers(new TurnStartEvent(game.getCurrentPlayer().getId()));
+        UUID currentPlayerId = game.getCurrentPlayer().getId();
+        gameEventSender.sendToAllPlayers(new NewPlayerTurn(currentPlayerId));
+        gameEventSender.sendToPlayer(currentPlayerId, new TurnStartEvent());
     }
 
     public void startDiceRolling() {
@@ -189,7 +192,7 @@ public class GameService {
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                     currentPlayer.getName() + " is released on bail"));
             gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
-            gameEventSender.sendToAllPlayers(new TurnStartEvent(currentPlayer.getId()));
+            gameEventSender.sendToPlayer(currentPlayer.getId(), new TurnStartEvent());
         } else if (jailAction.equals(JailAction.LUCK)) {
             notifyAboutDiceRolling(game);
         }

@@ -301,6 +301,7 @@
     width: 35vh;
     height: 15vh;
     background-color: white;
+    color: var(--gray-800);
 }
 
 .center-popup {

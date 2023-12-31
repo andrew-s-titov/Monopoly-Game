@@ -14,13 +14,13 @@ const PageSwitcher = () => {
     isLoggedIn
       ?
       <GameStateProvider>
-        <PopUpModalProvider>
-          <EventModalProvider>
+        <EventModalProvider>
+          <PopUpModalProvider>
             <WebsocketConnectionProvider>
               <Game/>
             </WebsocketConnectionProvider>
-          </EventModalProvider>
-        </PopUpModalProvider>
+          </PopUpModalProvider>
+        </EventModalProvider>
       </GameStateProvider>
 
       : <LoginForm/>

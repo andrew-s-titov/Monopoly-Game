@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
-public class GameMapRefreshEvent implements GameEvent {
+public class GameMapStateEvent implements GameEvent {
 
     private final int code = 300;
 
