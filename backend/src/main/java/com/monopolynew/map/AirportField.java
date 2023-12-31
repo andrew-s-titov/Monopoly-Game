@@ -5,16 +5,17 @@ import lombok.Getter;
 
 import java.util.Objects;
 
-public class CompanyField extends BasePurchasableField implements StaticRentField {
+public class AirportField extends BasePurchasableField implements StaticRentField {
 
     private final int defaultRent;
 
     @Getter
     private int currentRent;
 
-    public CompanyField(int id, String name, int price, int defaultRent) {
+    public AirportField(int id, String name, int price, int defaultRent) {
         super(id, name, price);
         this.defaultRent = defaultRent;
+        this.currentRent = defaultRent;
     }
     @Override
     public void newOwner(Player newOwner) {
@@ -32,7 +33,7 @@ public class CompanyField extends BasePurchasableField implements StaticRentFiel
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CompanyField that = (CompanyField) o;
+        AirportField that = (AirportField) o;
         return id == that.id && name.equals(that.name);
     }
 

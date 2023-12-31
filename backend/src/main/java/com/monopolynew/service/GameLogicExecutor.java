@@ -2,7 +2,6 @@ package com.monopolynew.service;
 
 import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.dto.PropertyPrice;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
 import com.monopolynew.event.ChatMessageEvent;
@@ -18,7 +17,7 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.procedure.BuyProposal;
 import com.monopolynew.game.procedure.DiceResult;
-import com.monopolynew.map.CompanyField;
+import com.monopolynew.map.AirportField;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import com.monopolynew.map.PurchasableFieldGroups;
@@ -34,7 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -132,36 +130,31 @@ public class GameLogicExecutor {
         debtor.goBankrupt();
         gameEventSender.sendToAllPlayers(new BankruptcyEvent(debtor.getId()));
         var moneyStatesToSend = new ArrayList<MoneyState>();
-        var playerMoneyLeft = debtor.getMoney();
         var playerFieldsLeft = getPlayerFields(game, debtor);
-        var playerFieldsToProcess = new ArrayList<>(playerFieldsLeft);
-        var shouldProcessFields = CollectionUtils.isNotEmpty(playerFieldsLeft);
-        if (playerMoneyLeft > 0) {
-            debtor.takeMoney(playerMoneyLeft);
-            moneyStatesToSend.add(MoneyState.fromPlayer(debtor));
-        }
         var checkToPay = game.getCheckToPay();
         if (checkToPay != null) {
             var beneficiary = checkToPay.getBeneficiary();
             var shouldProcessCheck = debtor.equals(checkToPay.getDebtor()) && beneficiary != null;
-            var debt = checkToPay.getDebt();
             if (shouldProcessCheck) {
-                var sumToTransfer = Math.min(playerMoneyLeft, debt);
-                beneficiary.addMoney(sumToTransfer);
-                debt = debt - sumToTransfer;
-                if (shouldProcessFields && debt > 0) {
-                    processFieldsForBeneficiary(beneficiary, debt, playerFieldsLeft, playerFieldsToProcess);
+                var sumToTransfer = Math.min(computePlayerAssets(game, debtor), checkToPay.getDebt());
+                if (sumToTransfer > 0) {
+                    beneficiary.addMoney(sumToTransfer);
+                    moneyStatesToSend.add(MoneyState.fromPlayer(beneficiary));
                 }
-                moneyStatesToSend.add(MoneyState.fromPlayer(beneficiary));
             }
             game.setCheckToPay(null);
         }
-        if (shouldProcessFields) {
-            for (PurchasableField field : playerFieldsToProcess) {
+        var playerMoneyLeft = debtor.getMoney();
+        if (playerMoneyLeft > 0) {
+            debtor.takeMoney(playerMoneyLeft);
+            moneyStatesToSend.add(MoneyState.fromPlayer(debtor));
+        }
+        if (CollectionUtils.isNotEmpty(playerFieldsLeft)) {
+            playerFieldsLeft.forEach(field -> {
                 field.redeem();
                 field.newOwner(null); // property goes to Bank
                 removeFieldHouses(field);
-            }
+            });
             gameEventSender.sendToAllPlayers(
                     new FieldStateChangeEvent(gameFieldMapper.toStateList(playerFieldsLeft)));
         }
@@ -192,7 +185,9 @@ public class GameLogicExecutor {
     public List<PurchasableField> processOwnershipChange(Game game, Collection<PurchasableField> changedFields) {
         return changedFields.stream()
                 .map(GameField::getId)
-                .map(id -> PurchasableFieldGroups.getGroupByFieldIndex(game, id))
+                .map(PurchasableFieldGroups::getGroupIdByFieldIndex)
+                .distinct()
+                .map(groupId -> PurchasableFieldGroups.getGroupById(game, groupId))
                 .map(this::processOwnershipChangeForGroup)
                 .flatMap(List::stream)
                 .toList();
@@ -208,24 +203,23 @@ public class GameLogicExecutor {
                 .filter(field -> !field.isFree())
                 .toList();
         var anyFieldFromGroup = fieldGroup.get(0);
-        Consumer<List<PurchasableField>> fieldProcessor;
         if (anyFieldFromGroup instanceof StreetField) {
             boolean allGroupHasSameOwner = fieldGroup.size() == ownedFields.size()
                     && 1 == fieldGroup.stream()
                     .map(PurchasableField::getOwner)
                     .distinct().count();
-            fieldProcessor = group -> group.stream()
+            ownedFields.stream()
                     .map(StreetField.class::cast)
                     .forEach(streetField -> streetField.refreshRent(allGroupHasSameOwner));
-        } else if (anyFieldFromGroup instanceof CompanyField) {
-            fieldProcessor = group -> group.stream()
-                    .map(CompanyField.class::cast)
-                    .forEach(companyField -> {
-                        var owningPlayer = companyField.getOwner();
+        } else if (anyFieldFromGroup instanceof AirportField) {
+            ownedFields.stream()
+                    .map(AirportField.class::cast)
+                    .forEach(airportField -> {
+                        var owningPlayer = airportField.getOwner();
                         int ownedBySameOwner = (int) ownedFields.stream()
                                 .filter(field -> owningPlayer.equals(field.getOwner()))
                                 .count();
-                        companyField.refreshRent(ownedBySameOwner);
+                        airportField.refreshRent(ownedBySameOwner);
                     });
         } else if (anyFieldFromGroup instanceof UtilityField) {
             boolean allUtilitiesOwned = fieldGroup.size() == ownedFields.size()
@@ -233,14 +227,13 @@ public class GameLogicExecutor {
                     .map(PurchasableField::getOwner)
                     .distinct()
                     .count();
-            fieldProcessor = group -> group.stream()
+            ownedFields.stream()
                     .map(UtilityField.class::cast)
                     .forEach(field -> field.refreshRent(allUtilitiesOwned));
         } else {
             throw new IllegalStateException("Unsupported field type");
         }
         // NOTE: processing only ownedFields, as for empty fields rent is reset to default
-        fieldProcessor.accept(ownedFields);
         return ownedFields;
     }
 
@@ -319,53 +312,5 @@ public class GameLogicExecutor {
         if (field instanceof StreetField streetField && streetField.getHouses() > 0) {
             streetField.removeHouses();
         }
-    }
-
-    private void processFieldsForBeneficiary(Player beneficiary, int debt,
-                                             List<PurchasableField> playerFieldsLeft,
-                                             List<PurchasableField> playerFieldsToProcess) {
-        var debtorPropertyPrice = computeDebtorPropertyPrice(playerFieldsLeft);
-
-        if (debtorPropertyPrice.getTotal() <= debt) {
-            for (PurchasableField field : playerFieldsLeft) {
-                field.newOwner(beneficiary);
-                removeFieldHouses(field);
-            }
-            playerFieldsToProcess.clear();
-        } else {
-            var housePriceToTransfer = Math.min(debtorPropertyPrice.getHousesPrice(), debt);
-            var remainingDebt = debt - housePriceToTransfer;
-            var fieldsIterator = playerFieldsLeft.iterator();
-            while (remainingDebt > 0 && fieldsIterator.hasNext()) {
-                var field = fieldsIterator.next();
-                removeFieldHouses(field);
-                var fieldPrice = field.isMortgaged() ? getFieldMortgagePrice(field) : field.getPrice();
-                if (remainingDebt >= fieldPrice) {
-                    remainingDebt = remainingDebt - fieldPrice;
-                    field.newOwner(beneficiary); // street instead of money equivalent to street's price
-                    playerFieldsToProcess.remove(field);
-                } else {
-                    beneficiary.addMoney(remainingDebt); // partial money sum instead of whole street
-                    remainingDebt = 0;
-                }
-            }
-        }
-    }
-
-    private PropertyPrice computeDebtorPropertyPrice(List<PurchasableField> playerFieldsLeft) {
-        var housesPrice = playerFieldsLeft.stream()
-                .filter(StreetField.class::isInstance)
-                .map(StreetField.class::cast)
-                .map(street -> street.getHousePrice() * street.getHouses())
-                .reduce(0, Integer::sum);
-        var fieldsPrice = playerFieldsLeft.stream()
-                .map(field -> field.isMortgaged()
-                        ? getFieldMortgagePrice(field)
-                        : field.getPrice())
-                .reduce(0, Integer::sum);
-        return PropertyPrice.builder()
-                .housesPrice(housesPrice)
-                .fieldsPrice(fieldsPrice)
-                .build();
     }
 }

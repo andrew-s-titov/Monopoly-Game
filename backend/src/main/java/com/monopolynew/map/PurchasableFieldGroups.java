@@ -2,10 +2,12 @@ package com.monopolynew.map;
 
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Rules;
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.Map;
 
+@UtilityClass
 public class PurchasableFieldGroups {
 
     public static final int AIRPORT_FIELD_GROUP = 1;
@@ -50,12 +52,9 @@ public class PurchasableFieldGroups {
         if (fieldGroupId < 0 || fieldGroupId > 9) {
             throw new IllegalArgumentException("No group exists for id " + fieldGroupId);
         }
+        GameMap gameMap = game.getGameMap();
         return FIELD_GROUPS.get(fieldGroupId).stream()
-                .map(fieldIndex -> (PurchasableField) game.getGameMap().getField(fieldIndex))
+                .map(fieldIndex -> (PurchasableField) gameMap.getField(fieldIndex))
                 .toList();
-    }
-
-    private PurchasableFieldGroups() {
-        // NO-OP
     }
 }
