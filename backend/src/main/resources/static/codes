@@ -2,7 +2,7 @@ Websocket codes:
 100 - connected players info
 200 - chat message
 300 - game map refresh
-301 - turn starts
+301 - usual turn starts
 302 - dice rolling start
 303 - dice result
 304 - new player position
@@ -15,10 +15,9 @@ Websocket codes:
 311 - bankruptcy
 312 - pay command
 313 - chance card
+314 - next player turn
 315 - game over
 316 - offer received
-317 - offer processed
-318 - offer sent
 350 - game stage changed
 500 - game connection error
 

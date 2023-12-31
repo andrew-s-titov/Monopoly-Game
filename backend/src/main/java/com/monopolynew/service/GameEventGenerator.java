@@ -4,7 +4,7 @@ import com.monopolynew.event.AuctionBuyProposalEvent;
 import com.monopolynew.event.AuctionRaiseProposalEvent;
 import com.monopolynew.event.BuyProposalEvent;
 import com.monopolynew.event.DiceResultEvent;
-import com.monopolynew.event.GameMapRefreshEvent;
+import com.monopolynew.event.GameMapStateEvent;
 import com.monopolynew.event.GameRoomEvent;
 import com.monopolynew.event.OfferProposalEvent;
 import com.monopolynew.event.PayCommandEvent;
@@ -28,13 +28,13 @@ public class GameEventGenerator {
     private final GameFieldMapper gameFieldMapper;
     private final PlayerMapper playerMapper;
 
-    public GameMapRefreshEvent mapRefreshEvent(Game game) {
+    public GameMapStateEvent mapRefreshEvent(Game game) {
         var purchasableFields = game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
                 .toList();
         var gameFieldViews = gameFieldMapper.toStateList(purchasableFields);
-        return new GameMapRefreshEvent(game.getPlayers(), gameFieldViews, game.getCurrentPlayer().getId());
+        return new GameMapStateEvent(game.getPlayers(), gameFieldViews, game.getCurrentPlayer().getId());
     }
 
     public OfferProposalEvent offerProposalEvent(Game game) {
@@ -43,7 +43,6 @@ public class GameEventGenerator {
         var currentPlayer = game.getCurrentPlayer();
         return OfferProposalEvent.builder()
                 .initiatorName(currentPlayer.getName())
-                .addresseeId(offer.getAddressee().getId())
                 .addresseeFields(offer.getAddresseeFields().stream().map(GameField::getId).toList())
                 .initiatorFields(offer.getInitiatorFields().stream().map(GameField::getId).toList())
                 .addresseeMoney(offer.getAddresseeMoney())
@@ -53,7 +52,6 @@ public class GameEventGenerator {
 
     public AuctionBuyProposalEvent auctionBuyProposalEvent(Auction auction) {
         return new AuctionBuyProposalEvent(
-                auction.getCurrentParticipant().getId(),
                 auction.getField().getId(),
                 auction.getAuctionPrice()
         );
@@ -61,7 +59,6 @@ public class GameEventGenerator {
 
     public AuctionRaiseProposalEvent auctionRaiseProposalEvent(Auction auction) {
         return new AuctionRaiseProposalEvent(
-                auction.getCurrentParticipant().getId(),
                 auction.getField().getId(),
                 auction.getAuctionPrice() + Rules.AUCTION_STEP
         );
@@ -70,9 +67,7 @@ public class GameEventGenerator {
     public BuyProposalEvent buyProposalEvent(BuyProposal buyProposal) {
         var purchasableField = buyProposal.getField();
         return BuyProposalEvent.builder()
-                .playerId(buyProposal.getPlayerId())
                 .price(purchasableField.getPrice())
-                .payable(buyProposal.isPayable())
                 .fieldIndex(purchasableField.getId())
                 .build();
     }
@@ -80,7 +75,7 @@ public class GameEventGenerator {
     public PayCommandEvent payCommandEvent(CheckToPay checkToPay) {
         var debtor = checkToPay.getDebtor();
         var debt = checkToPay.getDebt();
-        return new PayCommandEvent(debtor.getId(), debt, debtor.getMoney() >= debt, checkToPay.isWiseToGiveUp());
+        return new PayCommandEvent(debt, checkToPay.isWiseToGiveUp());
     }
 
     public GameRoomEvent gameRoomEvent(Game game) {

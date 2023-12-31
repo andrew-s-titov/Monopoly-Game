@@ -5,6 +5,8 @@ import useQuery from "../../hooks/useQuery";
 import { BE_ENDPOINT } from "../../api/config";
 import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
+import { useEventModalContext } from "../../context/EventModalProvider";
+import { ModalId } from "./index";
 
 interface IAuctionBuyProposalProps {
   proposal: number,
@@ -12,22 +14,26 @@ interface IAuctionBuyProposalProps {
 
 const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
 
+  const { closeEventModal } = useEventModalContext();
   const loggedInUserId = useMemo(getLoggedInUserId, []);
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUserId];
   const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= proposal;
+  const closeAuctionBuyProposal = () => closeEventModal(ModalId.AUCTION_BUY_PROPOSAL);
 
   const onBuyHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/auction/buy?action=ACCEPT`,
+      onSuccess: closeAuctionBuyProposal,
     });
   };
 
   const onDeclineHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/auction/buy?action=DECLINE`,
+      onSuccess: closeAuctionBuyProposal,
     });
   }
 

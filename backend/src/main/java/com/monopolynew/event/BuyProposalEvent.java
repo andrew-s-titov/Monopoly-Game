@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.UUID;
-
 @Getter
 @Builder
 @RequiredArgsConstructor
@@ -13,11 +11,7 @@ public class BuyProposalEvent implements GameEvent {
 
     private final int code = 306;
 
-    private final UUID playerId;
-
     private final int fieldIndex;
 
     private final int price;
-
-    private final boolean payable;
 }

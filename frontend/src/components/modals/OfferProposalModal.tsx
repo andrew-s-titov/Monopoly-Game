@@ -7,6 +7,7 @@ import PropertyOfferView from "../PropertyOfferView";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import useQuery from "../../hooks/useQuery";
 import { BE_ENDPOINT } from "../../api/config";
+import { ModalId } from "./index";
 
 interface IOfferProposalModalProps {
   initiatorName: string,
@@ -27,6 +28,7 @@ const OfferProposalModal = ({
   const { post, isLoading } = useQuery();
 
   const { closeEventModal } = useEventModalContext();
+  const closeProposal = () => closeEventModal(ModalId.OFFER_PROPOSAL);
 
   const initiatorTotal = initiatorFields
     .map(index => PROPERTY_FIELDS_DATA[index].price)
@@ -38,14 +40,14 @@ const OfferProposalModal = ({
   const onAcceptHandler = () => {
     post({
       url: `${BE_ENDPOINT}/game/offer/process?action=ACCEPT`,
-      onSuccess: closeEventModal,
+      onSuccess: closeProposal,
     })
   }
 
   const onDeclineHandler = () => {
     post({
       url: `${BE_ENDPOINT}/game/offer/process?action=DECLINE`,
-      onSuccess: closeEventModal,
+      onSuccess: closeProposal,
     })
   }
 
