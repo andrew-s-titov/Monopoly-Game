@@ -117,14 +117,12 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           clearHousePurchaseRecords();
           openModalOnlyForLoggedInUser(playerId, {
             header: <RollDiceButton/>,
-            draggable: false,
             modal: false,
           });
         },
         302: ({ playerId }) => {
           openEventModal({
             header: <Dice/>,
-            draggable: false,
             modal: false,
             transparent: true,
           })
@@ -138,7 +136,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         303: ({ playerId, firstDice, secondDice }) => {
           openEventModal({
             header: <Dice result={[firstDice, secondDice]}/>,
-            draggable: false,
             modal: false,
             transparent: true,
           })
@@ -284,7 +281,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           openEventModal({
             header: <WinnerModal name={winnerName}/>,
             modal: true,
-            draggable: false,
           });
           changeCurrentPlayer('');
           clearTimeouts();

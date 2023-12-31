@@ -4,7 +4,6 @@ import { Dialog } from "primereact/dialog";
 export interface IModalProps {
   header: React.JSX.Element;
   modalContent?: React.JSX.Element;
-  draggable?: boolean
   modal?: boolean;
   transparent?: boolean,
 }
@@ -12,7 +11,6 @@ export interface IModalProps {
 const useModal = (isClosable?: boolean) => {
   const [modalContent, setModalContent] = useState<React.JSX.Element>();
   const [modalHeader, setModalHeader] = useState<React.JSX.Element>();
-  const [draggable, setDraggable] = useState(true);
   const [isOpened, setIsOpened] = useState(false);
   const [isModal, setIsModal] = useState(true);
   const [isTransparent, setIsTransparent] = useState(false);
@@ -20,13 +18,11 @@ const useModal = (isClosable?: boolean) => {
   const openModal = ({
                        header,
                        modalContent,
-                       draggable = true,
                        modal = true,
                        transparent = false
                      }: IModalProps) => {
     setModalHeader(header);
     setModalContent(modalContent);
-    setDraggable(draggable);
     setIsModal(modal);
     setIsTransparent(transparent);
     setIsOpened(true);
@@ -49,7 +45,7 @@ const useModal = (isClosable?: boolean) => {
       dismissableMask={isClosable}
       closable={false}
       resizable={false}
-      draggable={draggable}
+      draggable={false}
       modal={isModal}
       className={isTransparent ? "transparent-dialog" : ""}
       headerClassName={isTransparent ? "transparent-dialog" : ""}
