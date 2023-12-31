@@ -18,7 +18,7 @@ import RollDiceButton from "../components/RollDiceButton";
 import Dice from "../components/Dice";
 import { useGameState } from "./GameStateProvider";
 import useQuery from "../hooks/useQuery";
-import { IEventModalProps, useEventModalContext } from "./EventModalProvider";
+import { useEventModalContext } from "./EventModalProvider";
 import { getLoggedInUserId } from "../utils/auth";
 import {
   AuctionBuyProposalModal,
@@ -58,14 +58,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
       currentUserId: currentPlayerId,
     }))
   };
-
-  const openModalOnlyForLoggedInUser = (modalForPlayerId: string, modalProps: IEventModalProps) => {
-    if (loggedInUserId === modalForPlayerId) {
-      openEventModal(modalProps);
-    } else {
-      closeEventModal();
-    }
-  }
 
   useEffect(() => {
       websocket.current = new WebSocket(getWebsocketUrl());
@@ -112,10 +104,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             }, {} as Record<UPropertyIndex, PropertyState>)
           }));
         },
-        301: ({ playerId }) => {
-          changeCurrentPlayer(playerId);
-          clearHousePurchaseRecords();
-          openModalOnlyForLoggedInUser(playerId, {
+        301: () => {
+          openEventModal({
             modalId: ModalId.ROLL_DICE,
             header: <RollDiceButton/>,
             modal: false,
@@ -175,9 +165,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             return newState;
           })
         },
-        306: ({ playerId, price, fieldIndex }: BuyProposalEvent) => {
+        306: ({ price, fieldIndex }: BuyProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
-          loggedInUserId === playerId && openEventModal({
+          openEventModal({
             modalId: ModalId.BUY_PROPOSAL,
             header:
               <div className='modal-title'>
@@ -185,7 +175,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               </div>,
             modalContent:
               <BuyProposalModal
-                playerId={playerId}
                 price={price}
               />,
             modal: false,
@@ -208,25 +197,21 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             return newState;
           });
         },
-        308: ({ playerId }) => {
-          changeCurrentPlayer(playerId);
-          clearHousePurchaseRecords();
-          openModalOnlyForLoggedInUser(playerId, {
+        308: () => {
+          openEventModal({
             modalId: ModalId.JAIL_RELEASE,
             header:
               <div className='modal-title'>
                 Choose a way out:
               </div>,
             modalContent:
-              <JailReleaseModal
-                playerId={playerId}
-              />,
+              <JailReleaseModal />,
             modal: false,
           });
         },
-        309: ({ playerId, fieldIndex, proposal }: AuctionRaiseProposalEvent) => {
+        309: ({ fieldIndex, proposal }: AuctionRaiseProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
-          openModalOnlyForLoggedInUser(playerId, {
+          openEventModal({
             modalId: ModalId.AUCTION,
             header:
               <div>
@@ -234,15 +219,14 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               </div>,
             modalContent:
               <AuctionModal
-                playerId={playerId}
                 proposal={proposal}
               />,
             modal: false,
           });
         },
-        310: ({ playerId, fieldIndex, proposal }: AuctionBuyProposalEvent) => {
+        310: ({ fieldIndex, proposal }: AuctionBuyProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
-          openModalOnlyForLoggedInUser(playerId, {
+          openEventModal({
             modalId: ModalId.AUCTION_BUY_PROPOSAL,
             header:
               <div>
@@ -264,8 +248,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             return newState;
           })
         },
-        312: ({ playerId, sum, wiseToGiveUp }: PayCommandEvent) => {
-          loggedInUserId === playerId && openEventModal(
+        312: ({ sum, wiseToGiveUp }: PayCommandEvent) => {
+          openEventModal(
             {
               modalId: ModalId.PAY_COMMAND,
               header:
@@ -274,7 +258,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 </div>,
               modalContent:
                 <PayCommandModal
-                  playerId={playerId}
                   sum={sum}
                   wiseToGiveUp={wiseToGiveUp}
                 />,
@@ -284,6 +267,10 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         313: ({ text }) => {
           showCenterPopUp(<ChanceCard text={text}/>);
+        },
+        314: ({ playerId }) => {
+          changeCurrentPlayer(playerId);
+          clearHousePurchaseRecords();
         },
         315: ({ winnerName }) => {
           openEventModal({
@@ -303,13 +290,12 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         316: ({
                 initiatorName,
-                addresseeId,
                 addresseeMoney,
                 initiatorMoney,
                 initiatorFields,
                 addresseeFields
               }: OfferProposalEvent) => {
-          openModalOnlyForLoggedInUser(addresseeId, {
+          openEventModal({
             modalId: ModalId.OFFER_PROPOSAL,
             header:
               <div className="offer-title">

@@ -14,6 +14,7 @@ import PropertyOfferView from '../PropertyOfferView';
 import useQuery from "../../hooks/useQuery";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { BE_ENDPOINT } from "../../api/config";
+import { useEventModalContext } from "../../context/EventModalProvider";
 
 interface IOfferDealModalProps {
   addresseeId: string,
@@ -68,6 +69,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
   const { showWarning } = useMessageContext();
 
   const { closePopUpModal } = usePopUpModalContext();
+  const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const addresseeState = gameState.playerStates[addresseeId];
   const initiatorId = gameState.currentUserId;
@@ -88,6 +90,11 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
     .map(index => PROPERTY_FIELDS_DATA[index].price)
     .reduce((a, b) => a + b, 0) + selectedAddresseeMoney;
 
+  const closeAllModals = () => {
+    closePopUpModal();
+    closeEventModal();
+  }
+
   const onSendOffer = () => {
     if (!selectedInitiatorMoney
       && !selectedAddresseeMoney
@@ -105,7 +112,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
     post({
       url: `${BE_ENDPOINT}/game/offer/${addresseeId}/send`,
       body: offer,
-      onSuccess: closePopUpModal,
+      onSuccess: closeAllModals,
     })
   }
 

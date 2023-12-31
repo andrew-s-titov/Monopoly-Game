@@ -25,11 +25,11 @@ public class GameMapRefresher {
         if (currentPlayerId.equals(playerId)) {
             switch (gameStage) {
                 case TURN_START: {
-                    gameEventSender.sendToPlayer(playerId, new TurnStartEvent(currentPlayerId));
+                    gameEventSender.sendToPlayer(playerId, new TurnStartEvent());
                     break;
                 }
                 case JAIL_RELEASE_START: {
-                    gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent(playerId));
+                    gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent());
                     break;
                 }
                 case BUY_PROPOSAL: {

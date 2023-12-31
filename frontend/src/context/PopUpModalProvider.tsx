@@ -14,7 +14,7 @@ export const PopUpModalProvider = ({ children }: PropsWithChildren) => {
   const { openModal, closeModal, dialogElement } = useModal(true);
 
   return (
-    <PopUpModalContext.Provider value={{ openPopUpModal: openModal, closePopUpModal: closeModal }}>
+    <PopUpModalContext.Provider value={{ openPopUpModal: openModal, closePopUpModal: () => closeModal() }}>
       {children}
       {dialogElement}
     </PopUpModalContext.Provider>

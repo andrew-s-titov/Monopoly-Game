@@ -11,6 +11,7 @@ import com.monopolynew.event.GameOverEvent;
 import com.monopolynew.event.GameStageEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.NewPlayerTurn;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -119,10 +120,12 @@ public class GameLogicExecutor {
         var nextPlayerId = nextPlayer.getId();
         if (nextPlayer.isImprisoned()) {
             changeGameStage(game, GameStage.JAIL_RELEASE_START);
-            gameEventSender.sendToAllPlayers(new JailReleaseProcessEvent(nextPlayerId));
+            gameEventSender.sendToAllPlayers(new NewPlayerTurn(nextPlayerId));
+            gameEventSender.sendToPlayer(nextPlayerId, new JailReleaseProcessEvent());
         } else {
             changeGameStage(game, GameStage.TURN_START);
-            gameEventSender.sendToAllPlayers(new TurnStartEvent(nextPlayerId));
+            gameEventSender.sendToAllPlayers(new NewPlayerTurn(nextPlayerId));
+            gameEventSender.sendToPlayer(nextPlayerId, new TurnStartEvent());
         }
     }
 

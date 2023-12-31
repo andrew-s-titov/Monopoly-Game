@@ -72,7 +72,7 @@ public class DealManager {
         game.setOffer(newOffer);
         gameEventSender.sendToAllPlayers(new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
-        gameEventSender.sendToAllPlayers(gameEventGenerator.offerProposalEvent(game));
+        gameEventSender.sendToPlayer(addresseeId, gameEventGenerator.offerProposalEvent(game));
     }
 
     public void processOfferAnswer(Game game, UUID addresseeId, ProposalAction proposalAction) {
@@ -99,10 +99,10 @@ public class DealManager {
         gameLogicExecutor.changeGameStage(game, stageToReturnTo);
         var initiatorId = initiator.getId();
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(initiatorId, new TurnStartEvent(initiatorId));
+            gameEventSender.sendToPlayer(initiatorId, new TurnStartEvent());
         }
         if (GameStage.JAIL_RELEASE_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(initiatorId, new JailReleaseProcessEvent(initiatorId));
+            gameEventSender.sendToPlayer(initiatorId, new JailReleaseProcessEvent());
         }
     }
 

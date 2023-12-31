@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
@@ -6,16 +6,14 @@ import { useGameState } from "../../context/GameStateProvider";
 import { BE_ENDPOINT } from "../../api/config";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
+import { getLoggedInUserId } from "../../utils/auth";
 
-interface IJailReleaseModalProps {
-  playerId: string,
-}
+const JailReleaseModal = () => {
 
-const JailReleaseModal = ({ playerId }: IJailReleaseModalProps) => {
-
+  const loggedInUser = useMemo(getLoggedInUserId, []);
   const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
-  const playerState = gameState.playerStates[playerId];
+  const playerState = gameState.playerStates[loggedInUser];
   const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= 50;
