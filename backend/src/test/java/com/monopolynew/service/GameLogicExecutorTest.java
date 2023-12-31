@@ -7,6 +7,7 @@ import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.procedure.CheckToPay;
+import com.monopolynew.map.AirportField;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.GameMap;
 import com.monopolynew.map.PurchasableField;
@@ -95,22 +96,13 @@ class GameLogicExecutorTest {
 
             // then
             assertCommonBankruptScenarioExecuted(debtor, playerFields);
-            for (GameField field : playerFields) {
-                if (field instanceof PurchasableField purchasableField) {
-                    assertNull(purchasableField.getOwner());
-                    assertFalse(purchasableField.isMortgaged());
-                }
-                if (field instanceof StreetField streetField) {
-                    assertEquals(0, streetField.getHouses());
-                }
-            }
         }
 
         @Test
         @DisplayName("""
                 when bankrupt for another player and debt > debtor assets price - expect:
                 - debtor with 0 money and bankrupt status;
-                - beneficiary all debtor's money received and all debtor's fields
+                - beneficiary received money equal to debtor's assets
                 - all debtor's fields not owned, not mortgaged and without houses;
                 - needed events sent;
                 """)
@@ -137,10 +129,8 @@ class GameLogicExecutorTest {
             var debtorAssetsTotal = debtorInitialMoney
                     + field1.getHouses() * field1.getHousePrice()
                     + field2.getHouses() * field2.getHousePrice()
-                    + field3.getHouses() * field3.getHousePrice()
-                    + field1.getPrice()
-                    + field2.getPrice()
-                    + field3.getPrice() / 2;
+                    + field1.getPrice() / 2
+                    + field2.getPrice() / 2;
             var beneficiary = new Player(PLAYER_ID_2, "player-2", "av");
             beneficiary.takeMoney(beneficiary.getMoney());
             var checkToPay = CheckToPay.builder()
@@ -155,23 +145,15 @@ class GameLogicExecutorTest {
 
             // then
             assertCommonBankruptScenarioExecuted(debtor, playerFields);
-            assertEquals(beneficiary, field1.getOwner());
-            assertEquals(0, field1.getHouses());
-            assertEquals(beneficiary, field2.getOwner());
-            assertEquals(0, field2.getHouses());
-            assertEquals(beneficiary, field3.getOwner());
-            assertEquals(0, field3.getHouses());
-            assertTrue(field3.isMortgaged(),
-                    "field should have stayed mortgaged if transferred to another player");
-            assertEquals(debtorInitialMoney, beneficiary.getMoney());
+            assertEquals(debtorAssetsTotal, beneficiary.getMoney());
         }
 
         @Test
         @DisplayName("""
                 when bankrupt for another player and debt < debtor assets price - expect:
                 - debtor with 0 money and bankrupt status;
-                - beneficiary received money and debtor fields equal to debt
-                - spare fields are not owned and not mortgaged and have no houses;
+                - beneficiary received money equal to debt
+                - all debtor's fields not owned, not mortgaged and without houses;
                 - needed events sent;
                 """)
         void bankruptForAnotherPlayerWithEnoughProperty() {
@@ -197,12 +179,9 @@ class GameLogicExecutorTest {
             var debtorAssetsTotal = debtorInitialMoney
                     + field1.getHouses() * field1.getHousePrice()
                     + field2.getHouses() * field2.getHousePrice()
-                    + field3.getHouses() * field3.getHousePrice()
-                    + field1.getPrice()
-                    + field2.getPrice()
-                    + field3.getPrice() / 2;
-            var debtDifference = 20;
-            var debt = debtorAssetsTotal - debtDifference;
+                    + field1.getPrice() / 2
+                    + field2.getPrice() / 2;
+            var debt = debtorAssetsTotal - 20;
             var beneficiary = new Player(PLAYER_ID_2, "player-2", "av");
             beneficiary.takeMoney(beneficiary.getMoney());
             var checkToPay = CheckToPay.builder()
@@ -217,15 +196,7 @@ class GameLogicExecutorTest {
 
             // then
             assertCommonBankruptScenarioExecuted(debtor, playerFields);
-            assertEquals(beneficiary, field1.getOwner());
-            assertEquals(0, field1.getHouses());
-            assertEquals(beneficiary, field2.getOwner());
-            assertEquals(0, field2.getHouses());
-            assertNull(field3.getOwner(), "field wasn't sold to Bank");
-            assertEquals(0, field3.getHouses());
-            assertFalse(field3.isMortgaged(), "field sold to Bank stayed mortgaged");
-            assertEquals(debtorInitialMoney + field3.getPrice() / 2 - debtDifference,
-                    beneficiary.getMoney());
+            assertEquals(debt, beneficiary.getMoney());
         }
 
         void assertCommonBankruptScenarioExecuted(Player debtor, List<GameField> playerFields) {
@@ -236,7 +207,86 @@ class GameLogicExecutorTest {
             verify(gameEventSender).sendToAllPlayers(fieldStateChangeEventCaptor.capture());
             FieldStateChangeEvent capturedEvent = fieldStateChangeEventCaptor.getValue();
             assertEquals(playerFields.size(), capturedEvent.getChanges().size());
+            playerFields.stream()
+                    .map(PurchasableField.class::cast)
+                    .forEach(field -> {
+                        assertFalse(field.isMortgaged());
+                        assertNull(field.getOwner());
+                        if (field instanceof StreetField streetField) {
+                            assertEquals(0, streetField.getHouses());
+                        }
+                    });
         }
     }
 
+    @Nested
+    @DisplayName("test 'processOwnershipChange'")
+    class ProcessOwnershipChange {
+
+        @Test
+        @DisplayName("for Airports")
+        void forAirport() {
+            // given
+            var player1 = new Player(PLAYER_ID_1, "player-1", "av");
+            var player2 = new Player(PLAYER_ID_2, "player-2", "av");
+            var game = mock(Game.class);
+            var gameMap = mock(GameMap.class);
+            when(game.getGameMap()).thenReturn(gameMap);
+            var airport1 = new AirportField(5, "airport1", 200, 25);
+            var airport2 = new AirportField(15, "airport2", 200, 25);
+            var airport3 = new AirportField(25, "airport3", 200, 25);
+            var airport4 = new AirportField(35, "airport4", 200, 25);
+            List<PurchasableField> airportGroup = List.of(airport1, airport2, airport3, airport4);
+            when(gameMap.getField(airport1.getId())).thenReturn(airport1);
+            when(gameMap.getField(airport2.getId())).thenReturn(airport2);
+            when(gameMap.getField(airport3.getId())).thenReturn(airport3);
+            when(gameMap.getField(airport4.getId())).thenReturn(airport4);
+
+            // when
+            gameLogicExecutor.processOwnershipChange(game, airport1);
+            gameLogicExecutor.processOwnershipChange(game, airportGroup);
+
+            // then
+            assertEquals(25, airport1.getCurrentRent());
+            assertEquals(25, airport2.getCurrentRent());
+            assertEquals(25, airport3.getCurrentRent());
+            assertEquals(25, airport4.getCurrentRent());
+
+            // when
+            airport1.newOwner(player1);
+            airport2.newOwner(player1);
+            airport3.newOwner(player2);
+            airport4.newOwner(player2);
+            gameLogicExecutor.processOwnershipChange(game, airport1);
+            gameLogicExecutor.processOwnershipChange(game, airportGroup);
+
+            // then
+            assertEquals(50, airport1.getCurrentRent());
+            assertEquals(50, airport2.getCurrentRent());
+            assertEquals(50, airport3.getCurrentRent());
+            assertEquals(50, airport4.getCurrentRent());
+
+            // when
+            airport2.newOwner(player2);
+            gameLogicExecutor.processOwnershipChange(game, airport1);
+            gameLogicExecutor.processOwnershipChange(game, airportGroup);
+
+            // then
+            assertEquals(25, airport1.getCurrentRent());
+            assertEquals(100, airport2.getCurrentRent());
+            assertEquals(100, airport3.getCurrentRent());
+            assertEquals(100, airport4.getCurrentRent());
+
+            // when
+            airport2.newOwner(null);
+            gameLogicExecutor.processOwnershipChange(game, airport1);
+            gameLogicExecutor.processOwnershipChange(game, airportGroup);
+
+            // then
+            assertEquals(25, airport1.getCurrentRent());
+            assertEquals(25, airport2.getCurrentRent());
+            assertEquals(50, airport3.getCurrentRent());
+            assertEquals(50, airport4.getCurrentRent());
+        }
+    }
 }

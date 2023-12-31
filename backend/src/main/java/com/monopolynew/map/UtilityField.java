@@ -6,31 +6,29 @@ import lombok.Getter;
 
 import java.util.Objects;
 
+import static com.monopolynew.game.Rules.INCREASED_UTILITY_MULTIPLIER;
+import static com.monopolynew.game.Rules.STANDARD_UTILITY_MULTIPLIER;
+
+@Getter
 public class UtilityField extends BasePurchasableField {
 
-    private final int standardMultiplier;
-    private final int highMultiplier;
-
-    @Getter
     private int currentMultiplier;
 
-    public UtilityField(int id, String name, int price, int standardMultiplier, int highMultiplier) {
+    public UtilityField(int id, String name, int price) {
         super(id, name, price);
-        this.standardMultiplier = standardMultiplier;
-        this.highMultiplier = highMultiplier;
-        this.currentMultiplier = standardMultiplier;
+        this.currentMultiplier = STANDARD_UTILITY_MULTIPLIER;
     }
 
     @Override
     public void newOwner(Player newOwner) {
         super.newOwner(newOwner);
         if (newOwner == null) {
-            this.currentMultiplier = standardMultiplier;
+            this.currentMultiplier = STANDARD_UTILITY_MULTIPLIER;
         }
     }
 
     public void refreshRent(boolean allOwned) {
-        this.currentMultiplier = allOwned ? highMultiplier : standardMultiplier;
+        this.currentMultiplier = allOwned ? INCREASED_UTILITY_MULTIPLIER : STANDARD_UTILITY_MULTIPLIER;
     }
 
     public int getRent(DiceResult diceResult) {
