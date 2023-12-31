@@ -152,8 +152,8 @@ class GameLogicExecutorTest {
         @DisplayName("""
                 when bankrupt for another player and debt < debtor assets price - expect:
                 - debtor with 0 money and bankrupt status;
-                - beneficiary received money and debtor fields equal to debt
-                - spare fields are not owned and not mortgaged and have no houses;
+                - beneficiary received money equal to debt
+                - all debtor's fields not owned, not mortgaged and without houses;
                 - needed events sent;
                 """)
         void bankruptForAnotherPlayerWithEnoughProperty() {
