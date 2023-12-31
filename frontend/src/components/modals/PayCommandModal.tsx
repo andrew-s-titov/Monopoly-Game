@@ -4,6 +4,8 @@ import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
 import { BE_ENDPOINT } from "../../api/config";
+import { useEventModalContext } from "../../context/EventModalProvider";
+import { ModalId } from "./index";
 
 interface IPayCommandModalProps {
   playerId: string;
@@ -13,21 +15,25 @@ interface IPayCommandModalProps {
 
 const PayCommandModal = ({ playerId, sum, wiseToGiveUp }: IPayCommandModalProps) => {
 
+  const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[playerId];
   const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= sum;
+  const closePayCommand = () => closeEventModal(ModalId.PAY_COMMAND);
 
   const onPayHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/pay`,
+      onSuccess: closePayCommand,
     });
   };
 
   const onGiveUpHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/player/give_up`,
+      onSuccess: closePayCommand,
     });
   };
 

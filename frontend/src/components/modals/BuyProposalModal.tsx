@@ -4,6 +4,8 @@ import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
 import { BE_ENDPOINT } from "../../api/config";
+import { useEventModalContext } from "../../context/EventModalProvider";
+import { ModalId } from "./index";
 
 interface IBuyProposalProps {
   playerId: string,
@@ -12,21 +14,25 @@ interface IBuyProposalProps {
 
 const BuyProposalModal = ({ playerId, price }: IBuyProposalProps) => {
 
+  const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[playerId];
   const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= price;
+  const closeBuyProposal = () => closeEventModal(ModalId.BUY_PROPOSAL);
 
   const onBuyHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/buy?action=ACCEPT`,
+      onSuccess: closeBuyProposal,
     });
   };
 
   const onAuctionHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/buy?action=DECLINE`,
+      onSuccess: closeBuyProposal,
     });
   }
 

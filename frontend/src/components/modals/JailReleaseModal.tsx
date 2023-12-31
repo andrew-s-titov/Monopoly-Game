@@ -4,6 +4,8 @@ import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
 import { BE_ENDPOINT } from "../../api/config";
+import { useEventModalContext } from "../../context/EventModalProvider";
+import { ModalId } from "./index";
 
 interface IJailReleaseModalProps {
   playerId: string,
@@ -11,21 +13,25 @@ interface IJailReleaseModalProps {
 
 const JailReleaseModal = ({ playerId }: IJailReleaseModalProps) => {
 
+  const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[playerId];
   const { get, isLoading } = useQuery();
 
   const payable = playerState.money >= 50;
+  const closeJailRelease = () => closeEventModal(ModalId.JAIL_RELEASE);
 
   const onPayHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/jail?action=PAY`,
+      onSuccess: closeJailRelease,
     });
   };
 
   const onTryLuckHandler = () => {
     get({
       url: `${BE_ENDPOINT}/game/jail?action=LUCK`,
+      onSuccess: closeJailRelease,
     });
   };
 

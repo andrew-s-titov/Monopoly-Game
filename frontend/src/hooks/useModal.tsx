@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Dialog } from "primereact/dialog";
+import { ModalId } from "../components/modals";
 
 export interface IModalProps {
   header: React.JSX.Element;
   modalContent?: React.JSX.Element;
   modal?: boolean;
   transparent?: boolean,
+  modalId?: ModalId,
 }
 
 const useModal = (isClosable?: boolean) => {
+  const lastModal = useRef<ModalId>();
   const [modalContent, setModalContent] = useState<React.JSX.Element>();
   const [modalHeader, setModalHeader] = useState<React.JSX.Element>();
   const [isOpened, setIsOpened] = useState(false);
@@ -19,15 +22,20 @@ const useModal = (isClosable?: boolean) => {
                        header,
                        modalContent,
                        modal = true,
-                       transparent = false
+                       transparent = false,
+                       modalId
                      }: IModalProps) => {
+    lastModal.current = modalId;
     setModalHeader(header);
     setModalContent(modalContent);
     setIsModal(modal);
     setIsTransparent(transparent);
     setIsOpened(true);
   }
-  const closeModal = () => {
+  const closeModal = (modalId?: ModalId) => {
+    if (modalId && modalId !== lastModal.current) {
+      return;
+    }
     setIsOpened(false);
   };
 

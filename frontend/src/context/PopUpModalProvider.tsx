@@ -9,12 +9,12 @@ export interface IPopUpModalContext {
 
 const PopUpModalContext = createContext({} as IPopUpModalContext);
 
-export const PopUpModalProvider = ({children}: PropsWithChildren) => {
+export const PopUpModalProvider = ({ children }: PropsWithChildren) => {
 
-  const {openModal, closeModal, dialogElement} = useModal(true);
+  const { openModal, closeModal, dialogElement } = useModal(true);
 
   return (
-    <PopUpModalContext.Provider value={{openPopUpModal: openModal, closePopUpModal: closeModal}}>
+    <PopUpModalContext.Provider value={{ openPopUpModal: openModal, closePopUpModal: closeModal }}>
       {children}
       {dialogElement}
     </PopUpModalContext.Provider>

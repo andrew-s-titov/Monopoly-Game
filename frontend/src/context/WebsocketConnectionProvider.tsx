@@ -18,18 +18,18 @@ import RollDiceButton from "../components/RollDiceButton";
 import Dice from "../components/Dice";
 import { useGameState } from "./GameStateProvider";
 import useQuery from "../hooks/useQuery";
-import { useEventModalContext } from "./EventModalProvider";
+import { IEventModalProps, useEventModalContext } from "./EventModalProvider";
 import { getLoggedInUserId } from "../utils/auth";
 import {
   AuctionBuyProposalModal,
   AuctionModal,
   BuyProposalModal,
   JailReleaseModal,
+  ModalId,
   OfferProposalModal,
-  PayCommandModal
+  PayCommandModal,
+  WinnerModal
 } from "../components/modals";
-import WinnerModal from "../components/modals/WinnerModal";
-import { IModalProps } from "../hooks/useModal";
 import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
 
@@ -59,7 +59,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
     }))
   };
 
-  const openModalOnlyForLoggedInUser = (modalForPlayerId: string, modalProps: IModalProps) => {
+  const openModalOnlyForLoggedInUser = (modalForPlayerId: string, modalProps: IEventModalProps) => {
     if (loggedInUserId === modalForPlayerId) {
       openEventModal(modalProps);
     } else {
@@ -116,12 +116,14 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           changeCurrentPlayer(playerId);
           clearHousePurchaseRecords();
           openModalOnlyForLoggedInUser(playerId, {
+            modalId: ModalId.ROLL_DICE,
             header: <RollDiceButton/>,
             modal: false,
           });
         },
         302: ({ playerId }) => {
           openEventModal({
+            modalId: ModalId.DICE,
             header: <Dice/>,
             modal: false,
             transparent: true,
@@ -135,11 +137,12 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         303: ({ playerId, firstDice, secondDice }) => {
           openEventModal({
+            modalId: ModalId.DICE,
             header: <Dice result={[firstDice, secondDice]}/>,
             modal: false,
             transparent: true,
           })
-          newTimeout(closeEventModal, 1500);
+          newTimeout(() => closeEventModal(ModalId.DICE), 1500);
           newTimeout(
             () => {
               loggedInUserId === playerId && get({
@@ -175,6 +178,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         306: ({ playerId, price, fieldIndex }: BuyProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
           loggedInUserId === playerId && openEventModal({
+            modalId: ModalId.BUY_PROPOSAL,
             header:
               <div className='modal-title'>
                 {`Do you want to buy ${fieldName} for $${price}?`}
@@ -208,6 +212,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           changeCurrentPlayer(playerId);
           clearHousePurchaseRecords();
           openModalOnlyForLoggedInUser(playerId, {
+            modalId: ModalId.JAIL_RELEASE,
             header:
               <div className='modal-title'>
                 Choose a way out:
@@ -222,6 +227,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         309: ({ playerId, fieldIndex, proposal }: AuctionRaiseProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
           openModalOnlyForLoggedInUser(playerId, {
+            modalId: ModalId.AUCTION,
             header:
               <div>
                 {`Do you want to raise ${fieldName} price to $${proposal}?`}
@@ -237,6 +243,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         310: ({ playerId, fieldIndex, proposal }: AuctionBuyProposalEvent) => {
           const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
           openModalOnlyForLoggedInUser(playerId, {
+            modalId: ModalId.AUCTION_BUY_PROPOSAL,
             header:
               <div>
                 {`Do you want to buy ${fieldName} for $${proposal}?`}
@@ -260,6 +267,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         312: ({ playerId, sum, wiseToGiveUp }: PayCommandEvent) => {
           loggedInUserId === playerId && openEventModal(
             {
+              modalId: ModalId.PAY_COMMAND,
               header:
                 <div>
                   {`Pay $${sum}`}
@@ -279,6 +287,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
         },
         315: ({ winnerName }) => {
           openEventModal({
+            modalId: ModalId.WINNER,
             header: <WinnerModal name={winnerName}/>,
             modal: true,
           });
@@ -301,6 +310,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 addresseeFields
               }: OfferProposalEvent) => {
           openModalOnlyForLoggedInUser(addresseeId, {
+            modalId: ModalId.OFFER_PROPOSAL,
             header:
               <div className="offer-title">
                 {`${initiatorName} made you an offer:`}
