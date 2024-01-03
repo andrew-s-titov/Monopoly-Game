@@ -62,21 +62,25 @@ public class PlayerMoveService {
         } else if (field instanceof ActionableField actionableField) {
             fieldActionExecutor.execute(actionableField.getAction(), game);
         } else if (field instanceof ChanceField) {
-            GoTo chanceResult = chanceExecutor.applyNextCard(game);
-            if (chanceResult == null) {
-                gameLogicExecutor.endTurn(game);
-                return;
-            }
-            int whereTo = chanceResult.whereTo();
-            if (whereTo == Rules.JAIL_FIELD_NUMBER) {
-                gameLogicExecutor.sendToJail(game, player);
-                gameLogicExecutor.endTurn(game);
-            } else {
-                movePlayerToPosition(game, player, whereTo, chanceResult.forward());
-            }
+            processChance(game, player);
         } else {
             // normally shouldn't happen
             throw new IllegalStateException("field on new player position is of an unsupported type");
+        }
+    }
+
+    private void processChance(Game game, Player player) {
+        GoTo chanceResult = chanceExecutor.applyNextCard(game);
+        if (chanceResult == null) {
+            gameLogicExecutor.endTurn(game);
+            return;
+        }
+        int whereTo = chanceResult.whereTo();
+        if (whereTo == Rules.JAIL_FIELD_NUMBER) {
+            gameLogicExecutor.sendToJail(game, player);
+            gameLogicExecutor.endTurn(game);
+        } else {
+            movePlayerToPosition(game, player, whereTo, chanceResult.forward());
         }
     }
 
