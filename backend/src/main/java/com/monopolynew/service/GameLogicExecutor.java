@@ -17,7 +17,6 @@ import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.procedure.BuyProposal;
-import com.monopolynew.game.procedure.DiceResult;
 import com.monopolynew.map.AirportField;
 import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
@@ -44,29 +43,15 @@ public class GameLogicExecutor {
     private final GameFieldMapper gameFieldMapper;
     private final GameEventGenerator gameEventGenerator;
 
-    public void movePlayer(Game game, Player player, int newPositionIndex, boolean forward) {
-        int currentPosition = player.getPosition();
-        changePlayerPosition(player, newPositionIndex, true);
-        if (forward && newPositionIndex < currentPosition) {
-            player.addMoney(Rules.CIRCLE_MONEY);
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    String.format("%s received $%s for starting a new circle",
-                            player.getName(), Rules.CIRCLE_MONEY)));
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
-                    Collections.singletonList(MoneyState.fromPlayer(player))));
-        }
-    }
-
-    public void sendToJailAndEndTurn(Game game, Player player) {
+    public void sendToJail(Game game, Player player) {
         player.resetDoublets();
         player.imprison();
-        changePlayerPosition(player, Rules.JAIL_FIELD_NUMBER, false);
-        endTurn(game);
+        changePlayerPosition(player, Rules.JAIL_FIELD_NUMBER);
     }
 
-    public void sendBuyProposal(Game game, Player player, PurchasableField field, boolean payable) {
+    public void sendBuyProposal(Game game, Player player, PurchasableField field) {
         var buyerId = player.getId();
-        var buyProposal = new BuyProposal(buyerId, field, payable);
+        var buyProposal = new BuyProposal(buyerId, field);
         game.setBuyProposal(buyProposal);
         changeGameStage(game, GameStage.BUY_PROPOSAL);
         gameEventSender.sendToPlayer(buyerId, gameEventGenerator.buyProposalEvent(buyProposal));
@@ -93,12 +78,6 @@ public class GameLogicExecutor {
                         ? streetField.getHousePrice() * streetField.getHouses() + field.getPrice() / 2
                         : field.getPrice() / 2)
                 .reduce(player.getMoney(), Integer::sum);
-    }
-
-    public int computeNewPlayerPosition(Player player, DiceResult diceResult) {
-        int result = player.getPosition() + diceResult.getSum();
-        boolean newCircle = result > Rules.LAST_FIELD_INDEX;
-        return newCircle ? result - Rules.NUMBER_OF_FIELDS : result;
     }
 
     public void endTurn(Game game) {
@@ -172,10 +151,6 @@ public class GameLogicExecutor {
     public void changeGameStage(Game game, GameStage newGameStage) {
         game.setStage(newGameStage);
         gameEventSender.sendToAllPlayers(new GameStageEvent(newGameStage));
-    }
-
-    public int getFieldMortgagePrice(PurchasableField field) {
-        return field.getPrice() / 2;
     }
 
     /**
@@ -263,9 +238,9 @@ public class GameLogicExecutor {
         return false;
     }
 
-    private void changePlayerPosition(Player player, int fieldIndex, boolean needAfterMoveCall) {
+    public void changePlayerPosition(Player player, int fieldIndex) {
         player.changePosition(fieldIndex);
-        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex, needAfterMoveCall));
+        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex));
     }
 
     private Player toNextPlayer(Game game) {

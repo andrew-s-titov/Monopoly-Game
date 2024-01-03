@@ -27,21 +27,6 @@ public class GameController {
         gameService.startDiceRolling();
     }
 
-    @GetMapping("/dice/result")
-    public void broadcastDiceResult() {
-        gameService.broadcastDiceResult();
-    }
-
-    @GetMapping("/dice/after")
-    public void afterDiceAction() {
-        gameService.afterDiceRollAction();
-    }
-
-    @GetMapping("/after_move")
-    public void afterPlayerMoveAction() {
-        gameService.afterPlayerMoveAction();
-    }
-
     @GetMapping("/buy")
     public void processBuyProposal(@RequestParam("action") ProposalAction action) {
         gameService.processBuyProposal(action);

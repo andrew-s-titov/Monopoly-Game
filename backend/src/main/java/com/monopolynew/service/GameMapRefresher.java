@@ -1,7 +1,9 @@
 package com.monopolynew.service;
 
 import com.monopolynew.enums.GameStage;
+import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
+import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +39,11 @@ public class GameMapRefresher {
                     break;
                 }
                 case AWAITING_PAYMENT, AWAITING_JAIL_FINE: {
-                    gameEventSender.sendToPlayer(playerId, gameEventGenerator.payCommandEvent(game.getCheckToPay()));
+                    gameEventSender.sendToPlayer(playerId, PayCommandEvent.of(game.getCheckToPay()));
                     break;
                 }
                 case ROLLED_FOR_JAIL, ROLLED_FOR_TURN: {
-                    gameEventSender.sendToAllPlayers(gameEventGenerator.diceResultEvent(game));
+                    gameEventSender.sendToAllPlayers(DiceResultEvent.of(game.getLastDice()));
                     break;
                 }
                 default:

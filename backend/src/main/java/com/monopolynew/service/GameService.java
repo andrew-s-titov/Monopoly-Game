@@ -6,6 +6,7 @@ import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.event.ChatMessageEvent;
+import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.NewPlayerTurn;
@@ -19,7 +20,6 @@ import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
 import com.monopolynew.game.procedure.BuyProposal;
 import com.monopolynew.game.procedure.DiceResult;
-import com.monopolynew.map.GameField;
 import com.monopolynew.map.PurchasableField;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.monopolynew.util.Utils.requireNotNullArgs;
 
@@ -38,13 +40,15 @@ public class GameService {
     private final GameRepository gameRepository;
     private final Dice dice;
     private final GameLogicExecutor gameLogicExecutor;
-    private final StepProcessor stepProcessor;
+    private final PlayerMoveService playerMoveService;
     private final AuctionManager auctionManager;
     private final GameEventSender gameEventSender;
     private final GameEventGenerator gameEventGenerator;
-    private final PaymentProcessor paymentProcessor;
+    private final PaymentService paymentService;
     private final FieldManagementService fieldManagementService;
     private final DealManager dealManager;
+
+    private final ScheduledExecutorService scheduler;
 
     public boolean isGameStarted() {
         return gameRepository.getGame().isInProgress();
@@ -65,42 +69,40 @@ public class GameService {
 
     public void startDiceRolling() {
         Game game = gameRepository.getGame();
-        notifyAboutDiceRolling(game);
-        var lastDice = dice.rollTheDice();
-        game.setLastDice(lastDice);
-        var currentGameStage = game.getStage();
+        var newStage = notifyAboutDiceRolling(game);
+        var diceResult = dice.rollTheDice();
+        game.setLastDice(diceResult);
         var currentPlayer = game.getCurrentPlayer();
-        if (lastDice.isDoublet()) {
-            if (GameStage.ROLLED_FOR_TURN.equals(currentGameStage) && !currentPlayer.isJustAmnestied()) {
+        if (diceResult.isDoublet()) {
+            if (GameStage.ROLLED_FOR_TURN.equals(newStage) && !currentPlayer.isJustAmnestied()) {
                 currentPlayer.incrementDoublets();
             }
         } else {
             currentPlayer.resetDoublets();
         }
+        scheduler.schedule(
+                () -> broadcastDiceResult(game),
+                1500, TimeUnit.MILLISECONDS);
     }
 
-    public void broadcastDiceResult() {
-        Game game = gameRepository.getGame();
-        GameStage stage = game.getStage();
-        if (GameStage.ROLLED_FOR_TURN.equals(stage) || GameStage.ROLLED_FOR_JAIL.equals(stage)) {
-            var lastDice = game.getLastDice();
-            Player currentPlayer = game.getCurrentPlayer();
-            String message = String.format("%s rolled the dice and got %s : %s",
-                    currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
-            if (lastDice.isDoublet()) {
-                message = message + " (doublet)";
-            }
-            gameEventSender.sendToAllPlayers(gameEventGenerator.diceResultEvent(game));
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
+    private void broadcastDiceResult(Game game) {
+        var lastDice = game.getLastDice();
+        Player currentPlayer = game.getCurrentPlayer();
+        String message = String.format("%s rolled the dice and got %s : %s",
+                currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
+        if (lastDice.isDoublet()) {
+            message = message + " (doublet)";
         }
+        gameEventSender.sendToAllPlayers(DiceResultEvent.of(lastDice));
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
+
+        scheduler.schedule(
+                () -> afterDiceRollAction(game),
+                2000, TimeUnit.MILLISECONDS);
     }
 
-    public void afterDiceRollAction() {
-        Game game = gameRepository.getGame();
+    private void afterDiceRollAction(Game game) {
         DiceResult lastDice = game.getLastDice();
-        if (lastDice == null) {
-            throw new ClientBadRequestException("throw dice must be called first");
-        }
         Player currentPlayer = game.getCurrentPlayer();
         GameStage stage = game.getStage();
         if (GameStage.ROLLED_FOR_TURN.equals(stage)) {
@@ -108,7 +110,8 @@ public class GameService {
                 currentPlayer.resetDoublets();
                 gameEventSender.sendToAllPlayers(
                         new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));
-                gameLogicExecutor.sendToJailAndEndTurn(game, currentPlayer);
+                gameLogicExecutor.sendToJail(game, currentPlayer);
+                gameLogicExecutor.endTurn(game);
             } else {
                 doRegularMove(game);
             }
@@ -122,7 +125,7 @@ public class GameService {
             } else {
                 if (currentPlayer.lastTurnInPrison()) {
                     String message = currentPlayer.getName() + " served time and paid a criminal fine";
-                    paymentProcessor.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
+                    paymentService.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
                 } else {
                     currentPlayer.doTime();
                     gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
@@ -130,18 +133,8 @@ public class GameService {
                 }
             }
         } else {
-            throw new WrongGameStageException("Cannot process dice - wrong game stage (roll must be called first)");
+            throw new IllegalStateException("Cannot process dice - wrong game stage (roll must be called first)");
         }
-    }
-
-    public void afterPlayerMoveAction() {
-        Game game = gameRepository.getGame();
-        if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
-            throw new WrongGameStageException("Cannot define after player move action - wrong game stage");
-        }
-        int playerPosition = game.getCurrentPlayer().getPosition();
-        GameField currentField = game.getGameMap().getField(playerPosition);
-        stepProcessor.processStepOnField(game, currentField);
     }
 
     public void processBuyProposal(@NonNull ProposalAction action) {
@@ -200,7 +193,18 @@ public class GameService {
 
     public void processPayment() {
         Game game = gameRepository.getGame();
-        paymentProcessor.processPayment(game);
+        GameStage currentGameStage = game.getStage();
+        if (!GameStage.AWAITING_PAYMENT.equals(currentGameStage) && !GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
+            throw new WrongGameStageException("Cannot process payment - wrong game stage");
+        }
+        Player debtor = paymentService.processPayment(game);
+        if (GameStage.AWAITING_PAYMENT.equals(currentGameStage)) {
+            gameLogicExecutor.endTurn(game);
+        } else {
+            debtor.releaseFromJail();
+            gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
+            playerMoveService.movePlayer(game, debtor, game.getLastDice());
+        }
     }
 
     public void giveUp(UUID playerId) {
@@ -242,35 +246,31 @@ public class GameService {
     }
 
     private void doRegularMove(Game game) {
-        if (!GameStage.ROLLED_FOR_TURN.equals(game.getStage())) {
-            throw new WrongGameStageException("cannot make move - wrong game stage");
-        }
         var lastDice = game.getLastDice();
         var currentPlayer = game.getCurrentPlayer();
         checkPlayerCanMakeMove(currentPlayer);
-        var newPosition = gameLogicExecutor.computeNewPlayerPosition(currentPlayer, lastDice);
-        gameLogicExecutor.movePlayer(game, currentPlayer, newPosition, true);
+        playerMoveService.movePlayer(game, currentPlayer, lastDice);
     }
 
     private void checkPlayerCanMakeMove(Player player) {
         if (player.isSkipping()) {
-            throw new ClientBadRequestException("skipping player cannot do regular turn");
+            throw new IllegalStateException("skipping player cannot do regular turn");
         }
         if (player.isImprisoned()) {
-            throw new ClientBadRequestException("imprisoned player cannot do regular turn");
+            throw new IllegalStateException("imprisoned player cannot do regular turn");
         }
     }
 
-    private void notifyAboutDiceRolling(Game game) {
+    private GameStage notifyAboutDiceRolling(Game game) {
         GameStage currentStage = game.getStage();
-        if (GameStage.TURN_START.equals(currentStage) || GameStage.JAIL_RELEASE_START.equals(currentStage)) {
-            var newStage = GameStage.TURN_START.equals(currentStage)
-                    ? GameStage.ROLLED_FOR_TURN
-                    : GameStage.ROLLED_FOR_JAIL;
-            gameLogicExecutor.changeGameStage(game, newStage);
-        } else {
+        if (!GameStage.TURN_START.equals(currentStage) && !GameStage.JAIL_RELEASE_START.equals(currentStage)) {
             throw new WrongGameStageException("cannot roll the dice - wrong game stage");
         }
-        gameEventSender.sendToAllPlayers(new DiceRollingStartEvent(game.getCurrentPlayer().getId()));
+        var newStage = GameStage.TURN_START.equals(currentStage)
+                ? GameStage.ROLLED_FOR_TURN
+                : GameStage.ROLLED_FOR_JAIL;
+        gameLogicExecutor.changeGameStage(game, newStage);
+        gameEventSender.sendToAllPlayers(new DiceRollingStartEvent());
+        return newStage;
     }
 }

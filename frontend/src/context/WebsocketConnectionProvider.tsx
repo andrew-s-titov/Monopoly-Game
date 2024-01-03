@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef } from "react";
 
-import { BE_ENDPOINT, getWebsocketUrl } from "../api/config";
+import { getWebsocketUrl } from "../api/config";
 import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,
@@ -111,21 +111,15 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             modal: false,
           });
         },
-        302: ({ playerId }) => {
+        302: () => {
           openEventModal({
             modalId: ModalId.DICE,
             header: <Dice/>,
             modal: false,
             transparent: true,
           })
-          loggedInUserId === playerId &&
-          newTimeout(
-            () => get({
-              url: `${BE_ENDPOINT}/game/dice/result`
-            }),
-            1500);
         },
-        303: ({ playerId, firstDice, secondDice }) => {
+        303: ({ firstDice, secondDice }) => {
           openEventModal({
             modalId: ModalId.DICE,
             header: <Dice result={[firstDice, secondDice]}/>,
@@ -133,15 +127,8 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             transparent: true,
           })
           newTimeout(() => closeEventModal(ModalId.DICE), 1500);
-          newTimeout(
-            () => {
-              loggedInUserId === playerId && get({
-                url: `${BE_ENDPOINT}/game/dice/after`
-              });
-            },
-            2000);
         },
-        304: ({ playerId, field, needAfterMoveCall }: any) => {
+        304: ({ playerId, field }: any) => {
           setGameState(prevState => {
             const newState = {
               ...prevState
@@ -149,12 +136,6 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
             newState.playerStates[playerId].position = field;
             return newState;
           });
-          needAfterMoveCall && loggedInUserId === playerId &&
-          newTimeout(
-            () => get({
-              url: `${BE_ENDPOINT}/game/after_move`
-            }),
-            500);
         },
         305: ({ changes }: MoneyChangeEvent) => {
           setGameState(prevState => {

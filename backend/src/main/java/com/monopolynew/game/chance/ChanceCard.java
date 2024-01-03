@@ -1,8 +1,9 @@
 package com.monopolynew.game.chance;
 
 import com.monopolynew.game.Game;
+import com.monopolynew.service.GameEventSender;
 
-import java.util.function.Consumer;
+public interface ChanceCard {
 
-public interface ChanceCard extends Consumer<Game> {
+    GoTo apply(Game game, GameEventSender gameEventSender);
 }
