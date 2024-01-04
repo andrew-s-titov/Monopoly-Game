@@ -69,6 +69,7 @@ public class GameService {
 
     public void startDiceRolling() {
         Game game = gameRepository.getGame();
+        // extract this method to a private reusable for jail action
         var newStage = notifyAboutDiceRolling(game);
         var diceResult = dice.rollTheDice();
         game.setLastDice(diceResult);
