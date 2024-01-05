@@ -26,9 +26,9 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
     showMortgage
   } = managementOptions;
 
-  const callManagementEndpoint = (urlPart: string) => {
+  const callManagementEndpoint = (action: 'redeem' | 'sell_house' | 'mortgage') => {
     get({
-      url: `${BE_ENDPOINT}/game/field/${fieldIndex}/${urlPart}`,
+      url: `${BE_ENDPOINT}/game/field/${fieldIndex}/${action}`,
       onSuccess: closePopUpModal,
     });
   }

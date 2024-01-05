@@ -70,6 +70,10 @@ public class GameService {
     public void startDiceRolling() {
         Game game = gameRepository.getGame();
         // extract this method to a private reusable for jail action
+        rollTheDice(game);
+    }
+
+    private void rollTheDice(Game game) {
         var newStage = notifyAboutDiceRolling(game);
         var diceResult = dice.rollTheDice();
         game.setLastDice(diceResult);
@@ -188,7 +192,7 @@ public class GameService {
             gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
             gameEventSender.sendToPlayer(currentPlayer.getId(), new TurnStartEvent());
         } else if (jailAction.equals(JailAction.LUCK)) {
-            notifyAboutDiceRolling(game);
+            rollTheDice(game);
         }
     }
 

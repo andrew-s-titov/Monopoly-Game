@@ -53,7 +53,7 @@ public class PlayerMoveService {
 
         GameField field = game.getGameMap().getField(newPositionIndex);
         scheduler.schedule(() -> processStepOnField(game, player, field),
-                1000, TimeUnit.MILLISECONDS);
+                700, TimeUnit.MILLISECONDS);
     }
 
     private void processStepOnField(Game game, Player player, GameField field) {

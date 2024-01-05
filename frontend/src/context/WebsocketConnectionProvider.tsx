@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react";
 
 import { getWebsocketUrl } from "../api/config";
 import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
@@ -17,9 +17,7 @@ import { UPropertyIndex } from "../types/unions";
 import RollDiceButton from "../components/RollDiceButton";
 import Dice from "../components/Dice";
 import { useGameState } from "./GameStateProvider";
-import useQuery from "../hooks/useQuery";
 import { useEventModalContext } from "./EventModalProvider";
-import { getLoggedInUserId } from "../utils/auth";
 import {
   AuctionBuyProposalModal,
   AuctionModal,
@@ -45,11 +43,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
     setGameState, setConnectedPlayers, addChatMessage, clearGameState,
     clearHousePurchaseRecords
   } = useGameState();
-  const { get } = useQuery();
   const { openEventModal, closeEventModal } = useEventModalContext();
   const { showCenterPopUp } = useMessageContext();
 
-  const loggedInUserId = useMemo(getLoggedInUserId, []);
   const websocket = useRef<WebSocket>();
 
   const changeCurrentPlayer = (currentPlayerId: string) => {
@@ -108,23 +104,23 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           openEventModal({
             modalId: ModalId.ROLL_DICE,
             header: <RollDiceButton/>,
-            modal: false,
+            blurBackground: false,
           });
         },
         302: () => {
           openEventModal({
             modalId: ModalId.DICE,
             header: <Dice/>,
-            modal: false,
-            transparent: true,
+            blurBackground: false,
+            isTransparent: true,
           })
         },
         303: ({ firstDice, secondDice }) => {
           openEventModal({
             modalId: ModalId.DICE,
             header: <Dice result={[firstDice, secondDice]}/>,
-            modal: false,
-            transparent: true,
+            blurBackground: false,
+            isTransparent: true,
           })
           newTimeout(() => closeEventModal(ModalId.DICE), 1500);
         },
@@ -154,11 +150,11 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               <div className='modal-title'>
                 {`Do you want to buy ${fieldName} for $${price}?`}
               </div>,
-            modalContent:
+            content:
               <BuyProposalModal
                 price={price}
               />,
-            modal: false,
+            blurBackground: false,
           });
         },
         307: ({ changes }: FieldChangeEvent) => {
@@ -185,9 +181,9 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               <div className='modal-title'>
                 Choose a way out:
               </div>,
-            modalContent:
+            content:
               <JailReleaseModal />,
-            modal: false,
+            blurBackground: false,
           });
         },
         309: ({ fieldIndex, proposal }: AuctionRaiseProposalEvent) => {
@@ -198,11 +194,11 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               <div>
                 {`Do you want to raise ${fieldName} price to $${proposal}?`}
               </div>,
-            modalContent:
+            content:
               <AuctionModal
                 proposal={proposal}
               />,
-            modal: false,
+            blurBackground: false,
           });
         },
         310: ({ fieldIndex, proposal }: AuctionBuyProposalEvent) => {
@@ -213,11 +209,11 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               <div>
                 {`Do you want to buy ${fieldName} for $${proposal}?`}
               </div>,
-            modalContent:
+            content:
               <AuctionBuyProposalModal
                 proposal={proposal}
               />,
-            modal: false,
+            blurBackground: false,
           });
         },
         311: ({ playerId }) => {
@@ -237,12 +233,12 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 <div>
                   {`Pay $${sum}`}
                 </div>,
-              modalContent:
+              content:
                 <PayCommandModal
                   sum={sum}
                   wiseToGiveUp={wiseToGiveUp}
                 />,
-              modal: false,
+              blurBackground: false,
             }
           );
         },
@@ -257,7 +253,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           openEventModal({
             modalId: ModalId.WINNER,
             header: <WinnerModal name={winnerName}/>,
-            modal: true,
+            blurBackground: true,
           });
           changeCurrentPlayer('');
           clearTimeouts();
@@ -282,7 +278,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
               <div className="offer-title">
                 {`${initiatorName} made you an offer:`}
               </div>,
-            modalContent:
+            content:
               <OfferProposalModal
                 initiatorName={initiatorName}
                 addresseeFields={addresseeFields}
@@ -290,7 +286,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 addresseeMoney={addresseeMoney}
                 initiatorMoney={initiatorMoney}
               />,
-            modal: true,
+            blurBackground: true,
           });
         },
         350: ({ gameStage }) => {

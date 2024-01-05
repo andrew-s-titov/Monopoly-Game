@@ -15,7 +15,7 @@ const AuthContext = createContext({} as IAuthContext);
 
 export const AuthContextProvider = ({children}: PropsWithChildren) => {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated);
   const { post, isLoading: isLoginInProgress } = useQuery();
 
   const login = (loginData: LoginData) => {
