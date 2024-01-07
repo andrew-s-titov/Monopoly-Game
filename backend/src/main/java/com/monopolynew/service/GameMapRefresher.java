@@ -20,7 +20,7 @@ public class GameMapRefresher {
 
     public void restoreGameStateForPlayer(Game game, UUID playerId) {
         var currentPlayerId = game.getCurrentPlayer().getId();
-        gameEventSender.sendToPlayer(playerId, gameEventGenerator.mapRefreshEvent(game));
+        gameEventSender.sendToPlayer(playerId, gameEventGenerator.mapStateEvent(game));
         gameEventSender.sendToPlayer(playerId, gameEventGenerator.gameRoomEvent(game));
 
         var gameStage = game.getStage();

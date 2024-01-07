@@ -30,7 +30,7 @@ public class OfferController {
         gameService.createOffer(initiatorId, addresseeId, dealOffer);
     }
 
-    @PutMapping("/process")
+    @PutMapping
     public void processOffer(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID callerId,
                              @RequestParam("action") ProposalAction proposalAction) {
         gameService.processOfferAnswer(callerId, proposalAction);

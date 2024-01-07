@@ -62,7 +62,7 @@ public class GameService {
             throw new PlayerInvalidInputException("Cannot start a game without at least 2 players");
         }
         game.startGame();
-        gameEventSender.sendToAllPlayers(gameEventGenerator.mapRefreshEvent(game));
+        gameEventSender.sendToAllPlayers(gameEventGenerator.mapStateEvent(game));
         UUID currentPlayerId = game.getCurrentPlayer().getId();
         gameEventSender.sendToAllPlayers(new NewPlayerTurn(currentPlayerId));
         gameEventSender.sendToPlayer(currentPlayerId, new TurnStartEvent());
@@ -72,73 +72,6 @@ public class GameService {
         Game game = gameRepository.getGame();
         // extract this method to a private reusable for jail action
         rollTheDice(game, this::afterDiceRollForTurn);
-    }
-
-    private void rollTheDice(Game game, Consumer<Game> afterAction) {
-        var newStage = notifyAboutDiceRolling(game);
-        var diceResult = dice.rollTheDice();
-        game.setLastDice(diceResult);
-        var currentPlayer = game.getCurrentPlayer();
-        if (diceResult.isDoublet()) {
-            if (GameStage.ROLLED_FOR_TURN.equals(newStage) && !currentPlayer.isJustAmnestied()) {
-                currentPlayer.incrementDoublets();
-            }
-        } else {
-            currentPlayer.resetDoublets();
-        }
-        scheduler.schedule(
-                () -> broadcastDiceResult(game, afterAction),
-                1500, TimeUnit.MILLISECONDS);
-    }
-
-    private void broadcastDiceResult(Game game, Consumer<Game> afterAction) {
-        var lastDice = game.getLastDice();
-        Player currentPlayer = game.getCurrentPlayer();
-        String message = String.format("%s rolled the dice and got %s : %s",
-                currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
-        if (lastDice.isDoublet()) {
-            message = message + " (doublet)";
-        }
-        gameEventSender.sendToAllPlayers(DiceResultEvent.of(lastDice));
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
-
-        scheduler.schedule(
-                () -> afterAction.accept(game),
-                2000, TimeUnit.MILLISECONDS);
-    }
-
-    private void afterDiceRollForTurn(Game game) {
-        Player currentPlayer = game.getCurrentPlayer();
-        if (currentPlayer.getDoubletCount() == Rules.DOUBLETS_LIMIT) {
-            currentPlayer.resetDoublets();
-            gameEventSender.sendToAllPlayers(
-                    new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));
-            gameLogicExecutor.sendToJail(game, currentPlayer);
-            gameLogicExecutor.endTurn(game);
-        } else {
-            doRegularMove(game);
-        }
-    }
-
-    private void afterDiceRollForJail(Game game) {
-        DiceResult lastDice = game.getLastDice();
-        Player currentPlayer = game.getCurrentPlayer();
-        if (lastDice.isDoublet()) {
-            currentPlayer.amnesty();
-            gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
-                    currentPlayer.getName() + " is pardoned under amnesty"));
-            doRegularMove(game);
-        } else {
-            if (currentPlayer.lastTurnInPrison()) {
-                String message = currentPlayer.getName() + " served time and paid a criminal fine";
-                paymentService.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
-            } else {
-                currentPlayer.doTime();
-                gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
-                gameLogicExecutor.endTurn(game);
-            }
-        }
     }
 
     public void processBuyProposal(@NonNull ProposalAction action) {
@@ -249,6 +182,67 @@ public class GameService {
         dealManager.processOfferAnswer(game, callerId, proposalAction);
     }
 
+
+    private void rollTheDice(Game game, Consumer<Game> afterAction) {
+        notifyAboutDiceRolling(game);
+        var diceResult = dice.rollTheDice();
+        game.setLastDice(diceResult);
+        processPlayerDoublets(game);
+        scheduler.schedule(
+                () -> broadcastDiceResult(game, afterAction),
+                1500, TimeUnit.MILLISECONDS);
+    }
+
+    private void broadcastDiceResult(Game game, Consumer<Game> afterAction) {
+        var lastDice = game.getLastDice();
+        Player currentPlayer = game.getCurrentPlayer();
+        String message = String.format("%s rolled the dice and got %s : %s",
+                currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
+        if (lastDice.isDoublet()) {
+            message = message + " (doublet)";
+        }
+        gameEventSender.sendToAllPlayers(DiceResultEvent.of(lastDice));
+        gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
+
+        scheduler.schedule(
+                () -> afterAction.accept(game),
+                2000, TimeUnit.MILLISECONDS);
+    }
+
+    private void afterDiceRollForTurn(Game game) {
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer.getDoubletCount() == Rules.DOUBLETS_LIMIT) {
+            currentPlayer.resetDoublets();
+            gameEventSender.sendToAllPlayers(
+                    new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));
+            gameLogicExecutor.sendToJail(game, currentPlayer);
+            gameLogicExecutor.endTurn(game);
+        } else {
+            doRegularMove(game);
+        }
+    }
+
+    private void afterDiceRollForJail(Game game) {
+        DiceResult lastDice = game.getLastDice();
+        Player currentPlayer = game.getCurrentPlayer();
+        if (lastDice.isDoublet()) {
+            currentPlayer.amnesty();
+            gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
+            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+                    currentPlayer.getName() + " is pardoned under amnesty"));
+            doRegularMove(game);
+        } else {
+            if (currentPlayer.lastTurnInPrison()) {
+                String message = currentPlayer.getName() + " served time and paid a criminal fine";
+                paymentService.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
+            } else {
+                currentPlayer.doTime();
+                gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
+                gameLogicExecutor.endTurn(game);
+            }
+        }
+    }
+
     private void doRegularMove(Game game) {
         var lastDice = game.getLastDice();
         var currentPlayer = game.getCurrentPlayer();
@@ -265,16 +259,22 @@ public class GameService {
         }
     }
 
-    private GameStage notifyAboutDiceRolling(Game game) {
-        GameStage currentStage = game.getStage();
-        if (!GameStage.TURN_START.equals(currentStage) && !GameStage.JAIL_RELEASE_START.equals(currentStage)) {
-            throw new WrongGameStageException("cannot roll the dice - wrong game stage");
-        }
-        var newStage = GameStage.TURN_START.equals(currentStage)
+    private void notifyAboutDiceRolling(Game game) {
+        var newStage = GameStage.TURN_START.equals(game.getStage())
                 ? GameStage.ROLLED_FOR_TURN
                 : GameStage.ROLLED_FOR_JAIL;
         gameLogicExecutor.changeGameStage(game, newStage);
         gameEventSender.sendToAllPlayers(new DiceRollingStartEvent());
-        return newStage;
+    }
+
+    private void processPlayerDoublets(Game game) {
+        var currentPlayer = game.getCurrentPlayer();
+        if (game.getLastDice().isDoublet()) {
+            if (GameStage.ROLLED_FOR_TURN.equals(game.getStage()) && !currentPlayer.isJustAmnestied()) {
+                currentPlayer.incrementDoublets();
+            }
+        } else {
+            currentPlayer.resetDoublets();
+        }
     }
 }

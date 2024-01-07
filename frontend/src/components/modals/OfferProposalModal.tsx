@@ -39,14 +39,14 @@ const OfferProposalModal = ({
 
   const onAcceptHandler = () => {
     put({
-      url: `${BE_ENDPOINT}/game/offer/process?action=ACCEPT`,
+      url: `${BE_ENDPOINT}/game/offer?action=ACCEPT`,
       onSuccess: closeProposal,
     })
   }
 
   const onDeclineHandler = () => {
     put({
-      url: `${BE_ENDPOINT}/game/offer/process?action=DECLINE`,
+      url: `${BE_ENDPOINT}/game/offer?action=DECLINE`,
       onSuccess: closeProposal,
     })
   }

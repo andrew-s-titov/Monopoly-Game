@@ -24,7 +24,7 @@ public class GameEventGenerator {
     private final GameFieldMapper gameFieldMapper;
     private final PlayerMapper playerMapper;
 
-    public GameMapStateEvent mapRefreshEvent(Game game) {
+    public GameMapStateEvent mapStateEvent(Game game) {
         var purchasableFields = game.getGameMap().getFields().stream()
                 .filter(PurchasableField.class::isInstance)
                 .map(PurchasableField.class::cast)
