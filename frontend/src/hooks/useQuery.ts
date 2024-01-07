@@ -4,23 +4,10 @@ import { getLoggedInUserId } from "../utils/auth";
 
 const USER_ID_KEY_HEADER = 'user_id';
 
-interface IQueryProps {
-  method: 'GET' | 'POST';
-  url: string;
-  body?: any;
-  onSuccess?: () => void;
-  responseHandler?: (data: any) => void;
-}
+type QueryMethod = 'GET' | 'POST' | 'PUT';
 
-interface GetQueryProps {
+interface QueryProps {
   url: string;
-  onSuccess?: () => void;
-  responseHandler?: (data: any) => void;
-}
-
-interface PostQueryProps {
-  url: string;
-  body?: any;
   onSuccess?: () => void;
   responseHandler?: (data: any) => void;
 }
@@ -49,7 +36,7 @@ const fetchParams = (method: string, body?: any): RequestInit => {
 const useQuery = () => {
 
   const { showError, showWarning } = useMessageContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const [queryStatuses, setQueryStatuses] = useState<Record<string, boolean>>({});
 
   const showDefaultError = () => {
     showError('Error occurred. Please try again or reload the page');
@@ -60,31 +47,40 @@ const useQuery = () => {
     showDefaultError();
   };
 
-  const get = ({url, onSuccess, responseHandler}: GetQueryProps) => {
-    runQuery({
-      method: 'GET',
-      url,
-      onSuccess,
-      responseHandler,
-    });
+  const get = (queryProps: QueryProps) => {
+    const { execute, isLoading } = setUpQuery('GET', queryProps);
+    return {
+      execute: () => execute(),
+      isLoading,
+    }
   }
 
-  const post = ({url, body, onSuccess, responseHandler}: PostQueryProps) => {
-    runQuery({
-      method: 'POST',
-      body,
-      url,
-      onSuccess,
-      responseHandler,
-    });
+  const put = (queryProps: QueryProps) => {
+    return setUpQuery('PUT', queryProps);
   }
 
-  const runQuery = ({method, url, body, onSuccess, responseHandler}: IQueryProps) => {
-    setIsLoading(true);
-    fetch(url, fetchParams(method, body))
-      .then(response => processResponse(response, onSuccess, responseHandler))
-      .catch(handleError)
-      .finally(() => setIsLoading(false));
+  const post = (queryProps: QueryProps) => {
+    return setUpQuery('POST', queryProps);
+  }
+
+  const setUpQuery = (method: QueryMethod, { url, onSuccess, responseHandler }: QueryProps) => {
+    const key = `${method}:${url}`;
+    const execute = (body?: any) => {
+      setQueryStatuses(prevState => ({
+        ...prevState,
+        [key]: true,
+      }));
+      fetch(url, fetchParams(method, body))
+        .then(response => processResponse(response, onSuccess, responseHandler))
+        .catch(handleError)
+        .finally(() => setQueryStatuses(prevState => ({
+          ...prevState,
+          [key]: false,
+        })));
+    }
+    const isLoading = queryStatuses[key] || false;
+
+    return { execute, isLoading };
   }
 
   const processResponse = (response: Response, onSuccess?: () => void, responseHandler?: (response: any) => void) => {
@@ -111,8 +107,8 @@ const useQuery = () => {
 
   return {
     get,
+    put,
     post,
-    isLoading,
   };
 }
 

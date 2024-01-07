@@ -9,14 +9,11 @@ import { ModalId } from "./modals";
 const RollDiceButton = () => {
 
   const { closeEventModal } = useEventModalContext();
-  const { get } = useQuery();
-
-  const onRollClick = () => {
-    get({
-      url: `${BE_ENDPOINT}/game/dice/roll`,
-      onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
-    });
-  }
+  const { put } = useQuery();
+  const { execute: rollDice } = put({
+    url: `${BE_ENDPOINT}/game/turn`,
+    onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
+  });
 
   return (
     <Button
@@ -26,7 +23,7 @@ const RollDiceButton = () => {
       severity="secondary"
       text
       raised
-      onClick={onRollClick}
+      onClick={() => rollDice()}
     />);
 }
 

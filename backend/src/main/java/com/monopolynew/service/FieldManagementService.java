@@ -28,14 +28,13 @@ public class FieldManagementService {
 
     private final GameEventSender gameEventSender;
     private final GameFieldMapper gameFieldMapper;
-    private final GameLogicExecutor gameLogicExecutor;
 
     public void mortgageField(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (mortgageAvailable(g, f)) {
                 Player currentPlayer = g.getCurrentPlayer();
                 f.mortgage();
-                currentPlayer.addMoney(gameLogicExecutor.getFieldMortgagePrice(f));
+                currentPlayer.addMoney(f.getPrice() / 2);
                 gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
                 gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(

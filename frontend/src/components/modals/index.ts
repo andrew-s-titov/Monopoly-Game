@@ -10,18 +10,18 @@ import PropertyManagementModal from "./PropertyManagementModal";
 import WinnerModal from "./WinnerModal";
 
 enum ModalId {
-  AUCTION_BUY_PROPOSAL,
-  AUCTION,
-  BUY_PROPOSAL,
-  JAIL_RELEASE,
-  OFFER_PROPOSAL,
-  PAY_COMMAND,
-  WINNER,
-  ROLL_DICE,
-  DICE,
-  GIVE_UP,
-  OFFER_DEAL,
-  PROPERTY_MANAGEMENT,
+  AUCTION_BUY_PROPOSAL = 'auction_buy_proposal',
+  AUCTION = 'auction',
+  BUY_PROPOSAL = 'buyProposal',
+  JAIL_RELEASE = 'jailRelease',
+  OFFER_PROPOSAL = 'offerProposal',
+  PAY_COMMAND = 'payCommand',
+  WINNER = 'winner',
+  ROLL_DICE = 'rollDice',
+  DICE = 'dice',
+  GIVE_UP = 'giveUp',
+  OFFER_DEAL = 'offerDeal',
+  PROPERTY_MANAGEMENT = 'propertyManagement',
 }
 
 export {

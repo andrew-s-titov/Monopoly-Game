@@ -3,7 +3,7 @@ package com.monopolynew.controller;
 import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +17,7 @@ public class PlayerController {
 
     private final GameService gameService;
 
-    @GetMapping("/give_up")
+    @PutMapping("/give_up")
     public void giveUp(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
         gameService.giveUp(playerId);
     }

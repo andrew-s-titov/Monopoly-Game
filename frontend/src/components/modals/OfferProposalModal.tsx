@@ -25,10 +25,18 @@ const OfferProposalModal = ({
                               initiatorMoney
                             }: IOfferProposalModalProps) => {
 
-  const { post, isLoading } = useQuery();
 
   const { closeEventModal } = useEventModalContext();
   const closeProposal = () => closeEventModal(ModalId.OFFER_PROPOSAL);
+  const { put } = useQuery();
+  const { execute: accept, isLoading: isAcceptLoading } = put({
+    url: `${BE_ENDPOINT}/game/offer?action=ACCEPT`,
+    onSuccess: closeProposal,
+  });
+  const { execute: decline, isLoading: isDeclineLoading } = put({
+    url: `${BE_ENDPOINT}/game/offer?action=DECLINE`,
+    onSuccess: closeProposal,
+  })
 
   const initiatorTotal = initiatorFields
     .map(index => PROPERTY_FIELDS_DATA[index].price)
@@ -36,20 +44,6 @@ const OfferProposalModal = ({
   const addresseeTotal = addresseeFields
     .map(index => PROPERTY_FIELDS_DATA[index].price)
     .reduce((a, b) => a + b, 0) + addresseeMoney;
-
-  const onAcceptHandler = () => {
-    post({
-      url: `${BE_ENDPOINT}/game/offer/process?action=ACCEPT`,
-      onSuccess: closeProposal,
-    })
-  }
-
-  const onDeclineHandler = () => {
-    post({
-      url: `${BE_ENDPOINT}/game/offer/process?action=DECLINE`,
-      onSuccess: closeProposal,
-    })
-  }
 
   return (
     <div className='offer-content'>
@@ -87,22 +81,22 @@ const OfferProposalModal = ({
       </div>
       <div className='modal-button-group'>
         <Button
-          loading={isLoading}
+          loading={isAcceptLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
           label='Accept'
           severity='success'
           icon='pi pi-check modal-button-icon'
-          onClick={onAcceptHandler}
+          onClick={() => accept()}
         />
         <Button
-          loading={isLoading}
+          loading={isDeclineLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
           label='Decline'
           severity='secondary'
           icon='pi pi-times modal-button-icon'
-          onClick={onDeclineHandler}
+          onClick={() => decline()}
         />
       </div>
     </div>

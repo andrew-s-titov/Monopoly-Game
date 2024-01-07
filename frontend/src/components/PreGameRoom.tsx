@@ -9,15 +9,16 @@ import StartPageButton from "./StartPageButton";
 const PreGameRoom = () => {
 
   const { connectedPlayers } = useGameState();
-  const { post, isLoading } = useQuery();
+  const { post } = useQuery();
+  const { execute: startGame, isLoading } = post(
+    {
+      url: `${BE_ENDPOINT}/game`
+    });
 
   const canStartGame = connectedPlayers.length > 1;
 
   const onStartGameHandler = () => {
-    canStartGame && post(
-      {
-        url: `${BE_ENDPOINT}/game`
-      });
+    canStartGame && startGame();
   };
 
   return (

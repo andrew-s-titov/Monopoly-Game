@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 @Configuration
 public class GlobalConfig {
 
@@ -14,5 +17,10 @@ public class GlobalConfig {
     @Bean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder jacksonBootDefault) {
         return jacksonBootDefault.build();
+    }
+
+    @Bean
+    public ScheduledExecutorService scheduler() {
+        return new ScheduledThreadPoolExecutor(5);
     }
 }

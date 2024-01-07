@@ -18,45 +18,41 @@ const AuctionModal = ({ proposal }: IAuctionModalProps) => {
   const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
-  const { get, isLoading } = useQuery();
-
-  const payable = playerState.money >= proposal;
   const closeAuctionModal = () => closeEventModal(ModalId.AUCTION);
 
-  const onRaiseHandler = () => {
-    get({
-      url: `${BE_ENDPOINT}/game/auction/raise?action=ACCEPT`,
-      onSuccess: closeAuctionModal,
-    });
-  };
+  const { put } = useQuery();
+  const { execute: raise, isLoading: isRaiseLoading } = put({
+    url: `${BE_ENDPOINT}/game/auction/raise?action=ACCEPT`,
+    onSuccess: closeAuctionModal,
+  });
 
-  const onDeclineHandler = () => {
-    get({
-      url: `${BE_ENDPOINT}/game/auction/raise?action=DECLINE`,
-      onSuccess: closeAuctionModal,
-    });
-  };
+  const { execute: decline, isLoading: isDeclineLoading } = put({
+    url: `${BE_ENDPOINT}/game/auction/raise?action=DECLINE`,
+    onSuccess: closeAuctionModal,
+  });
+
+  const payable = playerState.money >= proposal;
 
   return (
     <div className='modal-button-group'>
       <Button
-        loading={isLoading}
+        loading={isRaiseLoading}
         loadingIcon="pi pi-spin pi-box modal-button-icon"
         disabled={!payable}
         className="modal-button"
         label='Raise'
         severity="success"
         icon="pi pi-sort-amount-up modal-button-icon"
-        onClick={onRaiseHandler}
+        onClick={() => raise()}
       />
       <Button
-        loading={isLoading}
+        loading={isDeclineLoading}
         loadingIcon="pi pi-spin pi-box modal-button-icon"
         className="modal-button"
         severity="secondary"
         label='Decline'
         icon="pi pi-times modal-button-icon"
-        onClick={onDeclineHandler}
+        onClick={() => decline()}
       />
     </div>
   );

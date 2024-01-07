@@ -4,8 +4,8 @@ import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,47 +22,32 @@ public class GameController {
         gameService.startGame();
     }
 
-    @GetMapping("/dice/roll")
-    public void startDiceRolling() {
-        gameService.startDiceRolling();
+    @PutMapping("/turn")
+    public void startTurn() {
+        gameService.makeUsualTurn();
     }
 
-    @GetMapping("/dice/result")
-    public void broadcastDiceResult() {
-        gameService.broadcastDiceResult();
-    }
-
-    @GetMapping("/dice/after")
-    public void afterDiceAction() {
-        gameService.afterDiceRollAction();
-    }
-
-    @GetMapping("/after_move")
-    public void afterPlayerMoveAction() {
-        gameService.afterPlayerMoveAction();
-    }
-
-    @GetMapping("/buy")
+    @PutMapping("/buy")
     public void processBuyProposal(@RequestParam("action") ProposalAction action) {
         gameService.processBuyProposal(action);
     }
 
-    @GetMapping("/pay")
+    @PutMapping("/pay")
     public void processPayment() {
         gameService.processPayment();
     }
 
-    @GetMapping("/auction/buy")
+    @PutMapping("/auction/buy")
     public void processAuctionBuyProposal(@RequestParam("action") ProposalAction action) {
         gameService.processAuctionBuyProposal(action);
     }
 
-    @GetMapping("/auction/raise")
+    @PutMapping("/auction/raise")
     public void processAuctionRaiseProposal(@RequestParam("action") ProposalAction action) {
         gameService.processAuctionRaiseProposal(action);
     }
 
-    @GetMapping("/jail")
+    @PutMapping("/jail")
     public void processJailAction(@RequestParam("action") JailAction jailAction) {
         gameService.processJailAction(jailAction);
     }

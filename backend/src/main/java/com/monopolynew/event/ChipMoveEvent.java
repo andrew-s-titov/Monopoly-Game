@@ -14,6 +14,4 @@ public class ChipMoveEvent implements GameEvent {
     private final UUID playerId;
 
     private final int field;
-
-    private final boolean needAfterMoveCall;
 }
