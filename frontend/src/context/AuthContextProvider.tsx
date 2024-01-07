@@ -15,20 +15,16 @@ const AuthContext = createContext({} as IAuthContext);
 
 export const AuthContextProvider = ({children}: PropsWithChildren) => {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
-  const { post, isLoading: isLoginInProgress } = useQuery();
-
-  const login = (loginData: LoginData) => {
-    post({
-      url: `${BE_ENDPOINT}`,
-      body: loginData,
-      // onSuccess: () => setIsLoggedIn(true),
-      responseHandler: ({ id }: LoginResponse) => {
-        setAuthData(loginData, id);
-        setIsLoggedIn(true);
-      }
-    });
-  };
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated);
+  const { post } = useQuery();
+  const { execute: executeLogin, isLoading: isLoginInProgress } = post({
+    url: `${BE_ENDPOINT}`,
+    responseHandler: (loginResponse: LoginResponse) => {
+      setAuthData(loginResponse);
+      setIsLoggedIn(true);
+    }
+  });
+  const login = (loginData: LoginData) => executeLogin(loginData);
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, isLoginInProgress }}>

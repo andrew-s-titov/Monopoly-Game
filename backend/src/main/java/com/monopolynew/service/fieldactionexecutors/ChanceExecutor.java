@@ -1,6 +1,10 @@
-package com.monopolynew.game.chance;
+package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.game.Game;
+import com.monopolynew.game.chance.ChanceCard;
+import com.monopolynew.game.chance.GoTo;
+import com.monopolynew.service.GameEventSender;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,21 +15,24 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.monopolynew.game.chance.ChanceContainer.CHANCES;
+
 @RequiredArgsConstructor
 @Component
-public class ChanceCardProvider {
+public class ChanceExecutor {
 
-    private final ChanceContainer chanceContainer;
-
+    @Getter
     private final Map<UUID, Queue<ChanceCard>> chanceDecks = new ConcurrentHashMap<>();
 
-    public void applyNextCard(Game game) {
+    private final GameEventSender gameEventSender;
+
+    public GoTo applyNextCard(Game game) {
         Queue<ChanceCard> chanceDeck = getDeck(game);
         ChanceCard selectedChance = chanceDeck.poll();
         if (selectedChance == null) {
             throw new IllegalStateException("unexpectedly null chance (game consumer)");
         }
-        selectedChance.accept(game);
+        return selectedChance.apply(game, gameEventSender);
     }
 
     private Queue<ChanceCard> getDeck(Game game) {
@@ -38,7 +45,7 @@ public class ChanceCardProvider {
     }
 
     private Queue<ChanceCard> initiateCardDeck(UUID gameId) {
-        var newDeck = new LinkedList<>(chanceContainer.getChances());
+        var newDeck = new LinkedList<>(CHANCES);
         Collections.shuffle(newDeck);
         chanceDecks.put(gameId, newDeck);
         return newDeck;

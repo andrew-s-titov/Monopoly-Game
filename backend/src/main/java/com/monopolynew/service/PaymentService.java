@@ -4,6 +4,7 @@ import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.PayCommandEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
@@ -19,11 +20,10 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class PaymentProcessor {
+public class PaymentService {
 
     private final GameLogicExecutor gameLogicExecutor;
     private final GameEventSender gameEventSender;
-    private final GameEventGenerator gameEventGenerator;
 
     public void startPaymentProcess(Game game, @NonNull Player player, Player beneficiary,
                                     int amount, String paymentComment) {
@@ -42,7 +42,7 @@ public class PaymentProcessor {
                     .comment(paymentComment)
                     .build();
             game.setCheckToPay(checkToPay);
-            gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.payCommandEvent(checkToPay));
+            gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.of(checkToPay));
         } else {
             var assets = gameLogicExecutor.computePlayerAssets(game, player);
             var checkToPay = CheckToPay.builder()
@@ -56,7 +56,7 @@ public class PaymentProcessor {
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 gameLogicExecutor.changeGameStage(game, newGameStage);
-                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.payCommandEvent(checkToPay));
+                gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.of(checkToPay));
             } else {
                 gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " went bankrupt"));
                 gameLogicExecutor.bankruptPlayer(game, player);
@@ -64,9 +64,7 @@ public class PaymentProcessor {
         }
     }
 
-    public void processPayment(Game game) {
-        var currentGameStage = game.getStage();
-        verifyPaymentProcessingAvailable(currentGameStage);
+    public Player processPayment(Game game) {
         var checkToPay = game.getCheckToPay();
         if (checkToPay == null) {
             throw new IllegalStateException("Cannot process payment - no payment found");
@@ -90,26 +88,12 @@ public class PaymentProcessor {
             gameEventSender.sendToAllPlayers(new ChatMessageEvent(paymentComment));
         }
         game.setCheckToPay(null);
-
-        if (GameStage.AWAITING_PAYMENT.equals(currentGameStage)) {
-            gameLogicExecutor.endTurn(game);
-        } else if (GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
-            debtor.releaseFromJail();
-            gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
-            var newPosition = gameLogicExecutor.computeNewPlayerPosition(debtor, game.getLastDice());
-            gameLogicExecutor.movePlayer(game, debtor, newPosition, true);
-        }
+        return debtor;
     }
 
     private void verifyCheckCreationAvailable(GameStage currentGameStage) {
         if (!GameStage.ROLLED_FOR_TURN.equals(currentGameStage) && !GameStage.ROLLED_FOR_JAIL.equals(currentGameStage)) {
             throw new WrongGameStageException("Cannot create a check - wrong game stage");
-        }
-    }
-
-    private void verifyPaymentProcessingAvailable(GameStage currentGameStage) {
-        if (!GameStage.AWAITING_PAYMENT.equals(currentGameStage) && !GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
-            throw new WrongGameStageException("Cannot process payment - wrong game stage");
         }
     }
 }

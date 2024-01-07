@@ -59,7 +59,6 @@ const onOfferMoneyChange = (newValue: number | undefined | null,
 
 const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
 
-  const { post, isLoading } = useQuery();
   const checkedInitiatorFieldsUseStateReturn = useState<UPropertyIndex[]>([]);
   const checkedInitiatorFields = checkedInitiatorFieldsUseStateReturn[0];
   const checkedAddresseeFieldsUseStateReturn = useState<UPropertyIndex[]>([]);
@@ -67,9 +66,18 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
   const [selectedInitiatorMoney, setSelectedInitiatorMoney] = useState(0);
   const [selectedAddresseeMoney, setSelectedAddresseeMoney] = useState(0);
   const { showWarning } = useMessageContext();
-
+  const { post } = useQuery();
   const { closePopUpModal } = usePopUpModalContext();
   const { closeEventModal } = useEventModalContext();
+  const closeAllModals = () => {
+    closePopUpModal();
+    closeEventModal();
+  }
+  const { execute: sendOffer, isLoading } = post({
+    url: `${BE_ENDPOINT}/game/offer/${addresseeId}`,
+    onSuccess: closeAllModals,
+  })
+
   const { gameState } = useGameState();
   const addresseeState = gameState.playerStates[addresseeId];
   const initiatorId = gameState.currentUserId;
@@ -90,11 +98,6 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
     .map(index => PROPERTY_FIELDS_DATA[index].price)
     .reduce((a, b) => a + b, 0) + selectedAddresseeMoney;
 
-  const closeAllModals = () => {
-    closePopUpModal();
-    closeEventModal();
-  }
-
   const onSendOffer = () => {
     if (!selectedInitiatorMoney
       && !selectedAddresseeMoney
@@ -109,11 +112,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
       addresseeMoney: selectedAddresseeMoney,
       addresseeFields: checkedAddresseeFields,
     }
-    post({
-      url: `${BE_ENDPOINT}/game/offer/${addresseeId}/send`,
-      body: offer,
-      onSuccess: closeAllModals,
-    })
+    sendOffer(offer);
   }
 
   return (

@@ -4,34 +4,47 @@ import { ModalId } from "../components/modals";
 
 export interface IModalProps {
   header: React.JSX.Element;
-  modalContent?: React.JSX.Element;
-  modal?: boolean;
-  transparent?: boolean,
+  content?: React.JSX.Element;
+  blurBackground?: boolean;
+  isTransparent?: boolean,
   modalId?: ModalId,
+}
+
+interface ModalState {
+  content?: React.JSX.Element,
+  header?: React.JSX.Element,
+  blurBackground: boolean,
+  isTransparent: boolean,
+  isOpened: boolean,
 }
 
 const useModal = (isClosable?: boolean) => {
   const lastModal = useRef<ModalId>();
-  const [modalContent, setModalContent] = useState<React.JSX.Element>();
-  const [modalHeader, setModalHeader] = useState<React.JSX.Element>();
-  const [isOpened, setIsOpened] = useState(false);
-  const [isModal, setIsModal] = useState(true);
-  const [isTransparent, setIsTransparent] = useState(false);
+  const [modalState, setModalState] = useState<ModalState>(() => ({
+    isOpened: false,
+    isTransparent: false,
+    blurBackground: true,
+  }));
+  const [isOpened, setIsOpened] = useState<boolean>();
 
   const openModal = ({
                        header,
-                       modalContent,
-                       modal = true,
-                       transparent = false,
+                       content,
+                       blurBackground = true,
+                       isTransparent = false,
                        modalId
                      }: IModalProps) => {
     lastModal.current = modalId;
-    setModalHeader(header);
-    setModalContent(modalContent);
-    setIsModal(modal);
-    setIsTransparent(transparent);
+    setModalState(() => ({
+      header,
+      content,
+      blurBackground,
+      isTransparent,
+      isOpened: true,
+    }));
     setIsOpened(true);
-  }
+  };
+
   const closeModal = (modalId?: ModalId) => {
     if (modalId && modalId !== lastModal.current) {
       return;
@@ -39,11 +52,11 @@ const useModal = (isClosable?: boolean) => {
     setIsOpened(false);
   };
 
-  const headerWrapper = modalContent
-    ? <div className='modal-header'>{modalHeader}</div>
-    : modalHeader;
+  const headerWrapper = modalState.content
+    ? <div className='modal-header'>{modalState.header}</div>
+    : modalState.header;
 
-  const dialogElement = isOpened &&
+  const dialogElement =
     <Dialog
       header={headerWrapper}
       onHide={closeModal}
@@ -54,13 +67,13 @@ const useModal = (isClosable?: boolean) => {
       closable={false}
       resizable={false}
       draggable={false}
-      modal={isModal}
-      className={isTransparent ? "transparent-dialog" : ""}
-      headerClassName={isTransparent ? "transparent-dialog" : ""}
+      modal={modalState.blurBackground}
+      className={modalState.isTransparent ? "transparent-dialog" : ""}
+      headerClassName={modalState.isTransparent ? "transparent-dialog" : ""}
     >
-      {modalContent &&
+      {modalState.content &&
         <div className='modal-content'>
-          {modalContent}
+          {modalState.content}
         </div>
       }
     </Dialog>;

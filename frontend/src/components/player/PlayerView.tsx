@@ -42,7 +42,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
           <div className='modal-title'>
             Are you sure you want to give up?
           </div>,
-        modalContent: <GiveUpModal/>,
+        content: <GiveUpModal/>,
       });
   }, []);
 
@@ -54,7 +54,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
           <div className='offer-title'>
             Choose fields to buy or sell and enter money to exchange:
           </div>,
-        modalContent: <OfferDealModal addresseeId={playerId}/>,
+        content: <OfferDealModal addresseeId={playerId}/>,
       });
   }, []);
 
