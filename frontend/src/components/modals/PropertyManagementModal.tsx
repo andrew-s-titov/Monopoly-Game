@@ -15,7 +15,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
 
   const { closePopUpModal } = usePopUpModalContext();
   const { getManagement } = usePropertyActions();
-  const { get } = useQuery();
+  const { put } = useQuery();
   const { addHousePurchase } = useGameState();
 
   const { canManage, managementOptions } = getManagement(fieldIndex);
@@ -27,14 +27,14 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
   } = managementOptions;
 
   const callManagementEndpoint = (action: 'redeem' | 'sell_house' | 'mortgage') => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/field/${fieldIndex}/${action}`,
       onSuccess: closePopUpModal,
     });
   }
 
   const onBuyHouse = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/field/${fieldIndex}/buy_house`,
       onSuccess: () => {
         addHousePurchase(PROPERTY_FIELDS_DATA[fieldIndex].group);

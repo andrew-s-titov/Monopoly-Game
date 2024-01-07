@@ -110,7 +110,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
       addresseeFields: checkedAddresseeFields,
     }
     post({
-      url: `${BE_ENDPOINT}/game/offer/${addresseeId}/send`,
+      url: `${BE_ENDPOINT}/game/offer/${addresseeId}`,
       body: offer,
       onSuccess: closeAllModals,
     })

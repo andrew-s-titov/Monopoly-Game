@@ -5,7 +5,7 @@ import { getLoggedInUserId } from "../utils/auth";
 const USER_ID_KEY_HEADER = 'user_id';
 
 interface IQueryProps {
-  method: 'GET' | 'POST';
+  method: 'GET' | 'POST' | 'PUT';
   url: string;
   body?: any;
   onSuccess?: () => void;
@@ -18,7 +18,7 @@ interface GetQueryProps {
   responseHandler?: (data: any) => void;
 }
 
-interface PostQueryProps {
+interface PostPutQueryProps {
   url: string;
   body?: any;
   onSuccess?: () => void;
@@ -60,7 +60,7 @@ const useQuery = () => {
     showDefaultError();
   };
 
-  const get = ({url, onSuccess, responseHandler}: GetQueryProps) => {
+  const get = ({ url, onSuccess, responseHandler }: GetQueryProps) => {
     runQuery({
       method: 'GET',
       url,
@@ -69,7 +69,17 @@ const useQuery = () => {
     });
   }
 
-  const post = ({url, body, onSuccess, responseHandler}: PostQueryProps) => {
+  const put = ({ url, body, onSuccess, responseHandler }: PostPutQueryProps) => {
+    runQuery({
+      method: 'PUT',
+      body,
+      url,
+      onSuccess,
+      responseHandler,
+    });
+  }
+
+  const post = ({ url, body, onSuccess, responseHandler }: PostPutQueryProps) => {
     runQuery({
       method: 'POST',
       body,
@@ -79,7 +89,7 @@ const useQuery = () => {
     });
   }
 
-  const runQuery = ({method, url, body, onSuccess, responseHandler}: IQueryProps) => {
+  const runQuery = ({ method, url, body, onSuccess, responseHandler }: IQueryProps) => {
     setIsLoading(true);
     fetch(url, fetchParams(method, body))
       .then(response => processResponse(response, onSuccess, responseHandler))
@@ -111,6 +121,7 @@ const useQuery = () => {
 
   return {
     get,
+    put,
     post,
     isLoading,
   };

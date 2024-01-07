@@ -18,20 +18,20 @@ const BuyProposalModal = ({ price }: IBuyProposalProps) => {
   const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
-  const { get, isLoading } = useQuery();
+  const { put, isLoading } = useQuery();
 
   const payable = playerState.money >= price;
   const closeBuyProposal = () => closeEventModal(ModalId.BUY_PROPOSAL);
 
   const onBuyHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/buy?action=ACCEPT`,
       onSuccess: closeBuyProposal,
     });
   };
 
   const onAuctionHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/buy?action=DECLINE`,
       onSuccess: closeBuyProposal,
     });

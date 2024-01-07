@@ -19,20 +19,20 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
   const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
-  const { get, isLoading } = useQuery();
+  const { put, isLoading } = useQuery();
 
   const payable = playerState.money >= sum;
   const closePayCommand = () => closeEventModal(ModalId.PAY_COMMAND);
 
   const onPayHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/pay`,
       onSuccess: closePayCommand,
     });
   };
 
   const onGiveUpHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/player/give_up`,
       onSuccess: closePayCommand,
     });

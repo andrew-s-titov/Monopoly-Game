@@ -9,11 +9,11 @@ import { ModalId } from "./modals";
 const RollDiceButton = () => {
 
   const { closeEventModal } = useEventModalContext();
-  const { get } = useQuery();
+  const { put } = useQuery();
 
   const onRollClick = () => {
-    get({
-      url: `${BE_ENDPOINT}/game/dice/roll`,
+    put({
+      url: `${BE_ENDPOINT}/game/turn`,
       onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
     });
   }

@@ -25,7 +25,7 @@ const OfferProposalModal = ({
                               initiatorMoney
                             }: IOfferProposalModalProps) => {
 
-  const { post, isLoading } = useQuery();
+  const { put, isLoading } = useQuery();
 
   const { closeEventModal } = useEventModalContext();
   const closeProposal = () => closeEventModal(ModalId.OFFER_PROPOSAL);
@@ -38,14 +38,14 @@ const OfferProposalModal = ({
     .reduce((a, b) => a + b, 0) + addresseeMoney;
 
   const onAcceptHandler = () => {
-    post({
+    put({
       url: `${BE_ENDPOINT}/game/offer/process?action=ACCEPT`,
       onSuccess: closeProposal,
     })
   }
 
   const onDeclineHandler = () => {
-    post({
+    put({
       url: `${BE_ENDPOINT}/game/offer/process?action=DECLINE`,
       onSuccess: closeProposal,
     })

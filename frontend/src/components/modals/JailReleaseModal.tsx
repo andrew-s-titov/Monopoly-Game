@@ -14,20 +14,20 @@ const JailReleaseModal = () => {
   const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
-  const { get, isLoading } = useQuery();
+  const { put, isLoading } = useQuery();
 
   const payable = playerState.money >= 50;
   const closeJailRelease = () => closeEventModal(ModalId.JAIL_RELEASE);
 
   const onPayHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/jail?action=PAY`,
       onSuccess: closeJailRelease,
     });
   };
 
   const onTryLuckHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/jail?action=LUCK`,
       onSuccess: closeJailRelease,
     });

@@ -8,10 +8,10 @@ import { BE_ENDPOINT } from "../../api/config";
 const GiveUpModal = () => {
 
   const { closePopUpModal } = usePopUpModalContext();
-  const { get, isLoading } = useQuery();
+  const { put, isLoading } = useQuery();
 
   const onGiveUpHandler = () => {
-    get({
+    put({
       url: `${BE_ENDPOINT}/game/player/give_up`,
       onSuccess: closePopUpModal,
     });
