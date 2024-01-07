@@ -70,6 +70,8 @@ export interface ConnectedPlayer {
 
 export interface LoginResponse {
   id: string,
+  name: string,
+  avatar: string,
 }
 
 export interface PlayerAuthData {

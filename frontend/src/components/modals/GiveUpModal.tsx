@@ -8,14 +8,11 @@ import { BE_ENDPOINT } from "../../api/config";
 const GiveUpModal = () => {
 
   const { closePopUpModal } = usePopUpModalContext();
-  const { put, isLoading } = useQuery();
-
-  const onGiveUpHandler = () => {
-    put({
-      url: `${BE_ENDPOINT}/game/player/give_up`,
-      onSuccess: closePopUpModal,
-    });
-  };
+  const { put } = useQuery();
+  const { execute: giveUp, isLoading } = put({
+    url: `${BE_ENDPOINT}/game/player/give_up`,
+    onSuccess: closePopUpModal,
+  });
 
   return (
     <div className='modal-button-group'>
@@ -33,7 +30,7 @@ const GiveUpModal = () => {
         label='Give up'
         severity='danger'
         icon='pi pi-flag modal-button-icon'
-        onClick={onGiveUpHandler}
+        onClick={() => giveUp()}
       />
     </div>
   );

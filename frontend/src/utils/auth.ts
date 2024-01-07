@@ -1,9 +1,9 @@
-import { LoginData, PlayerAuthData } from "../types/interfaces";
+import { LoginResponse, PlayerAuthData } from "../types/interfaces";
 
 const AUTH_DATA_KEY = "playerData";
 
-export const setAuthData = (loginData: LoginData, id: string) => {
-  localStorage.setItem(AUTH_DATA_KEY, JSON.stringify(constructAuthData(loginData, id)));
+export const setAuthData = (loginResponse: LoginResponse) => {
+  localStorage.setItem(AUTH_DATA_KEY, JSON.stringify(loginResponse));
 }
 
 export const getLoggedInUserId = (): string => {
@@ -21,12 +21,3 @@ const getPlayerAuthData = (): PlayerAuthData | undefined => {
     ? JSON.parse(authData) as PlayerAuthData
     : undefined;
 }
-
-const constructAuthData = ({ name, avatar }: LoginData, id: string): PlayerAuthData => {
-  return {
-    id,
-    name,
-    avatar,
-  };
-}
-

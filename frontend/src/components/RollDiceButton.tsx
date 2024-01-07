@@ -10,13 +10,10 @@ const RollDiceButton = () => {
 
   const { closeEventModal } = useEventModalContext();
   const { put } = useQuery();
-
-  const onRollClick = () => {
-    put({
-      url: `${BE_ENDPOINT}/game/turn`,
-      onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
-    });
-  }
+  const { execute: rollDice } = put({
+    url: `${BE_ENDPOINT}/game/turn`,
+    onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
+  });
 
   return (
     <Button
@@ -26,7 +23,7 @@ const RollDiceButton = () => {
       severity="secondary"
       text
       raised
-      onClick={onRollClick}
+      onClick={() => rollDice()}
     />);
 }
 

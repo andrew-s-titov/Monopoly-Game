@@ -19,46 +19,40 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
   const { closeEventModal } = useEventModalContext();
   const { gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
-  const { put, isLoading } = useQuery();
 
   const payable = playerState.money >= sum;
   const closePayCommand = () => closeEventModal(ModalId.PAY_COMMAND);
-
-  const onPayHandler = () => {
-    put({
-      url: `${BE_ENDPOINT}/game/pay`,
-      onSuccess: closePayCommand,
-    });
-  };
-
-  const onGiveUpHandler = () => {
-    put({
-      url: `${BE_ENDPOINT}/game/player/give_up`,
-      onSuccess: closePayCommand,
-    });
-  };
+  const { put } = useQuery();
+  const { execute: pay, isLoading: isPayLoading } = put({
+    url: `${BE_ENDPOINT}/game/pay`,
+    onSuccess: closePayCommand,
+  });
+  const { execute: giveUp, isLoading: isGiveUpLoading } = put({
+    url: `${BE_ENDPOINT}/game/player/give_up`,
+    onSuccess: closePayCommand,
+  });
 
   return (
     <div className='modal-button-group'>
       <Button
         disabled={!payable}
-        loading={isLoading}
+        loading={isPayLoading}
         loadingIcon="pi pi-spin pi-box modal-button-icon"
         className="modal-button"
         label='Pay'
         severity="secondary"
         icon="pi pi-money-bill modal-button-icon"
-        onClick={onPayHandler}
+        onClick={() => pay()}
       />
       {wiseToGiveUp &&
         <Button
           className="modal-button"
-          loading={isLoading}
+          loading={isGiveUpLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           severity="danger"
           label='Give up'
           icon="pi pi-flag modal-button-icon"
-          onClick={onGiveUpHandler}
+          onClick={() => giveUp()}
         />
       }
     </div>
