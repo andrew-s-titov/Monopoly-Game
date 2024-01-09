@@ -42,6 +42,7 @@ public class GameLogicExecutor {
     private final GameEventSender gameEventSender;
     private final GameFieldMapper gameFieldMapper;
     private final GameEventGenerator gameEventGenerator;
+    private final GameRepository gameRepository;
 
     public void sendToJail(Game game, Player player) {
         player.resetDoublets();
@@ -231,8 +232,8 @@ public class GameLogicExecutor {
                 .toList();
         if (nonBankruptPlayers.size() == 1) {
             Player winner = nonBankruptPlayers.get(0);
-            game.finishGame();
             gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getName()));
+            finishGame(game);
             return true;
         }
         return false;
@@ -290,5 +291,10 @@ public class GameLogicExecutor {
         if (field instanceof StreetField streetField && streetField.getHouses() > 0) {
             streetField.removeHouses();
         }
+    }
+
+    private void finishGame(Game game) {
+        gameRepository.endGame();
+        // force to disconnect players?
     }
 }
