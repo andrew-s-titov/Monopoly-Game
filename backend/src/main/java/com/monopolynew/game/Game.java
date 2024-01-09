@@ -67,11 +67,6 @@ public class Game {
         return this.players.containsKey(playerId);
     }
 
-    public boolean isUsernameTaken(String username) {
-        return this.players.values().stream()
-                .anyMatch(player -> player.getName().equalsIgnoreCase(username.strip()));
-    }
-
     public void addPlayer(Player player) {
         this.players.put(player.getId(), player);
     }
@@ -85,19 +80,6 @@ public class Game {
         this.stage = GameStage.TURN_START;
         this.gameMap = new GameMap(this.withTeleport);
         this.whoseTurn = nextPlayer().getId();
-    }
-
-    public void finishGame() {
-        this.inProgress = false;
-        this.players.values().forEach(Player::resetState);
-        this.gameMap = null;
-        this.whoseTurn = null;
-        this.playerIterator = null;
-        this.auction = null;
-        this.buyProposal = null;
-        this.lastDice = null;
-        this.checkToPay = null;
-        this.offer = null;
     }
 
     public Player getCurrentPlayer() {
