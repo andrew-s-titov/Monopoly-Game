@@ -6,7 +6,6 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -18,7 +17,7 @@ import static com.monopolynew.config.GlobalConfig.USER_ID_HEADER;
 
 @Component
 @Slf4j
-public class GameWsInterceptor implements HandshakeInterceptor {
+public class LandingPageWsInterceptor implements HandshakeInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
@@ -32,9 +31,7 @@ public class GameWsInterceptor implements HandshakeInterceptor {
             return false;
         }
         var userId = UUID.fromString(pathSegments.get(1));
-//        var gameId = UUID.fromString(pathSegments.get(1));
         attributes.put(USER_ID_HEADER, userId);
-//        attributes.put(GAME_ID_KEY, gameId);
         return true;
     }
 
@@ -42,9 +39,5 @@ public class GameWsInterceptor implements HandshakeInterceptor {
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                WebSocketHandler wsHandler, Exception exception) {
 
-    }
-
-    public static UUID extractUserId(WebSocketSession session) {
-        return (UUID) session.getAttributes().get(USER_ID_HEADER);
     }
 }

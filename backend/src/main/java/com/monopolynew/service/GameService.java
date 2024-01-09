@@ -1,5 +1,6 @@
 package com.monopolynew.service;
 
+import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
@@ -32,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static com.monopolynew.util.Utils.requireNotNullArgs;
+import static com.monopolynew.util.CommonUtils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component
@@ -50,6 +51,10 @@ public class GameService {
     private final DealManager dealManager;
 
     private final ScheduledExecutorService scheduler;
+
+    public UUID newGame(NewGameParamsDTO newGameParamsDTO) {
+        return gameRepository.createGame(newGameParamsDTO);
+    }
 
     public boolean isGameStarted() {
         return gameRepository.getGame().isInProgress();

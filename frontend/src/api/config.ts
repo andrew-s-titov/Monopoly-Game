@@ -4,12 +4,12 @@ import { getLoggedInUserId } from "../utils/auth";
 // export const BE_ENDPOINT = 'http://localhost:8080';
 export const BE_ENDPOINT = document.location.origin;
 
-export const getWebsocketUrl = () => {
+export const getGameWebsocketUrl = () => {
   const wsUri = getWebsocketEndpoint();
-  return `${wsUri}?user_id=${getLoggedInUserId()}`;
+  return `${wsUri}/game/${getLoggedInUserId()}`;
 }
 
 const getWebsocketEndpoint = () => {
   const host = BE_ENDPOINT.split('://')[1];
-  return `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}/ws`;
+  return `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}`;
 }

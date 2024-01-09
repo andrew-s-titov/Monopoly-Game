@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.monopolynew.util.Utils.requireNotNullArgs;
+import static com.monopolynew.util.CommonUtils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component

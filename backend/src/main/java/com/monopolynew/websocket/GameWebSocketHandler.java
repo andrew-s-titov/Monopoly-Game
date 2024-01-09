@@ -22,6 +22,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 
+import static com.monopolynew.config.WebSocketConfig.extractUserId;
+
 @RequiredArgsConstructor
 @Slf4j
 @Component
@@ -37,7 +39,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        var playerId = GameWsInterceptor.extractUserId(session);
+        var playerId = extractUserId(session);
 
         GameUser user = userRepository.getUser(playerId);
 
@@ -66,7 +68,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        var playerId = GameWsInterceptor.extractUserId(session);
+        var playerId = extractUserId(session);
         userSessionRepository.removeUserSession(playerId);
         var game = gameRepository.getGame();
         // if a game isn't in progress - send an event for other players about disconnection
@@ -83,14 +85,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        var userId = GameWsInterceptor.extractUserId(session);
+        var userId = extractUserId(session);
         log.error("Websocket error, userId=" + userId, exception);
     }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
-        var playerId = GameWsInterceptor.extractUserId(session);
+        var playerId = extractUserId(session);
         var newMessage = ChatMessageEvent.builder()
                 .message(message.getPayload())
                 .playerId(playerId)

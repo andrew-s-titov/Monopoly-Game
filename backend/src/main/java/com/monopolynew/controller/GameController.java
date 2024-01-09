@@ -1,11 +1,14 @@
 package com.monopolynew.controller;
 
+import com.monopolynew.dto.CreateGameResponseDTO;
+import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class GameController {
 
     private final GameService gameService;
+
+    @PostMapping("/new")
+    public CreateGameResponseDTO newGame(@RequestBody NewGameParamsDTO newGameParamsDTO) {
+        return new CreateGameResponseDTO(gameService.newGame(newGameParamsDTO));
+    }
 
     @PostMapping
     public void start() {

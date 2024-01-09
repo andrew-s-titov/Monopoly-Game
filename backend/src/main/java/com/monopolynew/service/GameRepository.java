@@ -1,5 +1,6 @@
 package com.monopolynew.service;
 
+import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import org.springframework.stereotype.Component;
@@ -17,9 +18,9 @@ public class GameRepository {
         return this.game;
     }
 
-    public UUID createGame(int maxPlayers, boolean withTeleport) {
-        // TODO: implement for multi-game env
-        return UUID.randomUUID();
+    public UUID createGame(NewGameParamsDTO newGameParamsDTO) {
+        // TODO: implement map for multi-game setup
+        return game.getId();
     }
 
     public void removeGame(UUID gameId) {

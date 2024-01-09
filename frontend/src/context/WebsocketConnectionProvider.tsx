@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react";
 
-import { getWebsocketUrl } from "../api/config";
+import { getGameWebsocketUrl } from "../api/config";
 import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,
@@ -56,7 +56,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-      websocket.current = new WebSocket(getWebsocketUrl());
+      websocket.current = new WebSocket(getGameWebsocketUrl());
       const timeouts: ReturnType<typeof setTimeout>[] = [];
 
       const newTimeout = (action: () => void, delay: number) => timeouts.push(setTimeout(action, delay));
