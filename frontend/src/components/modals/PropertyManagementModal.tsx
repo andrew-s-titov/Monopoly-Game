@@ -63,7 +63,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="secondary"
               icon="pi pi-refresh icon"
               className="property-management-button"
-              onClick={() => redeem}
+              onClick={() => redeem()}
             />
           }
           {showMortgage &&
@@ -73,7 +73,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="danger"
               icon="pi pi-file-excel icon"
               className="property-management-button"
-              onClick={() => mortgage}
+              onClick={() => mortgage()}
             />
           }
           {showBuyHouse &&
@@ -83,7 +83,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="success"
               icon="pi pi-home icon"
               className="property-management-button"
-              onClick={() => onBuyHouse}
+              onClick={() => onBuyHouse()}
             />
           }
           {showSellHouse &&
@@ -93,7 +93,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="warning"
               icon="pi pi-money-bill icon"
               className="property-management-button"
-              onClick={() => sellHouse}
+              onClick={() => sellHouse()}
             />
           }
         </div>
