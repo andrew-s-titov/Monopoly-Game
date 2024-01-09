@@ -309,8 +309,11 @@ div::-webkit-scrollbar-thumb {
 .property-management-buttons-container {
     display: flex;
     flex-direction: column;
-    width: 25vh;
     align-self: center;
+}
+
+.property-management-buttons-container > button {
+    width: 25vh;
 }
 
 .property-management-buttons-container > button > .p-button-label {

@@ -18,7 +18,7 @@ export interface PropertyStaticData {
   housePrice?: number,
 }
 
-export interface PropertyManagementOptions {
+export interface PropertyManagementActions {
   showMortgage: boolean,
   showRedeem: boolean,
   showBuyHouse: boolean,

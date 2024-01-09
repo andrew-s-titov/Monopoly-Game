@@ -14,31 +14,29 @@ interface IPropertyManagementProps {
 const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
 
   const { closePopUpModal } = usePopUpModalContext();
-  const { getManagement } = usePropertyActions();
   const { put } = useQuery();
   const { addHousePurchase } = useGameState();
-
-  const { canManage, managementOptions } = getManagement(fieldIndex);
+  const { canManage, availableActions } = usePropertyActions(fieldIndex);
   const {
     showSellHouse,
     showRedeem,
     showBuyHouse,
     showMortgage
-  } = managementOptions;
+  } = availableActions;
 
-  const { execute: redeem } = put({
+  const { execute: redeem, isLoading: isRedeemLoading } = put({
     url: `${BE_ENDPOINT}/game/field/${fieldIndex}/redeem`,
     onSuccess: closePopUpModal,
   });
-  const { execute: sellHouse } = put({
+  const { execute: sellHouse, isLoading: isSellLoading } = put({
     url: `${BE_ENDPOINT}/game/field/${fieldIndex}/sell_house`,
     onSuccess: closePopUpModal,
   });
-  const { execute: mortgage } = put({
+  const { execute: mortgage, isLoading: isMortgageLoading } = put({
     url: `${BE_ENDPOINT}/game/field/${fieldIndex}/mortgage`,
     onSuccess: closePopUpModal,
   });
-  const { execute: onBuyHouse } = put({
+  const { execute: onBuyHouse, isLoading: isBuyLoading } = put({
     url: `${BE_ENDPOINT}/game/field/${fieldIndex}/buy_house`,
     onSuccess: () => {
       addHousePurchase(PROPERTY_FIELDS_DATA[fieldIndex].group);
@@ -63,6 +61,8 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="secondary"
               icon="pi pi-refresh icon"
               className="property-management-button"
+              loading={isRedeemLoading}
+              loadingIcon="pi pi-spin pi-box icon"
               onClick={() => redeem()}
             />
           }
@@ -73,6 +73,8 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="danger"
               icon="pi pi-file-excel icon"
               className="property-management-button"
+              loading={isMortgageLoading}
+              loadingIcon="pi pi-spin pi-box icon"
               onClick={() => mortgage()}
             />
           }
@@ -83,6 +85,8 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="success"
               icon="pi pi-home icon"
               className="property-management-button"
+              loading={isBuyLoading}
+              loadingIcon="pi pi-spin pi-box icon"
               onClick={() => onBuyHouse()}
             />
           }
@@ -93,6 +97,8 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               severity="warning"
               icon="pi pi-money-bill icon"
               className="property-management-button"
+              loading={isSellLoading}
+              loadingIcon="pi pi-spin pi-box icon"
               onClick={() => sellHouse()}
             />
           }
