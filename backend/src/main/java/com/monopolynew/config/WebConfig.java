@@ -13,9 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "https://*.ngrok.io",
                         "https://*.ngrok-free.app",
-                        "http://localhost:3000",
-                        "*"
+                        "http://localhost:3000"
                 )
+                .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }

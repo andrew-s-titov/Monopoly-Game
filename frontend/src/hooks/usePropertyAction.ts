@@ -1,4 +1,4 @@
-import { PlayerState, PropertyManagementOptions } from "../types/interfaces";
+import { GameState, PlayerState, PropertyManagementActions } from "../types/interfaces";
 import { UPropertyIndex } from "../types/unions";
 import { useGameState } from "../context/GameStateProvider";
 import { PROPERTY_FIELDS_DATA } from "../constants";
@@ -6,85 +6,97 @@ import { PROPERTY_GROUPS } from "../constants/mapData";
 import { MAX_HOUSES } from "../constants/rules";
 import { getLoggedInUserId } from "../utils/auth";
 import { isTurnStartStage, isStageAllowsPropertyManagement } from "../utils/property";
+import { useMemo } from "react";
+import { PropertyGroup } from "../types/enums";
 
-const defaultPropertyActions: PropertyManagementOptions = {
+const defaultPropertyActions: PropertyManagementActions = {
   showMortgage: false,
   showRedeem: false,
   showBuyHouse: false,
   showSellHouse: false,
 }
 
+const defineAvailableActions = (
+  fieldIndex: UPropertyIndex,
+  loggedInUserId: string,
+  gameState: GameState,
+  housePurchases: PropertyGroup[],
+): PropertyManagementActions => {
+  const managementActions = {
+    ...defaultPropertyActions
+  };
+
+  const propertyState = gameState.propertyStates[fieldIndex];
+  const housesAmount: number = propertyState.houses ?? 0;
+  const gameStage = gameState.stage;
+  const ownerState: PlayerState = gameState.playerStates[loggedInUserId];
+  const propertyPrice = PROPERTY_FIELDS_DATA[fieldIndex].price;
+  if (propertyState.isMortgaged && propertyPrice && ownerState.money >= propertyPrice * 0.55) {
+    managementActions.showRedeem = true;
+  }
+
+  const propertyGroup = PROPERTY_FIELDS_DATA[fieldIndex].group;
+  const housePrice = PROPERTY_FIELDS_DATA[fieldIndex].housePrice;
+  const groupFieldsStates = PROPERTY_GROUPS[propertyGroup].map(
+    index => gameState.propertyStates[index]
+  );
+
+  if (!propertyState.isMortgaged &&
+    (!housePrice || groupFieldsStates.every(state => !state.houses))) {
+    managementActions.showMortgage = true;
+  }
+
+  if (housePrice) {
+    if (housesAmount && groupFieldsStates.every(state => state.houses <= housesAmount)) {
+      managementActions.showSellHouse = true;
+    }
+
+    if (!propertyState.isMortgaged
+      && isTurnStartStage(gameStage)
+      && housesAmount < MAX_HOUSES
+      && !housePurchases.includes(propertyGroup)
+      && groupFieldsStates
+        .filter(state => state !== propertyState)
+        .every(state => !state.isMortgaged
+          && state.ownerId && state.ownerId === loggedInUserId
+          && state.houses >= housesAmount)
+      && ownerState.money >= housePrice) {
+      managementActions.showBuyHouse = true;
+    }
+  }
+
+  return managementActions;
+}
+
 /**
  * should be used only inside GameStateProvider
  */
-const usePropertyActions = () => {
+const usePropertyActions = (fieldIndex: UPropertyIndex) => {
 
   const { gameState, housePurchases } = useGameState();
 
-  const getManagement = (fieldIndex: UPropertyIndex): {
-    canManage: boolean,
-    managementOptions: PropertyManagementOptions
-  } => {
-    const managementOptions = {
-      ...defaultPropertyActions
-    };
+  const loggedInUserId = useMemo(getLoggedInUserId, []);
+  const currentPlayerId = gameState.currentUserId;
+  const propertyOwner = gameState.propertyStates[fieldIndex].ownerId;
+  const gameStage = gameState.stage;
 
-    const loggedInUserId = getLoggedInUserId();
-    const currentPlayerId = gameState.currentUserId;
-    const currentPropertyState = gameState.propertyStates[fieldIndex];
-    const currentPropertyHouses: number = currentPropertyState.houses ?? 0;
-    const currentGameStage = gameState.stage;
+  const canManage = useMemo(() => loggedInUserId === currentPlayerId
+      && loggedInUserId === propertyOwner
+      && isStageAllowsPropertyManagement(gameStage),
+    [
+      currentPlayerId,
+      propertyOwner,
+      gameStage,
+    ]
+  );
 
-    if (loggedInUserId !== currentPlayerId
-      || loggedInUserId !== currentPropertyState.ownerId
-      || !isStageAllowsPropertyManagement(currentGameStage)) {
-      return { canManage: false, managementOptions };
-    }
+  const availableActions = useMemo(
+    () => canManage
+      ? defineAvailableActions(fieldIndex, loggedInUserId, gameState, housePurchases)
+      : defaultPropertyActions,
+    [canManage]);
 
-    const ownerState: PlayerState = gameState.playerStates[loggedInUserId];
-    const propertyPrice = PROPERTY_FIELDS_DATA[fieldIndex].price;
-    if (currentPropertyState.isMortgaged && propertyPrice && ownerState.money >= propertyPrice * 0.55) {
-      managementOptions.showRedeem = true;
-    }
-
-    const propertyGroup = PROPERTY_FIELDS_DATA[fieldIndex].group;
-    const housePrice = PROPERTY_FIELDS_DATA[fieldIndex].housePrice;
-    const groupFieldsStates = PROPERTY_GROUPS[propertyGroup].map(
-      index => gameState.propertyStates[index]
-    );
-
-    if (!currentPropertyState.isMortgaged &&
-      (!housePrice || groupFieldsStates.every(state => !state.houses))) {
-      managementOptions.showMortgage = true;
-    }
-
-    if (housePrice) {
-      if (currentPropertyHouses && groupFieldsStates.every(state => state.houses <= currentPropertyHouses)) {
-        managementOptions.showSellHouse = true;
-      }
-
-      if (!currentPropertyState.isMortgaged
-        && isTurnStartStage(currentGameStage)
-        && currentPropertyHouses < MAX_HOUSES
-        && !housePurchases.includes(propertyGroup)
-        && groupFieldsStates
-          .filter(state => state !== currentPropertyState)
-          .every(state => !state.isMortgaged
-            && state.ownerId && state.ownerId === loggedInUserId
-            && state.houses >= currentPropertyHouses)
-        && ownerState.money >= housePrice) {
-        managementOptions.showBuyHouse = true;
-      }
-    }
-
-    return {
-      canManage: Object.values(managementOptions)
-        .reduce((acc, condition) => acc || condition, false),
-      managementOptions
-    };
-  }
-
-  return { getManagement };
+  return { canManage, availableActions };
 }
 
 export default usePropertyActions;
