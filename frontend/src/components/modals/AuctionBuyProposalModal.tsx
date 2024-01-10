@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
-import { BE_ENDPOINT } from "../../api/config";
+import { BE_ENDPOINT } from "../../config/api";
 import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
 import { useEventModalContext } from "../../context/EventModalProvider";

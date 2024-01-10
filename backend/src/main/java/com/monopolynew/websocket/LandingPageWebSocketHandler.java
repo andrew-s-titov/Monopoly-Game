@@ -29,7 +29,8 @@ public class LandingPageWebSocketHandler extends AbstractWebSocketHandler {
     @Override
     public void afterConnectionClosed(@NonNull WebSocketSession session, CloseStatus status) throws Exception {
         landingPageWsSessionRepository.removeUserSession(session);
-        if (!status.equals(CloseStatus.NORMAL) && !status.equals(CloseStatus.GOING_AWAY)) {
+        int statusCode = status.getCode();
+        if (statusCode != CloseStatus.NORMAL.getCode() && statusCode != CloseStatus.GOING_AWAY.getCode()) {
             log.warn("Not a normal websocket close: status=({}), sessionId={}, attributes=({})",
                     status, session.getId(), session.getAttributes());
         }

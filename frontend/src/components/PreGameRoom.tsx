@@ -3,7 +3,7 @@ import { useGameState } from "../context/GameStateProvider";
 
 import GameRoomPlayer from "./GameRoomPlayer";
 import useQuery from "../hooks/useQuery";
-import { BE_ENDPOINT } from "../api/config";
+import { BE_ENDPOINT } from "../config/api";
 import StartPageButton from "./StartPageButton";
 
 const PreGameRoom = () => {

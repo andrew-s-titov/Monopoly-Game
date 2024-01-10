@@ -13,7 +13,7 @@ import { useMessageContext } from '../../context/MessageProvider';
 import PropertyOfferView from '../PropertyOfferView';
 import useQuery from "../../hooks/useQuery";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
-import { BE_ENDPOINT } from "../../api/config";
+import { BE_ENDPOINT } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 
 interface IOfferDealModalProps {

@@ -3,13 +3,13 @@ import { ChangeEvent, KeyboardEvent, memo, useRef, useState } from "react";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { InputText } from "primereact/inputtext";
 
-import StartPageBackground from "./StartPageBackground";
-import StartPageButton from "./StartPageButton";
+import StartPageBackground from "../components/StartPageBackground";
+import StartPageButton from "../components/StartPageButton";
 import { useAuthContext } from "../context/AuthContextProvider";
-import { AVATAR_NAMES, getAvatarUrl, getRandomAvatar } from "../utils/playerAvatar";
-import PlayerAvatar from "./player/PlayerAvatar";
+import { AVATAR_NAMES, getRandomAvatar } from "../utils/playerAvatar";
+import PlayerAvatar from "../components/player/PlayerAvatar";
 
-const LoginForm = () => {
+const LoginPage = () => {
 
   const avatarOverlay = useRef<OverlayPanel>(null);
   const [avatar, setAvatar] = useState(getRandomAvatar());
@@ -73,7 +73,7 @@ const LoginForm = () => {
         onKeyDown={onEnterKeyDown}
       />
       <StartPageButton
-        label='Join'
+        label='Create user'
         icon="pi-user"
         isLoading={isLoginInProgress}
         isDisabled={isInputInvalid}
@@ -83,4 +83,4 @@ const LoginForm = () => {
   );
 }
 
-export default memo(LoginForm);
+export default memo(LoginPage);

@@ -3,7 +3,7 @@ import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { isAuthenticated, setAuthData } from "../utils/auth";
 import useQuery from "../hooks/useQuery";
 import { LoginData, LoginResponse } from "../types/interfaces";
-import { BE_ENDPOINT } from "../api/config";
+import { BE_ENDPOINT } from "../config/api";
 
 interface IAuthContext {
   isLoggedIn: boolean;

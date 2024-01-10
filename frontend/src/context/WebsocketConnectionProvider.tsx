@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react";
 
-import { getGameWebsocketUrl } from "../api/config";
+import { getGameWebsocketUrl } from "../config/api";
 import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,

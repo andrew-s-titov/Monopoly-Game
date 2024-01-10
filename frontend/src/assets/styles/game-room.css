@@ -1,6 +1,8 @@
 :root {
-    --gr-player-container-width: calc(100vw * 0.15);
-    --gr-player-container-side-margin: calc(100vw * 0.05);
+    --gr-player-width: calc(100vw * 0.15);
+    --gr-player-side-margin: calc(100vw * 0.05);
+
+    --gr-overview-player-width: calc(100vw * 0.10);
 }
 
 .gr-players-container {
@@ -8,31 +10,60 @@
     flex-direction: row;
 }
 
+.gr-overview-player {
+    width: var(--gr-overview-player-width);
+}
+
+.gr-overview-players-column {
+    min-width: calc(var(--gr-overview-player-width) * 5);
+}
+
 .gr-player {
-    width: var(--gr-player-container-width);
-    margin-right: var(--gr-player-container-side-margin);
-    margin-left: var(--gr-player-container-side-margin);
+    width: var(--gr-player-width);
+    margin-right: var(--gr-player-side-margin);
+    margin-left: var(--gr-player-side-margin);
+}
+
+.gr-player, .gr-overview-player {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.gr-player-image {
-    height: var(--gr-player-container-width);
-    width: var(--gr-player-container-width);
+.gr-overview-player-avatar {
+    height: var(--gr-overview-player-width);
+    width: var(--gr-overview-player-width);
+    background-size: var(--gr-overview-player-width);
+}
+
+.gr-player-avatar {
+    height: var(--gr-player-width);
+    width: var(--gr-player-width);
+    background-size: var(--gr-player-width);
+}
+
+.gr-player-avatar, .gr-overview-player-avatar {
     background-repeat: no-repeat no-repeat;
     background-position: center center;
-    background-size: var(--gr-player-container-width);
 }
 
 .gr-player-name {
-    font-size: 2.5vh;
+    font-size: 1.5vw;
+    padding: 1vh 0 1vh 0;
+}
+
+.gr-overview-player-name {
+    font-size: 1.3vw;
+    padding: 0.5vh 0 0.5vh 0;
+}
+
+.gr-player-name, .gr-overview-player-name {
+    text-align: center;
     font-weight: 500;
     width: 100%;
-    background: rgba(255,255,255, 0.4);
+    background: rgba(255, 255, 255, 0.4);
     border-radius: 10vh;
-    padding: 1vh 0 1vh 0;
 }
 
 .start-game-button {

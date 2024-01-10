@@ -55,9 +55,14 @@ export interface PayCommandEvent {
 }
 
 export interface OfferProposalEvent {
-  initiatorName: string;
+  initiatorName: string,
   addresseeFields: UPropertyIndex[],
   initiatorFields: UPropertyIndex[],
-  addresseeMoney: number;
-  initiatorMoney: number;
+  addresseeMoney: number,
+  initiatorMoney: number,
+}
+
+export interface GameRoomParticipant {
+  name: string,
+  avatar: string,
 }

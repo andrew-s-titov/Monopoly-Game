@@ -6,7 +6,7 @@ import { UPropertyIndex } from "../../types/unions";
 import PropertyOfferView from "../PropertyOfferView";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import useQuery from "../../hooks/useQuery";
-import { BE_ENDPOINT } from "../../api/config";
+import { BE_ENDPOINT } from "../../config/api";
 import { ModalId } from "./index";
 
 interface IOfferProposalModalProps {

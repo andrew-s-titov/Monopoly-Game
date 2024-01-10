@@ -5,7 +5,7 @@ import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { Button } from "primereact/button";
 import { useGameState } from "../../context/GameStateProvider";
 import { PROPERTY_FIELDS_DATA } from "../../constants";
-import { BE_ENDPOINT } from "../../api/config";
+import { BE_ENDPOINT } from "../../config/api";
 
 interface IPropertyManagementProps {
   fieldIndex: UPropertyIndex;

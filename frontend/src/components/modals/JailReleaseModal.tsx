@@ -3,7 +3,7 @@ import { memo, useMemo } from "react";
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
-import { BE_ENDPOINT } from "../../api/config";
+import { BE_ENDPOINT } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";

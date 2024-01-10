@@ -4,16 +4,17 @@ import PlayerAvatar from "./player/PlayerAvatar";
 interface IGameRoomPlayerProps {
   name: string,
   avatar: string,
+  isOverview?: boolean,
 }
 
-const GameRoomPlayer = ({ name, avatar }: IGameRoomPlayerProps) => {
+const GameRoomPlayer = ({ name, avatar, isOverview = false }: IGameRoomPlayerProps) => {
   return (
-    <div className="gr-player">
+    <div className={isOverview ? 'gr-overview-player' : 'gr-player'}>
       <PlayerAvatar
         avatarName={avatar}
-        className="avatar-in-room"
+        className={isOverview ? 'gr-overview-player-avatar' : 'gr-player-avatar'}
       />
-      <div className="gr-player-name">{name}</div>
+      <div className={isOverview ? 'gr-overview-player-name' : 'gr-player-name'}>{name}</div>
     </div>
   );
 }

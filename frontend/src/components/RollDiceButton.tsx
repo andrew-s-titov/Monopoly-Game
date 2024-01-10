@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 import useQuery from "../hooks/useQuery";
-import { BE_ENDPOINT } from "../api/config";
+import { BE_ENDPOINT } from "../config/api";
 import { Button } from "primereact/button";
 import { useEventModalContext } from "../context/EventModalProvider";
 import { ModalId } from "./modals";
