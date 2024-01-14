@@ -1,21 +1,37 @@
 :root {
-    --gr-player-width: calc(100vw * 0.15);
-    --gr-player-side-margin: calc(100vw * 0.05);
+    --gr-player-width: 15vw;
+    --gr-player-side-margin: 5vw;
 
-    --gr-overview-player-width: calc(100vw * 0.10);
+    --gr-overview-player-width: 6vh;
 }
 
 .gr-players-container {
+    background-color: transparent;
     display: flex;
     flex-direction: row;
 }
 
 .gr-overview-player {
     width: var(--gr-overview-player-width);
+    margin: 0 4vh 0 4vh;
 }
 
 .gr-overview-players-column {
-    min-width: calc(var(--gr-overview-player-width) * 5);
+    min-width: 70vh;
+    padding: 0;
+}
+
+.gr-overview-table {
+    max-width: 90vw;
+}
+
+.gr-overview-row {
+    height: 10vh;
+    padding: 0 1vh 0 1vh;
+}
+
+.gr-overview-row, .gr-overview-players-column {
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .gr-player {
@@ -54,8 +70,7 @@
 }
 
 .gr-overview-player-name {
-    font-size: 1.3vw;
-    padding: 0.5vh 0 0.5vh 0;
+    font-size: 2vh;
 }
 
 .gr-player-name, .gr-overview-player-name {
@@ -68,4 +83,31 @@
 
 .start-game-button {
     margin-top: 10vh;
+}
+
+.join-button {
+    margin-left: 5vh;
+    background-color: rgba(150, 150, 150, 0.4);
+    text-shadow: 0.3vh 0.3vh 0.3vh rgba(0, 0, 0, 0.5);
+    color: white;
+    min-width: 12vh;
+    height: 5vh;
+    justify-content: center;
+}
+
+.join-button:hover {
+    background-color: rgba(150, 150, 150, 0.7);
+}
+
+.join-button:active {
+    background-color: rgba(150, 150, 150);
+}
+
+.join-button .p-button-icon-left {
+    margin-right: 1vh !important;
+    text-shadow: inherit;
+}
+
+.join-button .p-button-label {
+    flex: none !important;
 }

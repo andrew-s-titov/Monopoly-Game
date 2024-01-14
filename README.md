@@ -43,4 +43,4 @@ To launch application to play via internet on separate computers do the followin
 - - -
 ### _Special thanks:_
 - _Denis Vasilkov_ - for game map and property cards images
-- _Freepik from Flaticon_ - for player avatar images (<a href="https://www.flaticon.com/free-icons/modern" title="modern icons">Modern icons created by Freepik - Flaticon</a>)
+- _Freepik from Flaticon_ - for player avatars and flags images (<a href="https://www.flaticon.com/free-icons/modern" title="modern icons">Modern icons created by Freepik - Flaticon</a>)

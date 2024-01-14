@@ -34,15 +34,24 @@
 .non-game-button {
     margin-top: 10vh;
     background-color: rgba(255, 255, 255, 0.4);
-    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: 0.3vh 0.3vh 0.3vh rgba(0, 0, 0, 0.5);
     color: white;
     width: 30vh;
     height: 7vh;
     justify-content: center;
 }
 
+.non-game-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.non-game-button:active {
+    background-color: rgba(255, 255, 255, 0);
+}
+
 .non-game-button .p-button-icon-left {
     margin-right: 2vh !important;
+    text-shadow: inherit;
 }
 
 .non-game-button .p-button-label {
@@ -54,13 +63,56 @@
     z-index: -10;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: 100vw;
+    height: 100vh;
     background-repeat: no-repeat no-repeat;
     background-position: center center;
     background-image: url('../images/start-background.jpg') !important;
+}
+
+.start-page-content {
+    height: 92vh;
+}
+
+.page-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 8vh;
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+}
+
+.header-avatar {
+    height: 6vh;
+    width: 6vh;
+    background-size: 6vh;
+    margin: 1vh 1vh 1vh auto;
+}
+
+.header-buttons {
+    margin-left: 6vh;
+}
+
+.header-buttons > a:link, .header-buttons > a:visited, .header-buttons > a:hover, .header-buttons > a:active {
+    text-decoration: none;
+    font-size: 2.5vh;
+    font-family: var(--font-family);
+    font-weight: 500;
+    margin-right: 2vh;
+}
+
+.header-buttons > a:link, .header-buttons > a:visited {
+    color: white;
+}
+
+.header-buttons > a:hover {
+    color: var(--gray-500);
+}
+
+.header-buttons > a:active {
+    color: var(--gray-900);
 }

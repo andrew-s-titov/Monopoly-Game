@@ -1,5 +1,5 @@
-import LoginForm from "./LoginPage";
 import { useAuthContext } from "../context/AuthContextProvider";
+import LoginPage from "./LoginPage";
 import LandingPage from "./LandingPage";
 
 const StartPage = () => {
@@ -9,7 +9,7 @@ const StartPage = () => {
   return (
     isLoggedIn
       ? <LandingPage/>
-      : <LoginForm/>
+      : <LoginPage/>
   );
 }
 

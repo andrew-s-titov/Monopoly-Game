@@ -8,6 +8,7 @@ import StartPageButton from "../components/StartPageButton";
 import { useAuthContext } from "../context/AuthContextProvider";
 import { AVATAR_NAMES, getRandomAvatar } from "../utils/playerAvatar";
 import PlayerAvatar from "../components/player/PlayerAvatar";
+import StartPageCenteredContent from "../components/StartPageCenteredContent";
 
 const LoginPage = () => {
 
@@ -35,13 +36,30 @@ const LoginPage = () => {
   };
 
   return (
-    <StartPageBackground>
-      <PlayerAvatar
-        avatarName={avatar}
-        className="avatar-in-login"
-        onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
-        withPointer
-      />
+    <StartPageBackground withHeader={false}>
+      <StartPageCenteredContent>
+        <PlayerAvatar
+          avatarName={avatar}
+          className="avatar-in-login"
+          onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
+          withPointer
+        />
+        <InputText
+          autoFocus
+          value={nameInputValue}
+          onChange={onInputChange}
+          className="player-name-input"
+          placeholder='Enter your nickname'
+          onKeyDown={onEnterKeyDown}
+        />
+        <StartPageButton
+          label='Create user'
+          icon="pi-user"
+          isLoading={isLoginInProgress}
+          isDisabled={isInputInvalid}
+          onClickHandler={onJoinClickHandler}
+        />
+      </StartPageCenteredContent>
       <OverlayPanel
         ref={avatarOverlay}
         dismissable
@@ -64,21 +82,6 @@ const LoginPage = () => {
           </div>
         }
       </OverlayPanel>
-      <InputText
-        autoFocus
-        value={nameInputValue}
-        onChange={onInputChange}
-        className="player-name-input"
-        placeholder='Enter your nickname'
-        onKeyDown={onEnterKeyDown}
-      />
-      <StartPageButton
-        label='Create user'
-        icon="pi-user"
-        isLoading={isLoginInProgress}
-        isDisabled={isInputInvalid}
-        onClickHandler={onJoinClickHandler}
-      />
     </StartPageBackground>
   );
 }

@@ -9,6 +9,7 @@ import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameMapRefresher;
 import com.monopolynew.service.GameRepository;
+import com.monopolynew.service.GameRoomService;
 import com.monopolynew.user.GameUser;
 import com.monopolynew.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private final GameMapRefresher gameMapRefresher;
     private final GameEventSender gameEventSender;
     private final GameEventGenerator gameEventGenerator;
+    private final GameRoomService gameRoomService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -64,6 +66,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         userSessionRepository.addUserSession(playerId, session);
         game.addPlayer(Player.fromUser(user));
         gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
+        gameRoomService.refreshGameRooms();
     }
 
     @Override
@@ -74,12 +77,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
             game.removePlayer(playerId);
+            gameRoomService.refreshGameRooms();
             gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
         // if a game is in progress - do not remove from game to let the player reconnect with another session
-        if (!status.equals(CloseStatus.NORMAL) && !status.equals(CloseStatus.GOING_AWAY)) {
-            log.warn("Not a normal websocket close: userId={}, reason=({}), sessionId={}",
-                    playerId, status, session.getId());
+        int statusCode = status.getCode();
+        if (statusCode != CloseStatus.NORMAL.getCode() && statusCode != CloseStatus.GOING_AWAY.getCode()) {
+            log.warn("Not a normal websocket close: status=({}), sessionId={}, attributes=({})",
+                    status, session.getId(), session.getAttributes());
         }
     }
 
