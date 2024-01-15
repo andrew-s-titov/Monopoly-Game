@@ -77,8 +77,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         // if a game isn't in progress - send an event for other players about disconnection
         if (!game.isInProgress()) {
             game.removePlayer(playerId);
+            if (game.getPlayers().isEmpty()) {
+                gameRepository.removeGame();
+            } else {
+                gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
+            }
             gameRoomService.refreshGameRooms();
-            gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
         }
         // if a game is in progress - do not remove from game to let the player reconnect with another session
         int statusCode = status.getCode();

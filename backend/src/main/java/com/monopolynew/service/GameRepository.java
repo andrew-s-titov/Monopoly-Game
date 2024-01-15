@@ -2,38 +2,43 @@ package com.monopolynew.service;
 
 import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.game.Game;
-import com.monopolynew.game.Player;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
 public class GameRepository {
 
-    private Game game = new Game(false);
+    private final Map<UUID, Game> games = new HashMap<>();
 
     public Game getGame() {
         // TODO get game by its ID
-        return this.game;
+        return getOrCreateGame();
     }
 
     public UUID createGame(NewGameParamsDTO newGameParamsDTO) {
         // TODO: implement map for multi-game setup
-        return game.getId();
+        return getOrCreateGame().getId();
     }
 
-    public void removeGame(UUID gameId) {
+    public void removeGame() {
+        games.clear();
         // TODO: implement for multi-game env
     }
 
-    public void endGame() {
-        // temporary decision before multiple game rooms
-        Collection<Player> players = this.game.getPlayers();
-        this.game = new Game(false);
-        players.forEach(player -> {
-            player.resetState();
-            game.addPlayer(player);
-        });
+    public Collection<Game> allGames() {
+        return games.values();
+    }
+
+    // temporary thing for single-room
+    private Game getOrCreateGame() {
+        if (games.values().isEmpty()) {
+            var newGame = new Game(false);
+            games.put(newGame.getId(), newGame);
+        }
+        return games.values().iterator().next();
     }
 }

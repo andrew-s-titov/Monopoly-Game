@@ -294,7 +294,7 @@ public class GameLogicExecutor {
     }
 
     private void finishGame(Game game) {
-        gameRepository.endGame();
+        gameRepository.removeGame();
         // force to disconnect players?
     }
 }

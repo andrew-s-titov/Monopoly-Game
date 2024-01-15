@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.Collection;
 import java.util.Map;
 
 import static com.monopolynew.util.WebsocketUtils.sendEvent;
@@ -31,12 +32,17 @@ public class GameRoomService {
     }
 
     private AvailableGamesEvent event() {
-        Game game = gameRepository.getGame();
-        return new AvailableGamesEvent(Map.of(
-                game.getId(),
-                game.getPlayers().stream()
-                        .map(player -> new GameRoomParticipant(player.getName(), player.getAvatar()))
-                        .toList()
-        ));
+        Collection<Game> games = gameRepository.allGames();
+        if (games.isEmpty()) {
+            return new AvailableGamesEvent(Map.of());
+        } else {
+            var game = games.iterator().next();
+            return new AvailableGamesEvent(Map.of(
+                    game.getId(),
+                    game.getPlayers().stream()
+                            .map(player -> new GameRoomParticipant(player.getName(), player.getAvatar()))
+                            .toList()
+            ));
+        }
     }
 }
