@@ -23,12 +23,12 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 
+import static com.monopolynew.config.WebSocketConfig.extractGameId;
 import static com.monopolynew.config.WebSocketConfig.extractUserId;
 
 @RequiredArgsConstructor
 @Slf4j
 @Component
-// TODO: define path as '/{gameId} to choose game, refactor session repo as game<->session map
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
     private final GamePlayerWsSessionRepository userSessionRepository;
@@ -42,45 +42,47 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         var playerId = extractUserId(session);
+        var gameId = extractGameId(session);
 
         GameUser user = userRepository.getUser(playerId);
 
-        Game game = gameRepository.getGame();
+        Game game = gameRepository.findGame(gameId);
         if (game.isInProgress()) {
             if (game.playerExists(playerId)) {
-                userSessionRepository.addUserSession(playerId, session);
+                userSessionRepository.addUserSession(gameId, playerId, session);
                 gameMapRefresher.restoreGameStateForPlayer(game, playerId);
             } else {
-                gameEventSender.sendToPlayer(playerId, new ConnectionErrorEvent("Game in progress"));
+                gameEventSender.sendToPlayer(gameId, playerId, new ConnectionErrorEvent("Game in progress"));
             }
             return;
         }
 
-        var allActiveSessions = userSessionRepository.getAllSessions();
+        var allActiveSessions = userSessionRepository.getAllSessions(gameId);
         if (CollectionUtils.isNotEmpty(allActiveSessions) && allActiveSessions.size() >= Rules.MAX_PLAYERS) {
-            gameEventSender.sendToPlayer(playerId,
+            gameEventSender.sendToPlayer(gameId, playerId,
                     new ConnectionErrorEvent("Only " + Rules.MAX_PLAYERS + " are allowed to play"));
             return;
         }
 
-        userSessionRepository.addUserSession(playerId, session);
+        userSessionRepository.addUserSession(gameId, playerId, session);
         game.addPlayer(Player.fromUser(user));
-        gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
+        gameEventSender.sendToAllPlayers(gameId, gameEventGenerator.gameRoomEvent(game));
         gameRoomService.refreshGameRooms();
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         var playerId = extractUserId(session);
-        userSessionRepository.removeUserSession(playerId);
-        var game = gameRepository.getGame();
+        var gameId = extractGameId(session);
+        userSessionRepository.removeUserSession(gameId, playerId);
+        var game = gameRepository.findGame(gameId);
         // if a game isn't in progress - send an event for other players about disconnection
-        if (!game.isInProgress()) {
+        if (game != null && !game.isInProgress()) {
             game.removePlayer(playerId);
             if (game.getPlayers().isEmpty()) {
-                gameRepository.removeGame();
+                gameRepository.removeGame(gameId);
             } else {
-                gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
+                gameEventSender.sendToAllPlayers(gameId, gameEventGenerator.gameRoomEvent(game));
             }
             gameRoomService.refreshGameRooms();
         }
@@ -102,10 +104,11 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
         var playerId = extractUserId(session);
+        var gameId = extractGameId(session);
         var newMessage = ChatMessageEvent.builder()
                 .message(message.getPayload())
                 .playerId(playerId)
                 .build();
-        gameEventSender.sendToAllPlayers(newMessage);
+        gameEventSender.sendToAllPlayers(gameId, newMessage);
     }
 }

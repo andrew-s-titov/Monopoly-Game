@@ -2,6 +2,7 @@ package com.monopolynew.service;
 
 import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.game.Game;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -14,31 +15,22 @@ public class GameRepository {
 
     private final Map<UUID, Game> games = new HashMap<>();
 
-    public Game getGame() {
-        // TODO get game by its ID
-        return getOrCreateGame();
+    public Game findGame(@NonNull UUID gameId) {
+        return games.get(gameId);
     }
 
     public UUID createGame(NewGameParamsDTO newGameParamsDTO) {
-        // TODO: implement map for multi-game setup
-        return getOrCreateGame().getId();
+        var newGame = new Game(newGameParamsDTO.isWithTeleport());
+        UUID gameId = newGame.getId();
+        games.put(gameId, newGame);
+        return gameId;
     }
 
-    public void removeGame() {
-        games.clear();
-        // TODO: implement for multi-game env
+    public void removeGame(@NonNull UUID gameId) {
+        games.remove(gameId);
     }
 
     public Collection<Game> allGames() {
         return games.values();
-    }
-
-    // temporary thing for single-room
-    private Game getOrCreateGame() {
-        if (games.values().isEmpty()) {
-            var newGame = new Game(false);
-            games.put(newGame.getId(), newGame);
-        }
-        return games.values().iterator().next();
     }
 }

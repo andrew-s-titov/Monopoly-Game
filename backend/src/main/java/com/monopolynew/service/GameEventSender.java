@@ -18,12 +18,12 @@ public class GameEventSender {
     private final GamePlayerWsSessionRepository userSessionRepository;
     private final ObjectMapper objectMapper;
 
-    public void sendToAllPlayers(Object gameEvent) {
-        sendEvent(userSessionRepository.getAllSessions(), objectMapper, gameEvent);
+    public void sendToAllPlayers(UUID gameId, Object gameEvent) {
+        sendEvent(userSessionRepository.getAllSessions(gameId), objectMapper, gameEvent);
     }
 
-    public void sendToPlayer(UUID playerId, Object gameEvent) {
-        var wsSession = userSessionRepository.getUserSession(playerId);
+    public void sendToPlayer(UUID gameId, UUID playerId, Object gameEvent) {
+        var wsSession = userSessionRepository.getUserSession(gameId, playerId);
         if (wsSession == null) {
             log.warn("No session was found for playerId={} on this server", playerId);
             return;

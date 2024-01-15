@@ -13,6 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 import java.util.UUID;
 
+import static com.monopolynew.config.GlobalConfig.GAME_ID_KEY;
 import static com.monopolynew.config.GlobalConfig.USER_ID_HEADER;
 
 @Configuration
@@ -45,5 +46,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     public static UUID extractUserId(WebSocketSession session) {
         return (UUID) session.getAttributes().get(USER_ID_HEADER);
+    }
+
+    public static UUID extractGameId(WebSocketSession session) {
+        return (UUID) session.getAttributes().get(GAME_ID_KEY);
     }
 }

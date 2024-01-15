@@ -47,7 +47,7 @@ public class GameLogicExecutor {
     public void sendToJail(Game game, Player player) {
         player.resetDoublets();
         player.imprison();
-        changePlayerPosition(player, Rules.JAIL_FIELD_NUMBER);
+        changePlayerPosition(game.getId(), player, Rules.JAIL_FIELD_NUMBER);
     }
 
     public void sendBuyProposal(Game game, Player player, PurchasableField field) {
@@ -55,21 +55,22 @@ public class GameLogicExecutor {
         var buyProposal = new BuyProposal(buyerId, field);
         game.setBuyProposal(buyProposal);
         changeGameStage(game, GameStage.BUY_PROPOSAL);
-        gameEventSender.sendToPlayer(buyerId, gameEventGenerator.buyProposalEvent(buyProposal));
+        gameEventSender.sendToPlayer(game.getId(), buyerId, gameEventGenerator.buyProposalEvent(buyProposal));
     }
 
     public void doBuyField(Game game, PurchasableField field, int price, UUID buyerId) {
+        var gameId = game.getId();
         var buyer = game.getPlayerById(buyerId);
         field.newOwner(buyer);
         buyer.takeMoney(price);
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                 String.format("%s is buying %s for $%s", buyer.getName(), field.getName(), price)));
-        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
+        gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
 
         var processedOwnedFields = processOwnershipChange(game, field);
         List<GameFieldState> newFieldStates = gameFieldMapper.toStateList(processedOwnedFields);
-        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newFieldStates));
+        gameEventSender.sendToAllPlayers(gameId, new FieldStateChangeEvent(newFieldStates));
     }
 
     public int computePlayerAssets(Game game, Player player) {
@@ -82,6 +83,7 @@ public class GameLogicExecutor {
     }
 
     public void endTurn(Game game) {
+        var gameId = game.getId();
         if (!GameStage.ROLLED_FOR_JAIL.equals(game.getStage())) {
             // as there was no actual turn when turn ended after rolled for jail (tried luck but failed)
             processMortgage(game);
@@ -100,18 +102,19 @@ public class GameLogicExecutor {
         var nextPlayerId = nextPlayer.getId();
         if (nextPlayer.isImprisoned()) {
             changeGameStage(game, GameStage.JAIL_RELEASE_START);
-            gameEventSender.sendToAllPlayers(new NewPlayerTurn(nextPlayerId));
-            gameEventSender.sendToPlayer(nextPlayerId, new JailReleaseProcessEvent());
+            gameEventSender.sendToAllPlayers(gameId, new NewPlayerTurn(nextPlayerId));
+            gameEventSender.sendToPlayer(gameId, nextPlayerId, new JailReleaseProcessEvent());
         } else {
             changeGameStage(game, GameStage.TURN_START);
-            gameEventSender.sendToAllPlayers(new NewPlayerTurn(nextPlayerId));
-            gameEventSender.sendToPlayer(nextPlayerId, new TurnStartEvent());
+            gameEventSender.sendToAllPlayers(gameId, new NewPlayerTurn(nextPlayerId));
+            gameEventSender.sendToPlayer(gameId, nextPlayerId, new TurnStartEvent());
         }
     }
 
     public void bankruptPlayer(Game game, Player debtor) {
+        var gameId = game.getId();
         debtor.goBankrupt();
-        gameEventSender.sendToAllPlayers(new BankruptcyEvent(debtor.getId()));
+        gameEventSender.sendToAllPlayers(gameId, new BankruptcyEvent(debtor.getId()));
         var moneyStatesToSend = new ArrayList<MoneyState>();
         var playerFieldsLeft = getPlayerFields(game, debtor);
         var checkToPay = game.getCheckToPay();
@@ -139,10 +142,11 @@ public class GameLogicExecutor {
                 removeFieldHouses(field);
             });
             gameEventSender.sendToAllPlayers(
+                    gameId,
                     new FieldStateChangeEvent(gameFieldMapper.toStateList(playerFieldsLeft)));
         }
         if (CollectionUtils.isNotEmpty(moneyStatesToSend)) {
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStatesToSend));
+            gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(moneyStatesToSend));
         }
         if (!isGameFinished(game) && debtor.equals(game.getCurrentPlayer())) {
             endTurn(game);
@@ -151,7 +155,7 @@ public class GameLogicExecutor {
 
     public void changeGameStage(Game game, GameStage newGameStage) {
         game.setStage(newGameStage);
-        gameEventSender.sendToAllPlayers(new GameStageEvent(newGameStage));
+        gameEventSender.sendToAllPlayers(game.getId(), new GameStageEvent(newGameStage));
     }
 
     /**
@@ -232,23 +236,24 @@ public class GameLogicExecutor {
                 .toList();
         if (nonBankruptPlayers.size() == 1) {
             Player winner = nonBankruptPlayers.get(0);
-            gameEventSender.sendToAllPlayers(new GameOverEvent(winner.getName()));
+            gameEventSender.sendToAllPlayers(game.getId(), new GameOverEvent(winner.getName()));
             finishGame(game);
             return true;
         }
         return false;
     }
 
-    public void changePlayerPosition(Player player, int fieldIndex) {
+    public void changePlayerPosition(UUID gameId, Player player, int fieldIndex) {
         player.changePosition(fieldIndex);
-        gameEventSender.sendToAllPlayers(new ChipMoveEvent(player.getId(), fieldIndex));
+        gameEventSender.sendToAllPlayers(gameId, new ChipMoveEvent(player.getId(), fieldIndex));
     }
 
     private Player toNextPlayer(Game game) {
         Player nextPlayer = game.nextPlayer();
         if (nextPlayer.isBankrupt() || nextPlayer.isSkipping()) {
             if (nextPlayer.isSkipping()) {
-                gameEventSender.sendToAllPlayers(new ChatMessageEvent(nextPlayer.getName() + " is skipping a turn"));
+                gameEventSender.sendToAllPlayers(game.getId(),
+                        new ChatMessageEvent(nextPlayer.getName() + " is skipping a turn"));
                 nextPlayer.skip();
             }
             nextPlayer = toNextPlayer(game);
@@ -283,7 +288,7 @@ public class GameLogicExecutor {
                 .map(gameFieldMapper::toState)
                 .toList();
         if (CollectionUtils.isNotEmpty(changedFieldStates)) {
-            gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(changedFieldStates));
+            gameEventSender.sendToAllPlayers(game.getId(), new FieldStateChangeEvent(changedFieldStates));
         }
     }
 
@@ -294,7 +299,6 @@ public class GameLogicExecutor {
     }
 
     private void finishGame(Game game) {
-        gameRepository.removeGame();
-        // force to disconnect players?
+        gameRepository.removeGame(game.getId());
     }
 }

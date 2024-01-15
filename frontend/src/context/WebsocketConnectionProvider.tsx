@@ -42,6 +42,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
 
   const navigate = useNavigate();
   const {
+    gameId,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
   const { openEventModal, closeEventModal } = useEventModalContext();
@@ -57,7 +58,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-      websocket.current = new WebSocket(getGameWebsocketUrl());
+      websocket.current = new WebSocket(getGameWebsocketUrl(gameId));
       const timeouts: ReturnType<typeof setTimeout>[] = [];
 
       const newTimeout = (action: () => void, delay: number) => timeouts.push(setTimeout(action, delay));
@@ -183,7 +184,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 Choose a way out:
               </div>,
             content:
-              <JailReleaseModal />,
+              <JailReleaseModal/>,
             blurBackground: false,
           });
         },

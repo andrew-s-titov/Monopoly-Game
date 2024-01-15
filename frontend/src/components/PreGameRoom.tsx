@@ -3,17 +3,18 @@ import { useGameState } from "../context/GameStateProvider";
 
 import GameRoomPlayer from "./GameRoomPlayer";
 import useQuery from "../hooks/useQuery";
-import { BE_ENDPOINT } from "../config/api";
+import { gameBaseUrl } from "../config/api";
 import StartPageButton from "./StartPageButton";
 import StartPageCenteredContent from "./StartPageCenteredContent";
 
 const PreGameRoom = () => {
 
+  const { gameId } = useGameState();
   const { connectedPlayers } = useGameState();
   const { post } = useQuery();
   const { execute: startGame, isLoading } = post(
     {
-      url: `${BE_ENDPOINT}/game`
+      url: gameBaseUrl(gameId),
     });
 
   const canStartGame = connectedPlayers.length > 1;

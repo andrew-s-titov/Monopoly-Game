@@ -5,7 +5,7 @@ import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { Button } from "primereact/button";
 import { useGameState } from "../../context/GameStateProvider";
 import { PROPERTY_FIELDS_DATA } from "../../constants";
-import { BE_ENDPOINT } from "../../config/api";
+import { gameBaseUrl } from "../../config/api";
 
 interface IPropertyManagementProps {
   fieldIndex: UPropertyIndex;
@@ -13,6 +13,7 @@ interface IPropertyManagementProps {
 
 const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
 
+  const { gameId } = useGameState();
   const { closePopUpModal } = usePopUpModalContext();
   const { put } = useQuery();
   const { addHousePurchase } = useGameState();
@@ -25,19 +26,19 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
   } = availableActions;
 
   const { execute: redeem, isLoading: isRedeemLoading } = put({
-    url: `${BE_ENDPOINT}/game/field/${fieldIndex}/redeem`,
+    url: `${gameBaseUrl(gameId)}/field/${fieldIndex}/redeem`,
     onSuccess: closePopUpModal,
   });
   const { execute: sellHouse, isLoading: isSellLoading } = put({
-    url: `${BE_ENDPOINT}/game/field/${fieldIndex}/sell_house`,
+    url: `${gameBaseUrl(gameId)}/field/${fieldIndex}/sell_house`,
     onSuccess: closePopUpModal,
   });
   const { execute: mortgage, isLoading: isMortgageLoading } = put({
-    url: `${BE_ENDPOINT}/game/field/${fieldIndex}/mortgage`,
+    url: `${gameBaseUrl(gameId)}/field/${fieldIndex}/mortgage`,
     onSuccess: closePopUpModal,
   });
   const { execute: onBuyHouse, isLoading: isBuyLoading } = put({
-    url: `${BE_ENDPOINT}/game/field/${fieldIndex}/buy_house`,
+    url: `${gameBaseUrl(gameId)}/field/${fieldIndex}/buy_house`,
     onSuccess: () => {
       addHousePurchase(PROPERTY_FIELDS_DATA[fieldIndex].group);
       closePopUpModal();

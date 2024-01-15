@@ -7,6 +7,7 @@ import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
 import com.monopolynew.service.GameService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,48 +25,53 @@ public class GameController {
 
     private final GameService gameService;
 
-    @PostMapping("/new")
+    @PostMapping
     public CreateGameResponseDTO newGame(@RequestBody NewGameParamsDTO newGameParamsDTO) {
         return new CreateGameResponseDTO(gameService.newGame(newGameParamsDTO));
     }
 
-    @PostMapping
-    public void start() {
-        gameService.startGame();
+    @PostMapping("/{gameId}")
+    public void start(@PathVariable("gameId") UUID gameId) {
+        gameService.startGame(gameId);
     }
 
-    @PutMapping("/turn")
-    public void startTurn() {
-        gameService.makeUsualTurn();
+    @PutMapping("/{gameId}/turn")
+    public void startTurn(@PathVariable("gameId") UUID gameId) {
+        gameService.makeUsualTurn(gameId);
     }
 
-    @PutMapping("/buy")
-    public void processBuyProposal(@RequestParam("action") ProposalAction action) {
-        gameService.processBuyProposal(action);
+    @PutMapping("/{gameId}/buy")
+    public void processBuyProposal(@PathVariable("gameId") UUID gameId,
+                                   @RequestParam("action") ProposalAction action) {
+        gameService.processBuyProposal(gameId, action);
     }
 
-    @PutMapping("/pay")
-    public void processPayment() {
-        gameService.processPayment();
+    @PutMapping("/{gameId}/pay")
+    public void processPayment(@PathVariable("gameId") UUID gameId) {
+        gameService.processPayment(gameId);
     }
 
-    @PutMapping("/auction/buy")
-    public void processAuctionBuyProposal(@RequestParam("action") ProposalAction action) {
-        gameService.processAuctionBuyProposal(action);
+    @PutMapping("/{gameId}/auction/buy")
+    public void processAuctionBuyProposal(@PathVariable("gameId") UUID gameId,
+                                          @RequestParam("action") ProposalAction action) {
+        gameService.processAuctionBuyProposal(gameId, action);
     }
 
-    @PutMapping("/auction/raise")
-    public void processAuctionRaiseProposal(@RequestParam("action") ProposalAction action) {
-        gameService.processAuctionRaiseProposal(action);
+    @PutMapping("/{gameId}/auction/raise")
+    public void processAuctionRaiseProposal(@PathVariable("gameId") UUID gameId,
+                                            @RequestParam("action") ProposalAction action) {
+        gameService.processAuctionRaiseProposal(gameId, action);
     }
 
-    @PutMapping("/jail")
-    public void processJailAction(@RequestParam("action") JailAction jailAction) {
-        gameService.processJailAction(jailAction);
+    @PutMapping("/{gameId}/jail")
+    public void processJailAction(@PathVariable("gameId") UUID gameId,
+                                  @RequestParam("action") JailAction jailAction) {
+        gameService.processJailAction(gameId, jailAction);
     }
 
-    @PutMapping("/give_up")
-    public void giveUp(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
-        gameService.giveUp(playerId);
+    @PutMapping("/{gameId}/give_up")
+    public void giveUp(@PathVariable("gameId") UUID gameId,
+                       @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
+        gameService.giveUp(gameId, playerId);
     }
 }

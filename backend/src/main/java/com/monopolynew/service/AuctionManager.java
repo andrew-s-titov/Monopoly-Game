@@ -29,23 +29,24 @@ public class AuctionManager {
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         var currentPlayer = game.getCurrentPlayer();
         game.setAuction(new Auction(game, field));
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " started an auction"));
+        gameEventSender.sendToAllPlayers(game.getId(), new ChatMessageEvent(currentPlayer.getName() + " started an auction"));
         auctionStep(game);
     }
 
     public void auctionStep(Game game) {
+        var gameId = game.getId();
         var auction = game.getAuction();
         List<Player> participants = auction.getParticipants();
         if (participants.isEmpty()) {
             // there's no one who wanted to or could take part in the auction
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent("No one took part in the auction"));
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent("No one took part in the auction"));
             finishAuction(game);
         } else if (participants.size() > 1) {
             // propose to raise the stake
             var player = auction.getNextPlayer();
             if (player.getMoney() >= auction.getAuctionPrice() + Rules.AUCTION_STEP) {
                 gameLogicExecutor.changeGameStage(game, GameStage.AWAITING_AUCTION_RAISE);
-                gameEventSender.sendToPlayer(player.getId(), gameEventGenerator.auctionRaiseProposalEvent(auction));
+                gameEventSender.sendToPlayer(gameId, player.getId(), gameEventGenerator.auctionRaiseProposalEvent(auction));
             } else {
                 // player can't afford to raise the stake - exclude from participants and proceed to next player
                 auction.removeParticipant();
@@ -56,7 +57,7 @@ public class AuctionManager {
             if (auction.isFirstCircle()) {
                 // if first circle - next playerId is the only participant: propose for start price
                 gameLogicExecutor.changeGameStage(game, GameStage.AWAITING_AUCTION_BUY);
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.auctionBuyProposalEvent(auction));
+                gameEventSender.sendToPlayer(gameId, playerId, gameEventGenerator.auctionBuyProposalEvent(auction));
             } else {
                 // automatically sell to the winner
                 gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), playerId);
@@ -67,6 +68,7 @@ public class AuctionManager {
 
     public void processAuctionBuyProposal(Game game, @NonNull ProposalAction action) {
         requireNotNullArgs(game, action);
+        var gameId = game.getId();
         var auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_BUY, auction);
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
@@ -74,19 +76,20 @@ public class AuctionManager {
             var buyerId = auction.getCurrentParticipant().getId();
             gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyerId);
         } else {
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent("No one took part in the auction"));
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent("No one took part in the auction"));
         }
         finishAuction(game);
     }
 
     public void processAuctionRaiseProposal(Game game, @NonNull ProposalAction action) {
         requireNotNullArgs(game, action);
+        var gameId = game.getId();
         Auction auction = game.getAuction();
         checkAuctionAvailability(game, GameStage.AWAITING_AUCTION_RAISE, auction);
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                     String.format("%s raised lot price to $%s",
                             auction.getCurrentParticipant().getName(),
                             auction.getAuctionPrice())));

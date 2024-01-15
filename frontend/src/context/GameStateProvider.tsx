@@ -4,7 +4,12 @@ import { ChatMessageBody, ConnectedPlayer, GameState } from "../types/interfaces
 import { INITIAL_GAME_STATE } from "../constants/mapData";
 import { PropertyGroup } from "../types/enums";
 
+interface IGameContextProps extends PropsWithChildren {
+  gameId: string,
+}
+
 interface IGameStateContext {
+  gameId: string,
   connectedPlayers: ConnectedPlayer[];
   gameState: GameState;
   setConnectedPlayers: Dispatch<SetStateAction<ConnectedPlayer[]>>;
@@ -18,7 +23,7 @@ interface IGameStateContext {
 
 const GameStateContext = createContext<IGameStateContext>({} as IGameStateContext);
 
-export const GameStateProvider = ({ children }: PropsWithChildren) => {
+export const GameStateProvider = ({ gameId, children }: IGameContextProps) => {
 
   const [connectedPlayers, setConnectedPlayers] = useState<ConnectedPlayer[]>([]);
   const [messages, setMessages] = useState<ChatMessageBody[]>([]);
@@ -34,6 +39,7 @@ export const GameStateProvider = ({ children }: PropsWithChildren) => {
   return (
     <GameStateContext.Provider
       value={{
+        gameId,
         gameState,
         setGameState,
         messages,

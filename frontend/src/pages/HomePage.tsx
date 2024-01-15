@@ -34,9 +34,8 @@ const HomePage = () => {
   const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
 
   const { execute: createNewGame, isLoading: isCreateLoading } = post({
-    url: `${BE_ENDPOINT}/game/new`,
-    responseHandler: () => navigate('/game'),
-    // responseHandler: ({ gameId }) => navigate(`/game/${gameId}`), TODO: enable for multi-room setup
+    url: `${BE_ENDPOINT}/game`,
+    responseHandler: ({ gameId }) => navigate(`/game/${gameId}`),
   });
 
   const languageBody = ({ language }: GameRoomEntry) =>
@@ -61,8 +60,7 @@ const HomePage = () => {
         severity="secondary"
         label="Join"
         icon={'pi pi-caret-right icon'}
-        // onClick={() => navigate(`/game/${gameId}`)}
-        onClick={() => navigate('/game')}
+        onClick={() => navigate(`/game/${gameId}`)}
       />
       : null);
 
@@ -130,7 +128,9 @@ const HomePage = () => {
           icon={'pi pi-plus icon'}
           label='Create new'
           isLoading={isCreateLoading}
-          onClickHandler={() => createNewGame({})}
+          onClickHandler={() => createNewGame({
+            "withTeleport": false,
+          })}
           isDisabled={false}
         />
       </StartPageCenteredContent>

@@ -30,7 +30,7 @@ export const routerConfig: RouteObject[] = [
               </ActiveGameSessionFinderLayout>,
           },
           {
-            path: '/game',
+            path: '/game/:gameId',
             element: <GamePage/>,
           },
         ]

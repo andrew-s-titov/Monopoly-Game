@@ -1,17 +1,19 @@
 import { memo } from "react";
 
 import useQuery from "../hooks/useQuery";
-import { BE_ENDPOINT } from "../config/api";
+import { gameBaseUrl } from "../config/api";
 import { Button } from "primereact/button";
 import { useEventModalContext } from "../context/EventModalProvider";
 import { ModalId } from "./modals";
+import { useGameState } from "../context/GameStateProvider";
 
 const RollDiceButton = () => {
 
+  const { gameId } = useGameState();
   const { closeEventModal } = useEventModalContext();
   const { put } = useQuery();
   const { execute: rollDice } = put({
-    url: `${BE_ENDPOINT}/game/turn`,
+    url: `${gameBaseUrl(gameId)}/turn`,
     onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
   });
 

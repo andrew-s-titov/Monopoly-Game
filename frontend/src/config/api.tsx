@@ -8,4 +8,6 @@ const host = BE_ENDPOINT.split('://')[1];
 const wsEndpoint = `${BE_ENDPOINT.startsWith('https') ? 'wss' : 'ws'}://${host}`;
 
 export const getLandingPageWebsocketUrl = () => `${wsEndpoint}/start/${getLoggedInUserId()}`;
-export const getGameWebsocketUrl = () => `${wsEndpoint}/game/${getLoggedInUserId()}`;
+export const getGameWebsocketUrl = (gameId: string) => `${wsEndpoint}/game/${gameId}/${getLoggedInUserId()}`;
+
+export const gameBaseUrl = (gameId: string) => `${BE_ENDPOINT}/game/${gameId}`;

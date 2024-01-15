@@ -40,14 +40,15 @@ public class PlayerMoveService {
     }
 
     private void movePlayerToPosition(Game game, Player player, int newPositionIndex, boolean forward) {
+        var gameId = game.getId();
         int currentPosition = player.getPosition();
-        gameLogicExecutor.changePlayerPosition(player, newPositionIndex);
+        gameLogicExecutor.changePlayerPosition(gameId, player, newPositionIndex);
         if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                     String.format("%s received $%s for starting a new circle",
                             player.getName(), Rules.CIRCLE_MONEY)));
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+            gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(player))));
         }
 
