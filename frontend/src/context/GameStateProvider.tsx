@@ -11,7 +11,6 @@ interface IGameStateContext {
   setGameState: Dispatch<SetStateAction<GameState>>;
   messages: ChatMessageBody[];
   addChatMessage: (chatMessage: ChatMessageBody) => void;
-  clearGameState: () => void;
   housePurchases: PropertyGroup[];
   addHousePurchase: (group: PropertyGroup) => void;
   clearHousePurchaseRecords: () => void;
@@ -32,12 +31,6 @@ export const GameStateProvider = ({ children }: PropsWithChildren) => {
   }
   const clearHousePurchaseRecords = () => setHousePurchases([]);
 
-  const clearGameState = () => {
-    setGameState(INITIAL_GAME_STATE);
-    setMessages([]);
-    clearHousePurchaseRecords();
-  };
-
   return (
     <GameStateContext.Provider
       value={{
@@ -47,7 +40,6 @@ export const GameStateProvider = ({ children }: PropsWithChildren) => {
         connectedPlayers,
         setConnectedPlayers,
         addChatMessage,
-        clearGameState,
         housePurchases,
         addHousePurchase,
         clearHousePurchaseRecords,
