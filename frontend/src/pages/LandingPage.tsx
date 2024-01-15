@@ -1,19 +1,18 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "primereact/button";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
 
 import { BE_ENDPOINT, getLandingPageWebsocketUrl } from "../config/api";
 import useQuery from "../hooks/useQuery";
+import GameRoomPlayer from "../components/GameRoomPlayer";
 import StartPageBackground from "../components/StartPageBackground";
 import StartPageButton from "../components/StartPageButton";
+import StartPageCenteredContent from "../components/StartPageCenteredContent";
 import { GameRoomParticipant } from "../types/events";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import GameRoomPlayer from "../components/GameRoomPlayer";
 
 import "../assets/styles/flags.css"
-import { Button } from "primereact/button";
-import StartPageCenteredContent from "../components/StartPageCenteredContent";
-import { Row } from "primereact/row";
 
 interface GameRoomEntry {
   gameId?: string,
@@ -106,31 +105,30 @@ const LandingPage = () => {
   return (
     <StartPageBackground>
       <StartPageCenteredContent>
+        <div className="gr-table-overview-header">Available game rooms</div>
         <DataTable
           value={rooms}
           showHeaders={false}
           dataKey="gameId"
-          className="gr-overview-table"
           paginator
           rows={perPage}
+          tableClassName="gr-overview-table"
           rowClassName={() => 'gr-overview-row'}
         >
           <Column
             field="players"
             header="Players"
-            className="gr-overview-players-column gr-overview-row"
+            className="gr-overview-players-column"
             body={playersBody}
           />
           <Column
             field="language"
             body={languageBody}
             align="center"
-            className="gr-overview-row"
           />
           <Column
             body={joinBody}
             align="center"
-            className="gr-overview-row"
           />
         </DataTable>
         <StartPageButton

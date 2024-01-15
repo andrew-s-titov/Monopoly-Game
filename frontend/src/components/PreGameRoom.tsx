@@ -6,7 +6,6 @@ import useQuery from "../hooks/useQuery";
 import { BE_ENDPOINT } from "../config/api";
 import StartPageButton from "./StartPageButton";
 import StartPageCenteredContent from "./StartPageCenteredContent";
-import PageHeader from "./PageHeader";
 
 const PreGameRoom = () => {
 
