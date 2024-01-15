@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.monopolynew.TestData.PLAYER_ID_1;
 import static com.monopolynew.TestData.PLAYER_ID_2;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,6 +77,8 @@ class GameLogicExecutorTest {
         void bankruptForBank() {
             // given
             var game = mock(Game.class);
+            var gameId = UUID.randomUUID();
+            when(game.getId()).thenReturn(gameId);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
             var debtor = new Player(PLAYER_ID_1, "player-1", "av");
@@ -95,7 +99,7 @@ class GameLogicExecutorTest {
             gameLogicExecutor.bankruptPlayer(game, debtor);
 
             // then
-            assertCommonBankruptScenarioExecuted(debtor, playerFields);
+            assertCommonBankruptScenarioExecuted(gameId, debtor, playerFields);
         }
 
         @Test
@@ -109,6 +113,8 @@ class GameLogicExecutorTest {
         void bankruptForAnotherPlayerWithNotEnoughProperty() {
             // given
             var game = mock(Game.class);
+            var gameId = UUID.randomUUID();
+            when(game.getId()).thenReturn(gameId);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
             var debtor = new Player(PLAYER_ID_1, "player-1", "av");
@@ -144,7 +150,7 @@ class GameLogicExecutorTest {
             gameLogicExecutor.bankruptPlayer(game, debtor);
 
             // then
-            assertCommonBankruptScenarioExecuted(debtor, playerFields);
+            assertCommonBankruptScenarioExecuted(gameId, debtor, playerFields);
             assertEquals(debtorAssetsTotal, beneficiary.getMoney());
         }
 
@@ -159,6 +165,8 @@ class GameLogicExecutorTest {
         void bankruptForAnotherPlayerWithEnoughProperty() {
             // given
             var game = mock(Game.class);
+            var gameId = UUID.randomUUID();
+            when(game.getId()).thenReturn(gameId);
             var gameMap = mock(GameMap.class);
             when(game.getGameMap()).thenReturn(gameMap);
             var debtor = new Player(PLAYER_ID_1, "player-1", "av");
@@ -195,16 +203,16 @@ class GameLogicExecutorTest {
             gameLogicExecutor.bankruptPlayer(game, debtor);
 
             // then
-            assertCommonBankruptScenarioExecuted(debtor, playerFields);
+            assertCommonBankruptScenarioExecuted(gameId, debtor, playerFields);
             assertEquals(debt, beneficiary.getMoney());
         }
 
-        void assertCommonBankruptScenarioExecuted(Player debtor, List<GameField> playerFields) {
+        void assertCommonBankruptScenarioExecuted(UUID gameId, Player debtor, List<GameField> playerFields) {
             assertTrue(debtor.isBankrupt());
             assertEquals(0, debtor.getMoney());
-            verify(gameEventSender).sendToAllPlayers(any(BankruptcyEvent.class));
-            verify(gameEventSender).sendToAllPlayers(any(MoneyChangeEvent.class));
-            verify(gameEventSender).sendToAllPlayers(fieldStateChangeEventCaptor.capture());
+            verify(gameEventSender).sendToAllPlayers(eq(gameId), any(BankruptcyEvent.class));
+            verify(gameEventSender).sendToAllPlayers(eq(gameId), any(MoneyChangeEvent.class));
+            verify(gameEventSender).sendToAllPlayers(eq(gameId), fieldStateChangeEventCaptor.capture());
             FieldStateChangeEvent capturedEvent = fieldStateChangeEventCaptor.getValue();
             assertEquals(playerFields.size(), capturedEvent.getChanges().size());
             playerFields.stream()
