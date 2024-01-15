@@ -18,7 +18,6 @@ public class GameRoomService {
     private final LandingPageWsSessionRepository landingPageWsSessionRepository;
 
     public void refreshGameRooms() {
-        // TODO: get all games in not-started state
         sendEvent(landingPageWsSessionRepository.getAllSessions(), objectMapper, event());
     }
 

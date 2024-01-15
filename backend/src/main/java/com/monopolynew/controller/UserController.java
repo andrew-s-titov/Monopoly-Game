@@ -1,7 +1,7 @@
 package com.monopolynew.controller;
 
 import com.monopolynew.config.GlobalConfig;
-import com.monopolynew.dto.ActiveGameSessionDTO;
+import com.monopolynew.dto.GameResponseDTO;
 import com.monopolynew.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ActiveGameSessionDTO findActiveGameSession(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
-        return ActiveGameSessionDTO.withId(userService.findActiveGameSession(playerId));
+    public GameResponseDTO findActiveGameSession(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
+        return GameResponseDTO.withId(userService.findActiveGameSession(playerId));
     }
 }

@@ -77,7 +77,6 @@ public class GameService {
 
     public void makeUsualTurn(UUID gameId) {
         Game game = getGame(gameId);
-        // extract this method to a private reusable for jail action
         rollTheDice(game, this::afterDiceRollForTurn);
     }
 

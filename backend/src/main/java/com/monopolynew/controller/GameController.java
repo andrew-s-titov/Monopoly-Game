@@ -1,7 +1,7 @@
 package com.monopolynew.controller;
 
 import com.monopolynew.config.GlobalConfig;
-import com.monopolynew.dto.CreateGameResponseDTO;
+import com.monopolynew.dto.GameResponseDTO;
 import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.enums.JailAction;
 import com.monopolynew.enums.ProposalAction;
@@ -26,8 +26,8 @@ public class GameController {
     private final GameService gameService;
 
     @PostMapping
-    public CreateGameResponseDTO newGame(@RequestBody NewGameParamsDTO newGameParamsDTO) {
-        return new CreateGameResponseDTO(gameService.newGame(newGameParamsDTO));
+    public GameResponseDTO newGame(@RequestBody NewGameParamsDTO newGameParamsDTO) {
+        return GameResponseDTO.withId(gameService.newGame(newGameParamsDTO));
     }
 
     @PostMapping("/{gameId}")

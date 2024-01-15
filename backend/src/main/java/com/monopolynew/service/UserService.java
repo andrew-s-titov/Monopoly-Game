@@ -19,7 +19,6 @@ public class UserService {
 
     @Nullable
     public UUID findActiveGameSession(UUID userId) {
-        // TODO: get game id when multi-room setup is ready
         Optional<Pair<UUID, List<UUID>>> possibleGameEntry = gameRepository.allGames().stream()
                 .filter(Game::isInProgress)
                 .map(game -> Pair.of(game.getId(), game.getPlayers().stream().map(Player::getId).toList()))
