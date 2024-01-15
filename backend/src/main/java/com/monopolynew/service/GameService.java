@@ -13,7 +13,7 @@ import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.NewPlayerTurn;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
-import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.UserInvalidInputException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Dice;
 import com.monopolynew.game.Game;
@@ -49,6 +49,7 @@ public class GameService {
     private final PaymentService paymentService;
     private final FieldManagementService fieldManagementService;
     private final DealManager dealManager;
+    private final GameRoomService gameRoomService;
 
     private final ScheduledExecutorService scheduler;
 
@@ -64,9 +65,10 @@ public class GameService {
         Game game = gameRepository.getGame();
         Collection<Player> players = game.getPlayers();
         if (players.size() < 2) {
-            throw new PlayerInvalidInputException("Cannot start a game without at least 2 players");
+            throw new UserInvalidInputException("Cannot start a game without at least 2 players");
         }
         game.startGame();
+        gameRoomService.refreshGameRooms();
         gameEventSender.sendToAllPlayers(gameEventGenerator.mapStateEvent(game));
         UUID currentPlayerId = game.getCurrentPlayer().getId();
         gameEventSender.sendToAllPlayers(new NewPlayerTurn(currentPlayerId));

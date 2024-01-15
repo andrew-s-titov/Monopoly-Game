@@ -1,7 +1,7 @@
 package com.monopolynew.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.monopolynew.websocket.UserWsSessionRepository;
+import com.monopolynew.websocket.GamePlayerWsSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import static com.monopolynew.util.WebsocketUtils.sendEvent;
 @Component
 public class GameEventSender {
 
-    private final UserWsSessionRepository userSessionRepository;
+    private final GamePlayerWsSessionRepository userSessionRepository;
     private final ObjectMapper objectMapper;
 
     public void sendToAllPlayers(Object gameEvent) {

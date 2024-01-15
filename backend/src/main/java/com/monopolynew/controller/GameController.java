@@ -1,5 +1,6 @@
 package com.monopolynew.controller;
 
+import com.monopolynew.config.GlobalConfig;
 import com.monopolynew.dto.CreateGameResponseDTO;
 import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.enums.JailAction;
@@ -9,9 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -58,5 +62,10 @@ public class GameController {
     @PutMapping("/jail")
     public void processJailAction(@RequestParam("action") JailAction jailAction) {
         gameService.processJailAction(jailAction);
+    }
+
+    @PutMapping("/give_up")
+    public void giveUp(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
+        gameService.giveUp(playerId);
     }
 }

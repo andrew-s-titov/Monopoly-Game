@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-public class UserWsSessionRepository {
+public class GamePlayerWsSessionRepository {
 
     private final Map<UUID, WebSocketSession> activeUserSessions = new HashMap<>();
 

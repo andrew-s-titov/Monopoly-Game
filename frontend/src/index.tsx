@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { routerConfig } from "./config/router";
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import { routerConfig } from "./config/router";
+import { AuthContextProvider } from "./context/AuthContextProvider";
 
 import "./assets/styles/index.css";
 import "./assets/styles/chat.css";
@@ -22,6 +23,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router}/>
+    <AuthContextProvider>
+      <RouterProvider router={router}/>
+    </AuthContextProvider>
   </React.StrictMode>
 );

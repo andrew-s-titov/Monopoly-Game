@@ -10,19 +10,19 @@ import GameRoomPlayer from "../components/GameRoomPlayer";
 import StartPageBackground from "../components/StartPageBackground";
 import StartPageButton from "../components/StartPageButton";
 import StartPageCenteredContent from "../components/StartPageCenteredContent";
-import { GameRoomParticipant } from "../types/events";
+import { AvailableGamesEvent, GameRoomParticipant } from "../types/events";
 
 import "../assets/styles/flags.css"
 
 interface GameRoomEntry {
-  gameId?: string,
+  gameId: string,
   players?: GameRoomParticipant[],
   language?: string,
 }
 
 const perPage = 5;
 
-const LandingPage = () => {
+const HomePage = () => {
 
   // TODO: on load - useEffect for finding player active games
 
@@ -69,15 +69,11 @@ const LandingPage = () => {
 
       websocket.current.onmessage = ({ data }: MessageEvent) => {
         console.log(`websocket message is: ${data}`);
-        const rooms: Record<string, GameRoomParticipant[]> = JSON.parse(data).rooms;
-        const roomsData: GameRoomEntry[] = Object.entries(rooms)
-          .map(([gameId, players]) =>
-            ({
-              gameId,
-              players,
-              language: 'en',
-            })
-          );
+        const rooms: AvailableGamesEvent[] = JSON.parse(data).rooms;
+        const roomsData: GameRoomEntry[] = rooms.map(room =>
+          ({
+            ...room,
+          }));
         if (roomsData.length < perPage) {
           roomsData.push(...Array.from({ length: perPage - roomsData.length },
             (_, index) => ({
@@ -143,4 +139,4 @@ const LandingPage = () => {
   );
 }
 
-export default memo(LandingPage);
+export default memo(HomePage);

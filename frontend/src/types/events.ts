@@ -62,6 +62,12 @@ export interface OfferProposalEvent {
   initiatorMoney: number,
 }
 
+export interface AvailableGamesEvent {
+  gameId: string,
+  players: GameRoomParticipant[],
+  language: string,
+}
+
 export interface GameRoomParticipant {
   name: string,
   avatar: string,

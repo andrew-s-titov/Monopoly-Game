@@ -28,7 +28,7 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
     onSuccess: closePayCommand,
   });
   const { execute: giveUp, isLoading: isGiveUpLoading } = put({
-    url: `${BE_ENDPOINT}/game/player/give_up`,
+    url: `${BE_ENDPOINT}/game/give_up`,
     onSuccess: closePayCommand,
   });
 

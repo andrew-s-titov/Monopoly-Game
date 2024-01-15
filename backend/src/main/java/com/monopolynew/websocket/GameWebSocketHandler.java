@@ -31,7 +31,7 @@ import static com.monopolynew.config.WebSocketConfig.extractUserId;
 // TODO: define path as '/{gameId} to choose game, refactor session repo as game<->session map
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
-    private final UserWsSessionRepository userSessionRepository;
+    private final GamePlayerWsSessionRepository userSessionRepository;
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;

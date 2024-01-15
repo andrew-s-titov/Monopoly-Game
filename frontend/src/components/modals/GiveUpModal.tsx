@@ -10,7 +10,7 @@ const GiveUpModal = () => {
   const { closePopUpModal } = usePopUpModalContext();
   const { put } = useQuery();
   const { execute: giveUp, isLoading } = put({
-    url: `${BE_ENDPOINT}/game/player/give_up`,
+    url: `${BE_ENDPOINT}/game/give_up`,
     onSuccess: closePopUpModal,
   });
 

@@ -11,7 +11,7 @@ import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
-import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.UserInvalidInputException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -157,7 +157,7 @@ public class DealManager {
     private void checkPlayerSolvency(Player player, Integer money, boolean initiator) {
         if (money != null && player.getMoney() < money) {
             var message = String.format("%s cannot afford this deal", initiator ? "You" : player.getName());
-            throw new PlayerInvalidInputException(message);
+            throw new UserInvalidInputException(message);
         }
     }
 
@@ -231,7 +231,7 @@ public class DealManager {
                 && (moneyToReceive == null || moneyToReceive == 0)
                 && CollectionUtils.isEmpty(offer.getAddresseeFields())
                 && CollectionUtils.isEmpty(offer.getInitiatorFields())) {
-            throw new PlayerInvalidInputException("Cannot send an empty offer");
+            throw new UserInvalidInputException("Cannot send an empty offer");
         }
     }
 
