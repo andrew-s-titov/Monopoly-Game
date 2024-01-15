@@ -21,15 +21,17 @@ interface GameRoomEntry {
 }
 
 const perPage = 5;
+const createRoomPlaceholders = (amount: number) => Array.from({ length: amount },
+  (_, index) => ({
+    gameId: `placeholder-${index}`
+  }));
 
 const HomePage = () => {
-
-  // TODO: on load - useEffect for finding player active games
 
   const websocket = useRef<WebSocket>();
   const { post } = useQuery();
   const navigate = useNavigate();
-  const [rooms, setRooms] = useState<GameRoomEntry[]>([]);
+  const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
 
   const { execute: createNewGame, isLoading: isCreateLoading } = post({
     url: `${BE_ENDPOINT}/game/new`,
@@ -75,10 +77,7 @@ const HomePage = () => {
             ...room,
           }));
         if (roomsData.length < perPage) {
-          roomsData.push(...Array.from({ length: perPage - roomsData.length },
-            (_, index) => ({
-              gameId: `placeholder-${index}`
-            })));
+          roomsData.push(...createRoomPlaceholders(perPage - roomsData.length));
         }
         setRooms(roomsData);
       };
