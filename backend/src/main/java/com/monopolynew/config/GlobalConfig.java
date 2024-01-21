@@ -11,6 +11,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 @Configuration
 public class GlobalConfig {
 
+    public static final String[] ALLOWED_ORIGINS_PATTERNS = new String[]{
+            "https://*.ngrok-free.app",
+            "https://*.ngrok.io",
+            "http://localhost:3000"
+    };
+
     public static final String USER_ID_HEADER = "user_id";
     public static final String GAME_ID_KEY = "game_id";
 

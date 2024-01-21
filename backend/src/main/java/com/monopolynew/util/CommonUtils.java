@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 import java.util.Objects;
 
 @UtilityClass
-public class Utils {
+public class CommonUtils {
 
     private static final String NULL_ARG_MESSAGE = "Null argument passed";
 

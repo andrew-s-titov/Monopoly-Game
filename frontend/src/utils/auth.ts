@@ -7,10 +7,11 @@ export const setAuthData = (loginResponse: LoginResponse) => {
 }
 
 export const getLoggedInUserId = (): string => {
-  const authData = getPlayerAuthData();
-  return authData
-    ? authData.id
-    : 'UNAUTHORIZED';
+  return getPlayerAuthData()?.id || 'UNAUTHORIZED';
+}
+
+export const getUserAvatar = (): string => {
+  return getPlayerAuthData()?.avatar || 'unknown';
 }
 
 export const isAuthenticated = () => !!getPlayerAuthData();

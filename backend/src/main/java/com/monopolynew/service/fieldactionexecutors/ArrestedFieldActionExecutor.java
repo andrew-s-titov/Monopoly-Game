@@ -23,7 +23,7 @@ public class ArrestedFieldActionExecutor implements FieldActionExecutor {
     @Override
     public void executeAction(Game game) {
         Player currentPlayer = game.getCurrentPlayer();
-        gameEventSender.sendToAllPlayers(
+        gameEventSender.sendToAllPlayers(game.getId(),
                 new ChatMessageEvent(currentPlayer.getName() + " was sent to jail"));
         gameLogicExecutor.sendToJail(game, currentPlayer);
         gameLogicExecutor.endTurn(game);

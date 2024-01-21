@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.monopolynew.util.Utils.requireNotNullArgs;
+import static com.monopolynew.util.CommonUtils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component

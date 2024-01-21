@@ -1,38 +1,36 @@
 package com.monopolynew.service;
 
+import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.game.Game;
-import com.monopolynew.game.Player;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class GameRepository {
 
-    private Game game = new Game(false);
+    private final Map<UUID, Game> games = new ConcurrentHashMap<>();
 
-    public Game getGame() {
-        // TODO get game by its ID
-        return this.game;
+    public Game findGame(@NonNull UUID gameId) {
+        return games.get(gameId);
     }
 
-    public UUID createGame(int maxPlayers, boolean withTeleport) {
-        // TODO: implement for multi-game env
-        return UUID.randomUUID();
+    public UUID createGame(NewGameParamsDTO newGameParamsDTO) {
+        var newGame = new Game(newGameParamsDTO.isWithTeleport());
+        UUID gameId = newGame.getId();
+        games.put(gameId, newGame);
+        return gameId;
     }
 
-    public void removeGame(UUID gameId) {
-        // TODO: implement for multi-game env
+    public void removeGame(@NonNull UUID gameId) {
+        games.remove(gameId);
     }
 
-    public void endGame() {
-        // temporary decision before multiple game rooms
-        Collection<Player> players = this.game.getPlayers();
-        this.game = new Game(false);
-        players.forEach(player -> {
-            player.resetState();
-            game.addPlayer(player);
-        });
+    public Collection<Game> allGames() {
+        return games.values();
     }
 }

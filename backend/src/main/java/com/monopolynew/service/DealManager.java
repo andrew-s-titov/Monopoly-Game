@@ -11,7 +11,7 @@ import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
-import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.UserInvalidInputException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -42,6 +42,7 @@ public class DealManager {
     private final GameLogicExecutor gameLogicExecutor;
 
     public void createOffer(Game game, UUID initiatorId, UUID addresseeId, DealOffer offer) {
+        var gameId = game.getId();
         checkCanCreateOffer(game);
         checkDealSides(game, initiatorId, addresseeId);
         var currentPlayer = game.getCurrentPlayer();
@@ -70,12 +71,13 @@ public class DealManager {
                 .stageToReturnTo(currentGameStage)
                 .build();
         game.setOffer(newOffer);
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                 String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
-        gameEventSender.sendToPlayer(addresseeId, gameEventGenerator.offerProposalEvent(game));
+        gameEventSender.sendToPlayer(gameId, addresseeId, gameEventGenerator.offerProposalEvent(game));
     }
 
     public void processOfferAnswer(Game game, UUID addresseeId, ProposalAction proposalAction) {
+        var gameId = game.getId();
         var currentGameStage = game.getStage();
         if (!GameStage.DEAL_OFFER.equals(currentGameStage)) {
             throw new WrongGameStageException("Cannot process offer - wrong game stage");
@@ -88,10 +90,10 @@ public class DealManager {
         }
         var initiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(addressee.getName() + " declined the offer"));
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(addressee.getName() + " declined the offer"));
         } else {
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(createOfferAcceptMessage(offer)));
-            processOfferPayments(offer, initiator, addressee);
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(createOfferAcceptMessage(offer)));
+            processOfferPayments(gameId, offer, initiator, addressee);
             processOfferPropertyExchange(game, offer, initiator, addressee);
         }
         game.setOffer(null);
@@ -99,10 +101,10 @@ public class DealManager {
         gameLogicExecutor.changeGameStage(game, stageToReturnTo);
         var initiatorId = initiator.getId();
         if (GameStage.TURN_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(initiatorId, new TurnStartEvent());
+            gameEventSender.sendToPlayer(gameId, initiatorId, new TurnStartEvent());
         }
         if (GameStage.JAIL_RELEASE_START.equals(stageToReturnTo)) {
-            gameEventSender.sendToPlayer(initiatorId, new JailReleaseProcessEvent());
+            gameEventSender.sendToPlayer(gameId, initiatorId, new JailReleaseProcessEvent());
         }
     }
 
@@ -157,7 +159,7 @@ public class DealManager {
     private void checkPlayerSolvency(Player player, Integer money, boolean initiator) {
         if (money != null && player.getMoney() < money) {
             var message = String.format("%s cannot afford this deal", initiator ? "You" : player.getName());
-            throw new PlayerInvalidInputException(message);
+            throw new UserInvalidInputException(message);
         }
     }
 
@@ -179,12 +181,12 @@ public class DealManager {
         }
     }
 
-    private void processOfferPayments(Offer offer, Player initiator, Player addressee) {
+    private void processOfferPayments(UUID gameId, Offer offer, Player initiator, Player addressee) {
         var initiatorMoney = offer.getInitiatorMoney();
         var addresseeMoney = offer.getAddresseeMoney();
         if (processOfferPayment(initiatorMoney, initiator, addressee) ||
                 processOfferPayment(addresseeMoney, addressee, initiator)) {
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+            gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                     List.of(MoneyState.fromPlayer(initiator), MoneyState.fromPlayer(addressee))));
         }
     }
@@ -211,7 +213,7 @@ public class DealManager {
 
         List<PurchasableField> processedOwnedFields = gameLogicExecutor.processOwnershipChange(game, exchangedFields);
         List<GameFieldState> newFieldStates = gameFieldMapper.toStateList(processedOwnedFields);
-        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(newFieldStates));
+        gameEventSender.sendToAllPlayers(game.getId(), new FieldStateChangeEvent(newFieldStates));
     }
 
     private boolean processOfferFieldExchange(List<PurchasableField> fields, Player newOwner) {
@@ -231,7 +233,7 @@ public class DealManager {
                 && (moneyToReceive == null || moneyToReceive == 0)
                 && CollectionUtils.isEmpty(offer.getAddresseeFields())
                 && CollectionUtils.isEmpty(offer.getInitiatorFields())) {
-            throw new PlayerInvalidInputException("Cannot send an empty offer");
+            throw new UserInvalidInputException("Cannot send an empty offer");
         }
     }
 

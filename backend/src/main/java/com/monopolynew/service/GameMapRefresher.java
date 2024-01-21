@@ -19,31 +19,32 @@ public class GameMapRefresher {
     private final GameEventSender gameEventSender;
 
     public void restoreGameStateForPlayer(Game game, UUID playerId) {
+        var gameId = game.getId();
         var currentPlayerId = game.getCurrentPlayer().getId();
-        gameEventSender.sendToPlayer(playerId, gameEventGenerator.mapStateEvent(game));
-        gameEventSender.sendToPlayer(playerId, gameEventGenerator.gameRoomEvent(game));
+        gameEventSender.sendToPlayer(gameId, playerId, gameEventGenerator.mapStateEvent(game));
+        gameEventSender.sendToPlayer(gameId, playerId, gameEventGenerator.gameRoomEvent(game));
 
         var gameStage = game.getStage();
         if (currentPlayerId.equals(playerId)) {
             switch (gameStage) {
                 case TURN_START: {
-                    gameEventSender.sendToPlayer(playerId, new TurnStartEvent());
+                    gameEventSender.sendToPlayer(gameId, playerId, new TurnStartEvent());
                     break;
                 }
                 case JAIL_RELEASE_START: {
-                    gameEventSender.sendToPlayer(playerId, new JailReleaseProcessEvent());
+                    gameEventSender.sendToPlayer(gameId, playerId, new JailReleaseProcessEvent());
                     break;
                 }
                 case BUY_PROPOSAL: {
-                    gameEventSender.sendToPlayer(playerId, gameEventGenerator.buyProposalEvent(game.getBuyProposal()));
+                    gameEventSender.sendToPlayer(gameId, playerId, gameEventGenerator.buyProposalEvent(game.getBuyProposal()));
                     break;
                 }
                 case AWAITING_PAYMENT, AWAITING_JAIL_FINE: {
-                    gameEventSender.sendToPlayer(playerId, PayCommandEvent.of(game.getCheckToPay()));
+                    gameEventSender.sendToPlayer(gameId, playerId, PayCommandEvent.of(game.getCheckToPay()));
                     break;
                 }
                 case ROLLED_FOR_JAIL, ROLLED_FOR_TURN: {
-                    gameEventSender.sendToAllPlayers(DiceResultEvent.of(game.getLastDice()));
+                    gameEventSender.sendToAllPlayers(gameId, DiceResultEvent.of(game.getLastDice()));
                     break;
                 }
                 default:
@@ -51,7 +52,7 @@ public class GameMapRefresher {
             }
         } else {
             if (GameStage.DEAL_OFFER.equals(gameStage) && game.getOffer().getAddressee().getId().equals(playerId)) {
-                gameEventSender.sendToPlayer(playerId, gameEventGenerator.offerProposalEvent(game));
+                gameEventSender.sendToPlayer(gameId, playerId, gameEventGenerator.offerProposalEvent(game));
             }
         }
 
@@ -59,7 +60,7 @@ public class GameMapRefresher {
             var auction = game.getAuction();
             var currentParticipantId = auction.getCurrentParticipant().getId();
             if (playerId.equals(currentParticipantId)) {
-                gameEventSender.sendToPlayer(playerId, GameStage.AWAITING_AUCTION_BUY.equals(gameStage) ?
+                gameEventSender.sendToPlayer(gameId, playerId, GameStage.AWAITING_AUCTION_BUY.equals(gameStage) ?
                         gameEventGenerator.auctionBuyProposalEvent(auction) :
                         gameEventGenerator.auctionRaiseProposalEvent(auction));
             }

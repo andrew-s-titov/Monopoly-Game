@@ -13,7 +13,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.rmi.server.UID;
 import java.util.Collections;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
@@ -29,10 +31,11 @@ public class StartFieldActionExecutor implements FieldActionExecutor {
     public void executeAction(Game game) {
         Player currentPlayer = game.getCurrentPlayer();
         currentPlayer.addMoney(Rules.CIRCLE_MONEY);
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+        var gameId = game.getId();
+        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                 String.format("%s received $%s for hitting the %s field",
                         currentPlayer.getName(), Rules.CIRCLE_MONEY, FieldAction.START.getName())));
-        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+        gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
         gameLogicExecutor.endTurn(game);
     }

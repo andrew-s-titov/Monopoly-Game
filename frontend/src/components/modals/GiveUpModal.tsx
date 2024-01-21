@@ -3,14 +3,16 @@ import { memo } from 'react';
 import { Button } from 'primereact/button';
 import useQuery from "../../hooks/useQuery";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
-import { BE_ENDPOINT } from "../../api/config";
+import { gameBaseUrl } from "../../config/api";
+import { useGameState } from "../../context/GameStateProvider";
 
 const GiveUpModal = () => {
 
+  const { gameId } = useGameState();
   const { closePopUpModal } = usePopUpModalContext();
   const { put } = useQuery();
   const { execute: giveUp, isLoading } = put({
-    url: `${BE_ENDPOINT}/game/player/give_up`,
+    url: `${gameBaseUrl(gameId)}/give_up`,
     onSuccess: closePopUpModal,
   });
 

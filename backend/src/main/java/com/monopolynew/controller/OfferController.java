@@ -18,21 +18,23 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/game/offer")
+@RequestMapping("/game/{gameId}/offer")
 public class OfferController {
 
     private final GameService gameService;
 
     @PostMapping("/{addresseeId}")
-    public void sendOffer(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID initiatorId,
+    public void sendOffer(@PathVariable("gameId") UUID gameId,
+                          @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID initiatorId,
                           @PathVariable("addresseeId") UUID addresseeId,
                           @RequestBody DealOffer dealOffer) {
-        gameService.createOffer(initiatorId, addresseeId, dealOffer);
+        gameService.createOffer(gameId, initiatorId, addresseeId, dealOffer);
     }
 
     @PutMapping
-    public void processOffer(@RequestHeader(GlobalConfig.USER_ID_HEADER) UUID callerId,
+    public void processOffer(@PathVariable("gameId") UUID gameId,
+                             @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID callerId,
                              @RequestParam("action") ProposalAction proposalAction) {
-        gameService.processOfferAnswer(callerId, proposalAction);
+        gameService.processOfferAnswer(gameId, callerId, proposalAction);
     }
 }

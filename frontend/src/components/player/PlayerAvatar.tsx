@@ -3,12 +3,12 @@ import { getAvatarUrl } from "../../utils/playerAvatar";
 
 interface IPlayerAvatarProps {
   avatarName: string,
-  className?: string,
+  className: string,
   onClickHandler?: MouseEventHandler<HTMLDivElement>,
   withPointer?: boolean,
 }
 
-const PlayerAvatar = ({ avatarName, onClickHandler, className, withPointer }: IPlayerAvatarProps) => {
+const PlayerAvatar = ({ avatarName, className, onClickHandler, withPointer }: IPlayerAvatarProps) => {
   return (
     <div
       onClick={onClickHandler}

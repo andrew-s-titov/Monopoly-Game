@@ -269,9 +269,9 @@
 }
 
 .avatar-in-room {
-    width: var(--gr-player-container-width);
-    height: var(--gr-player-container-width);
-    background-size: var(--gr-player-container-width);
+    width: var(--gr-player-width);
+    height: var(--gr-player-width);
+    background-size: var(--gr-player-width);
 }
 
 .avatar-in-picker {

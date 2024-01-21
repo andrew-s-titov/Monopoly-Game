@@ -3,7 +3,7 @@ import { memo, useMemo } from "react";
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
-import { BE_ENDPOINT } from "../../api/config";
+import { gameBaseUrl } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";
@@ -17,18 +17,18 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
 
   const loggedInUser = useMemo(getLoggedInUserId, []);
   const { closeEventModal } = useEventModalContext();
-  const { gameState } = useGameState();
+  const { gameId, gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
 
   const payable = playerState.money >= sum;
   const closePayCommand = () => closeEventModal(ModalId.PAY_COMMAND);
   const { put } = useQuery();
   const { execute: pay, isLoading: isPayLoading } = put({
-    url: `${BE_ENDPOINT}/game/pay`,
+    url: `${gameBaseUrl(gameId)}/pay`,
     onSuccess: closePayCommand,
   });
   const { execute: giveUp, isLoading: isGiveUpLoading } = put({
-    url: `${BE_ENDPOINT}/game/player/give_up`,
+    url: `${gameBaseUrl(gameId)}/give_up`,
     onSuccess: closePayCommand,
   });
 

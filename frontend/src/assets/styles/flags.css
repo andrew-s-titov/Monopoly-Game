@@ -1,0 +1,16 @@
+.flag {
+    width: 5vh;
+    height: 5vh;
+    background-repeat: no-repeat no-repeat;
+    background-position: center center;
+    background-size: 100%;
+}
+.flag-en {
+    background-image: url('../images/flags/en.png');
+}
+.flag-ru {
+    background-image: url('../images/flags/ru.png');
+}
+.flag-pl {
+    background-image: url('../images/flags/pl.png');
+}

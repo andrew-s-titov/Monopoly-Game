@@ -32,12 +32,13 @@ public class FieldManagementService {
     public void mortgageField(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (mortgageAvailable(g, f)) {
-                Player currentPlayer = g.getCurrentPlayer();
+                var gameId = game.getId();
+                var currentPlayer = g.getCurrentPlayer();
                 f.mortgage();
                 currentPlayer.addMoney(f.getPrice() / 2);
-                gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+                gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-                gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
+                gameEventSender.sendToAllPlayers(gameId, new FieldStateChangeEvent(
                         Collections.singletonList(gameFieldMapper.toState(f))));
                 return;
             }
@@ -48,12 +49,13 @@ public class FieldManagementService {
     public void redeemMortgagedProperty(Game game, int fieldIndex, UUID playerId) {
         doFieldManagement(game, playerId, fieldIndex, (g, f) -> {
             if (redemptionAvailable(g, f)) {
-                Player currentPlayer = g.getCurrentPlayer();
+                var gameId = game.getId();
+                var currentPlayer = g.getCurrentPlayer();
                 f.redeem();
                 currentPlayer.takeMoney(getPropertyRedemptionValue(f));
-                gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+                gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-                gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
+                gameEventSender.sendToAllPlayers(gameId, new FieldStateChangeEvent(
                         Collections.singletonList(gameFieldMapper.toState(f))));
                 return;
             }
@@ -69,7 +71,7 @@ public class FieldManagementService {
                     streetField.buyHouse();
                     aGame.getGameMap().setPurchaseMadeFlag(PurchasableFieldGroups.getGroupIdByFieldIndex(fieldIndex));
                     currentPlayer.takeMoney(streetField.getHousePrice());
-                    notifyAfterHouseManagementChange(currentPlayer, streetField);
+                    notifyAfterHouseManagementChange(aGame.getId(), currentPlayer, streetField);
                     return;
                 }
             }
@@ -83,7 +85,7 @@ public class FieldManagementService {
                 streetField.sellHouse();
                 Player currentPlayer = aGame.getCurrentPlayer();
                 currentPlayer.addMoney(streetField.getHousePrice());
-                notifyAfterHouseManagementChange(currentPlayer, streetField);
+                notifyAfterHouseManagementChange(aGame.getId(), currentPlayer, streetField);
                 return;
             }
             throw new ClientBadRequestException("Cannot sell a house on this property field");
@@ -187,10 +189,10 @@ public class FieldManagementService {
         }
     }
 
-    private void notifyAfterHouseManagementChange(Player currentPlayer, StreetField streetField) {
-        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(
+    private void notifyAfterHouseManagementChange(UUID gameId, Player currentPlayer, StreetField streetField) {
+        gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
-        gameEventSender.sendToAllPlayers(new FieldStateChangeEvent(
+        gameEventSender.sendToAllPlayers(gameId, new FieldStateChangeEvent(
                 Collections.singletonList(gameFieldMapper.toState(streetField))));
     }
 }
