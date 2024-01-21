@@ -6,14 +6,14 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class GameRepository {
 
-    private final Map<UUID, Game> games = new HashMap<>();
+    private final Map<UUID, Game> games = new ConcurrentHashMap<>();
 
     public Game findGame(@NonNull UUID gameId) {
         return games.get(gameId);
