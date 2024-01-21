@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react";
 
-import { getWebsocketUrl } from "../api/config";
+import { getGameWebsocketUrl } from "../config/api";
 import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,
@@ -30,6 +30,7 @@ import {
 } from "../components/modals";
 import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
+import { useRouting } from "./Routing";
 
 interface IWebsocketContext {
   sendMessage: (chatMessage: string) => void;
@@ -39,9 +40,10 @@ const WebsocketContext = createContext<IWebsocketContext>({} as IWebsocketContex
 
 const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
 
+  const { navigate } = useRouting();
   const {
-    setGameState, setConnectedPlayers, addChatMessage, clearGameState,
-    clearHousePurchaseRecords
+    gameId,
+    setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
   const { openEventModal, closeEventModal } = useEventModalContext();
   const { showCenterPopUp } = useMessageContext();
@@ -56,7 +58,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-      websocket.current = new WebSocket(getWebsocketUrl());
+      websocket.current = new WebSocket(getGameWebsocketUrl(gameId));
       const timeouts: ReturnType<typeof setTimeout>[] = [];
 
       const newTimeout = (action: () => void, delay: number) => timeouts.push(setTimeout(action, delay));
@@ -182,7 +184,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
                 Choose a way out:
               </div>,
             content:
-              <JailReleaseModal />,
+              <JailReleaseModal/>,
             blurBackground: false,
           });
         },
@@ -258,10 +260,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           changeCurrentPlayer('');
           clearTimeouts();
           newTimeout(
-            () => {
-              closeEventModal();
-              clearGameState();
-            },
+            () => navigate('home'),
             5000
           );
         },

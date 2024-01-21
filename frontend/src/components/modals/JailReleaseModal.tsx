@@ -3,7 +3,7 @@ import { memo, useMemo } from "react";
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
-import { BE_ENDPOINT } from "../../api/config";
+import { gameBaseUrl } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";
@@ -12,7 +12,7 @@ const JailReleaseModal = () => {
 
   const loggedInUser = useMemo(getLoggedInUserId, []);
   const { closeEventModal } = useEventModalContext();
-  const { gameState } = useGameState();
+  const { gameId, gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUser];
 
   const payable = playerState.money >= 50;
@@ -20,11 +20,11 @@ const JailReleaseModal = () => {
 
   const { put } = useQuery();
   const { execute: pay, isLoading: isPayLoading } = put({
-    url: `${BE_ENDPOINT}/game/jail?action=PAY`,
+    url: `${gameBaseUrl(gameId)}/jail?action=PAY`,
     onSuccess: closeJailRelease,
   });
   const { execute: tryLuck, isLoading: isLuckLoading } = put({
-    url: `${BE_ENDPOINT}/game/jail?action=LUCK`,
+    url: `${gameBaseUrl(gameId)}/jail?action=LUCK`,
     onSuccess: closeJailRelease,
   });
 

@@ -1,9 +1,14 @@
 import { memo, PropsWithChildren, useEffect, useRef } from "react";
+import PageHeader from "./PageHeader";
 
 const initialBackgroundImageWidth = 1086;
 const initialBackgroundImageHeight = 610;
 
-const StartPageBackground = ({ children }: PropsWithChildren) => {
+interface IStartPageProps extends PropsWithChildren {
+  withHeader?: boolean;
+}
+
+const StartPageBackground = ({ children, withHeader = true }: IStartPageProps) => {
 
   const background = useRef<HTMLDivElement>(null);
 
@@ -25,7 +30,10 @@ const StartPageBackground = ({ children }: PropsWithChildren) => {
       ref={background}
       className="full-size-background"
     >
-      {children}
+      {withHeader && <PageHeader/>}
+      <div className="start-page-content">
+        {children}
+      </div>
     </div>
   );
 }

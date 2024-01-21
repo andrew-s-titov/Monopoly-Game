@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.monopolynew.map.PurchasableFieldGroups.AIRPORT_FIELD_GROUP;
@@ -109,7 +110,7 @@ public class ChanceContainer {
             sendChanceMessages(game, eventSender,
                     messageTemplate.formatted(currentPlayer.getName(), amount),
                     messageTemplate.formatted(YOU, amount));
-            eventSender.sendToAllPlayers(new MoneyChangeEvent(
+            eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
             return null;
         };
@@ -133,7 +134,7 @@ public class ChanceContainer {
             sendChanceMessages(game, eventSender,
                     message.formatted(currentPlayer.getName(), payment, reason),
                     message.formatted(YOU, payment, reason));
-            eventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+            eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(moneyStates));
             return null;
         };
     }
@@ -156,7 +157,7 @@ public class ChanceContainer {
                 }
             }
             moneyStates.add(MoneyState.fromPlayer(currentPlayer));
-            eventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+            eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(moneyStates));
             var message = "%s must pay everyone $%s for help with the election campaign";
             sendChanceMessages(game, eventSender,
                     message.formatted(currentPlayer.getName(), rewardRate),
@@ -178,7 +179,7 @@ public class ChanceContainer {
                     .reduce(0, Integer::sum);
             if (tax > 0) {
                 currentPlayer.takeMoney(tax);
-                eventSender.sendToAllPlayers(new MoneyChangeEvent(
+                eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
             }
             var message = "%s must pay $%s per house and $%s per hotel owned %s";
@@ -310,8 +311,9 @@ public class ChanceContainer {
 
     private static void sendChanceMessages(Game game, GameEventSender eventSender,
                                            String chatMessage, String cardMessage) {
-        eventSender.sendToAllPlayers(new ChatMessageEvent(chatMessage));
-        eventSender.sendToPlayer(game.getCurrentPlayer().getId(), new ChanceCardEvent(cardMessage));
+        UUID gameId = game.getId();
+        eventSender.sendToAllPlayers(gameId, new ChatMessageEvent(chatMessage));
+        eventSender.sendToPlayer(gameId, game.getCurrentPlayer().getId(), new ChanceCardEvent(cardMessage));
     }
 
     private static void skipTurns(int amount, Player currentPlayer) {

@@ -21,7 +21,7 @@ public class ParkingFieldActionExecutor implements FieldActionExecutor {
 
     @Override
     public void executeAction(Game game) {
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+        gameEventSender.sendToAllPlayers(game.getId(), new ChatMessageEvent(
                 game.getCurrentPlayer().getName() + " is using free parking"));
         gameLogicExecutor.endTurn(game);
     }

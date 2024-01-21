@@ -13,32 +13,36 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/game/field")
+@RequestMapping("/game/{gameId}/field")
 public class FieldController {
 
     private final GameService gameService;
 
     @PutMapping("/{fieldIndex}/mortgage")
-    public void mortgageProperty(@PathVariable("fieldIndex") Integer fieldIndex,
+    public void mortgageProperty(@PathVariable("gameId") UUID gameId,
+                                 @PathVariable("fieldIndex") Integer fieldIndex,
                                  @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
-        gameService.mortgageField(fieldIndex, playerId);
+        gameService.mortgageField(gameId, fieldIndex, playerId);
     }
 
     @PutMapping("/{fieldIndex}/redeem")
-    public void redeemProperty(@PathVariable("fieldIndex") Integer fieldIndex,
+    public void redeemProperty(@PathVariable("gameId") UUID gameId,
+                               @PathVariable("fieldIndex") Integer fieldIndex,
                                @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
-        gameService.redeemMortgagedProperty(fieldIndex, playerId);
+        gameService.redeemMortgagedProperty(gameId, fieldIndex, playerId);
     }
 
     @PutMapping("/{fieldIndex}/buy_house")
-    public void buyHouse(@PathVariable("fieldIndex") Integer fieldIndex,
+    public void buyHouse(@PathVariable("gameId") UUID gameId,
+                         @PathVariable("fieldIndex") Integer fieldIndex,
                          @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
-        gameService.buyHouse(fieldIndex, playerId);
+        gameService.buyHouse(gameId, fieldIndex, playerId);
     }
 
     @PutMapping("/{fieldIndex}/sell_house")
-    public void sellHouse(@PathVariable("fieldIndex") Integer fieldIndex,
+    public void sellHouse(@PathVariable("gameId") UUID gameId,
+                          @PathVariable("fieldIndex") Integer fieldIndex,
                           @RequestHeader(GlobalConfig.USER_ID_HEADER) UUID playerId) {
-        gameService.sellHouse(fieldIndex, playerId);
+        gameService.sellHouse(gameId, fieldIndex, playerId);
     }
 }

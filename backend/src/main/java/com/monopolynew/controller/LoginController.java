@@ -2,7 +2,7 @@ package com.monopolynew.controller;
 
 import com.monopolynew.dto.LoginData;
 import com.monopolynew.dto.UserInfo;
-import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.UserInvalidInputException;
 import com.monopolynew.mapper.PlayerMapper;
 import com.monopolynew.user.GameUser;
 import com.monopolynew.user.UserRepository;
@@ -23,12 +23,12 @@ public class LoginController {
 
     @PostMapping
     public UserInfo createUser(@RequestBody LoginData loginData) {
-        String playerName = loginData.getName();
+        String userName = loginData.getName();
         // TODO: remove upon login feature implementation
-        if (StringUtils.isBlank(playerName) || playerName.length() < 3 || playerName.length() > 20) {
-            throw new PlayerInvalidInputException("Player name length must be from 3 to 20 characters");
+        if (StringUtils.isBlank(userName) || userName.length() < 3 || userName.length() > 20) {
+            throw new UserInvalidInputException("Player name length must be from 3 to 20 characters");
         }
-        GameUser user = userRepository.createUser(playerName, loginData.getAvatar());
+        GameUser user = userRepository.createUser(userName, loginData.getAvatar());
         return playerMapper.toUserInfo(user);
     }
 }

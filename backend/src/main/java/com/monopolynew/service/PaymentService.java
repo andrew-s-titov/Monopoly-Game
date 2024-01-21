@@ -27,6 +27,7 @@ public class PaymentService {
 
     public void startPaymentProcess(Game game, @NonNull Player player, Player beneficiary,
                                     int amount, String paymentComment) {
+        var gameId = game.getId();
         var currentGameStage = game.getStage();
         verifyCheckCreationAvailable(currentGameStage);
         var newGameStage = GameStage.ROLLED_FOR_TURN.equals(currentGameStage) ?
@@ -42,7 +43,7 @@ public class PaymentService {
                     .comment(paymentComment)
                     .build();
             game.setCheckToPay(checkToPay);
-            gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.of(checkToPay));
+            gameEventSender.sendToPlayer(gameId, player.getId(), PayCommandEvent.of(checkToPay));
         } else {
             var assets = gameLogicExecutor.computePlayerAssets(game, player);
             var checkToPay = CheckToPay.builder()
@@ -56,15 +57,16 @@ public class PaymentService {
             boolean enoughAssets = assets >= amount;
             if (enoughAssets) {
                 gameLogicExecutor.changeGameStage(game, newGameStage);
-                gameEventSender.sendToPlayer(player.getId(), PayCommandEvent.of(checkToPay));
+                gameEventSender.sendToPlayer(gameId, player.getId(), PayCommandEvent.of(checkToPay));
             } else {
-                gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " went bankrupt"));
+                gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(player.getName() + " went bankrupt"));
                 gameLogicExecutor.bankruptPlayer(game, player);
             }
         }
     }
 
     public Player processPayment(Game game) {
+        var gameId = game.getId();
         var checkToPay = game.getCheckToPay();
         if (checkToPay == null) {
             throw new IllegalStateException("Cannot process payment - no payment found");
@@ -82,10 +84,10 @@ public class PaymentService {
             beneficiary.addMoney(debt);
             moneyStates.add(MoneyState.fromPlayer(beneficiary));
         }
-        gameEventSender.sendToAllPlayers(new MoneyChangeEvent(moneyStates));
+        gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(moneyStates));
         var paymentComment = checkToPay.getComment();
         if (StringUtils.isNotBlank(paymentComment)) {
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(paymentComment));
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(paymentComment));
         }
         game.setCheckToPay(null);
         return debtor;

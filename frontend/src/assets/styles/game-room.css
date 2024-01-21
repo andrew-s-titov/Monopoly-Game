@@ -1,40 +1,121 @@
 :root {
-    --gr-player-container-width: calc(100vw * 0.15);
-    --gr-player-container-side-margin: calc(100vw * 0.05);
+    --gr-player-width: 15vw;
+    --gr-player-side-margin: 5vw;
+
+    --gr-overview-player-width: 6vh;
 }
 
 .gr-players-container {
+    background-color: transparent;
     display: flex;
     flex-direction: row;
 }
 
+.gr-overview-player {
+    width: var(--gr-overview-player-width);
+    margin: 0 4vh 0 4vh;
+}
+
+.gr-overview-players-column {
+    min-width: 70vh;
+    padding: 0;
+}
+
+.gr-table-overview-header {
+    font-size: 3vh;
+    margin-bottom: 1.5vh;
+    color: var(--gray-800);
+    font-weight: 500;
+    text-shadow: 0.2vh 0.2vh 0.3vh rgba(0,0,0,0.2);
+}
+
+.gr-overview-table {
+    min-width: 60vw;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.gr-overview-row {
+    height: 10vh;
+    padding: 0 1vh 0 1vh;
+    background-color: inherit;
+}
+
 .gr-player {
-    width: var(--gr-player-container-width);
-    margin-right: var(--gr-player-container-side-margin);
-    margin-left: var(--gr-player-container-side-margin);
+    width: var(--gr-player-width);
+    margin-right: var(--gr-player-side-margin);
+    margin-left: var(--gr-player-side-margin);
+}
+
+.gr-player, .gr-overview-player {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.gr-player-image {
-    height: var(--gr-player-container-width);
-    width: var(--gr-player-container-width);
+.gr-overview-player-avatar {
+    height: var(--gr-overview-player-width);
+    width: var(--gr-overview-player-width);
+    background-size: var(--gr-overview-player-width);
+}
+
+.gr-player-avatar {
+    height: var(--gr-player-width);
+    width: var(--gr-player-width);
+    background-size: var(--gr-player-width);
+}
+
+.gr-player-avatar, .gr-overview-player-avatar {
     background-repeat: no-repeat no-repeat;
     background-position: center center;
-    background-size: var(--gr-player-container-width);
 }
 
 .gr-player-name {
-    font-size: 2.5vh;
-    font-weight: 500;
-    width: 100%;
-    background: rgba(255,255,255, 0.4);
-    border-radius: 10vh;
+    font-size: 1.5vw;
     padding: 1vh 0 1vh 0;
+    width: 100%;
+}
+
+.gr-overview-player-name {
+    font-size: 2vh;
+    width: 13vh;
+}
+
+.gr-player-name, .gr-overview-player-name {
+    text-align: center;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 10vh;
+    word-break: break-all;
 }
 
 .start-game-button {
     margin-top: 10vh;
+}
+
+.join-button {
+    margin-left: 5vh;
+    background-color: rgba(150, 150, 150, 0.4);
+    text-shadow: 0.3vh 0.3vh 0.3vh rgba(0, 0, 0, 0.5);
+    color: white;
+    min-width: 12vh;
+    height: 5vh;
+    justify-content: center;
+}
+
+.join-button:hover {
+    background-color: rgba(150, 150, 150, 0.7);
+}
+
+.join-button:active {
+    background-color: rgba(150, 150, 150);
+}
+
+.join-button .p-button-icon-left {
+    margin-right: 1vh !important;
+    text-shadow: inherit;
+}
+
+.join-button .p-button-label {
+    flex: none !important;
 }

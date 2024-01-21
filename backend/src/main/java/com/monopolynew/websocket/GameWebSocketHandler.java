@@ -9,6 +9,7 @@ import com.monopolynew.service.GameEventGenerator;
 import com.monopolynew.service.GameEventSender;
 import com.monopolynew.service.GameMapRefresher;
 import com.monopolynew.service.GameRepository;
+import com.monopolynew.service.GameRoomService;
 import com.monopolynew.user.GameUser;
 import com.monopolynew.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,79 +23,92 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 
+import static com.monopolynew.config.WebSocketConfig.extractGameId;
+import static com.monopolynew.config.WebSocketConfig.extractUserId;
+
 @RequiredArgsConstructor
 @Slf4j
 @Component
-// TODO: define path as '/{gameId} to choose game, refactor session repo as game<->session map
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
-    private final UserWsSessionRepository userSessionRepository;
+    private final GamePlayerWsSessionRepository userSessionRepository;
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final GameMapRefresher gameMapRefresher;
     private final GameEventSender gameEventSender;
     private final GameEventGenerator gameEventGenerator;
+    private final GameRoomService gameRoomService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        var playerId = GameWsInterceptor.extractUserId(session);
+        var playerId = extractUserId(session);
+        var gameId = extractGameId(session);
 
         GameUser user = userRepository.getUser(playerId);
 
-        Game game = gameRepository.getGame();
+        Game game = gameRepository.findGame(gameId);
         if (game.isInProgress()) {
             if (game.playerExists(playerId)) {
-                userSessionRepository.addUserSession(playerId, session);
+                userSessionRepository.addUserSession(gameId, playerId, session);
                 gameMapRefresher.restoreGameStateForPlayer(game, playerId);
             } else {
-                gameEventSender.sendToPlayer(playerId, new ConnectionErrorEvent("Game in progress"));
+                gameEventSender.sendToPlayer(gameId, playerId, new ConnectionErrorEvent("Game in progress"));
             }
             return;
         }
 
-        var allActiveSessions = userSessionRepository.getAllSessions();
+        var allActiveSessions = userSessionRepository.getAllSessions(gameId);
         if (CollectionUtils.isNotEmpty(allActiveSessions) && allActiveSessions.size() >= Rules.MAX_PLAYERS) {
-            gameEventSender.sendToPlayer(playerId,
+            gameEventSender.sendToPlayer(gameId, playerId,
                     new ConnectionErrorEvent("Only " + Rules.MAX_PLAYERS + " are allowed to play"));
             return;
         }
 
-        userSessionRepository.addUserSession(playerId, session);
+        userSessionRepository.addUserSession(gameId, playerId, session);
         game.addPlayer(Player.fromUser(user));
-        gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
+        gameEventSender.sendToAllPlayers(gameId, gameEventGenerator.gameRoomEvent(game));
+        gameRoomService.refreshGameRooms();
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        var playerId = GameWsInterceptor.extractUserId(session);
-        userSessionRepository.removeUserSession(playerId);
-        var game = gameRepository.getGame();
+        var playerId = extractUserId(session);
+        var gameId = extractGameId(session);
+        userSessionRepository.removeUserSession(gameId, playerId);
+        var game = gameRepository.findGame(gameId);
         // if a game isn't in progress - send an event for other players about disconnection
-        if (!game.isInProgress()) {
+        if (game != null && !game.isInProgress()) {
             game.removePlayer(playerId);
-            gameEventSender.sendToAllPlayers(gameEventGenerator.gameRoomEvent(game));
+            if (game.getPlayers().isEmpty()) {
+                gameRepository.removeGame(gameId);
+            } else {
+                gameEventSender.sendToAllPlayers(gameId, gameEventGenerator.gameRoomEvent(game));
+            }
+            gameRoomService.refreshGameRooms();
         }
         // if a game is in progress - do not remove from game to let the player reconnect with another session
-        if (!status.equals(CloseStatus.NORMAL) && !status.equals(CloseStatus.GOING_AWAY)) {
-            log.warn("Not a normal websocket close: userId={}, reason=({}), sessionId={}",
-                    playerId, status, session.getId());
+        int statusCode = status.getCode();
+        if (statusCode != CloseStatus.NORMAL.getCode() && statusCode != CloseStatus.GOING_AWAY.getCode()) {
+            log.warn("Not a normal websocket close: status=({}), sessionId={}, attributes=({})",
+                    status, session.getId(), session.getAttributes());
         }
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        var userId = GameWsInterceptor.extractUserId(session);
+        var userId = extractUserId(session);
         log.error("Websocket error, userId=" + userId, exception);
     }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
-        var playerId = GameWsInterceptor.extractUserId(session);
+        var playerId = extractUserId(session);
+        var gameId = extractGameId(session);
         var newMessage = ChatMessageEvent.builder()
                 .message(message.getPayload())
                 .playerId(playerId)
                 .build();
-        gameEventSender.sendToAllPlayers(newMessage);
+        gameEventSender.sendToAllPlayers(gameId, newMessage);
     }
 }

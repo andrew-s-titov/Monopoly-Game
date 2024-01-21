@@ -1,5 +1,6 @@
 package com.monopolynew.service;
 
+import com.monopolynew.dto.NewGameParamsDTO;
 import com.monopolynew.dto.DealOffer;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
@@ -12,7 +13,7 @@ import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.NewPlayerTurn;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
-import com.monopolynew.exception.PlayerInvalidInputException;
+import com.monopolynew.exception.UserInvalidInputException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Dice;
 import com.monopolynew.game.Game;
@@ -32,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static com.monopolynew.util.Utils.requireNotNullArgs;
+import static com.monopolynew.util.CommonUtils.requireNotNullArgs;
 
 @RequiredArgsConstructor
 @Component
@@ -48,35 +49,40 @@ public class GameService {
     private final PaymentService paymentService;
     private final FieldManagementService fieldManagementService;
     private final DealManager dealManager;
+    private final GameRoomService gameRoomService;
 
     private final ScheduledExecutorService scheduler;
 
-    public boolean isGameStarted() {
-        return gameRepository.getGame().isInProgress();
+    public UUID newGame(NewGameParamsDTO newGameParamsDTO) {
+        return gameRepository.createGame(newGameParamsDTO);
     }
 
-    public void startGame() {
-        Game game = gameRepository.getGame();
+    public boolean isGameStarted(UUID gameId) {
+        return getGame(gameId).isInProgress();
+    }
+
+    public void startGame(UUID gameId) {
+        Game game = getGame(gameId);
         Collection<Player> players = game.getPlayers();
         if (players.size() < 2) {
-            throw new PlayerInvalidInputException("Cannot start a game without at least 2 players");
+            throw new UserInvalidInputException("Cannot start a game without at least 2 players");
         }
         game.startGame();
-        gameEventSender.sendToAllPlayers(gameEventGenerator.mapStateEvent(game));
+        gameRoomService.refreshGameRooms();
+        gameEventSender.sendToAllPlayers(gameId, gameEventGenerator.mapStateEvent(game));
         UUID currentPlayerId = game.getCurrentPlayer().getId();
-        gameEventSender.sendToAllPlayers(new NewPlayerTurn(currentPlayerId));
-        gameEventSender.sendToPlayer(currentPlayerId, new TurnStartEvent());
+        gameEventSender.sendToAllPlayers(gameId, new NewPlayerTurn(currentPlayerId));
+        gameEventSender.sendToPlayer(gameId, currentPlayerId, new TurnStartEvent());
     }
 
-    public void makeUsualTurn() {
-        Game game = gameRepository.getGame();
-        // extract this method to a private reusable for jail action
+    public void makeUsualTurn(UUID gameId) {
+        Game game = getGame(gameId);
         rollTheDice(game, this::afterDiceRollForTurn);
     }
 
-    public void processBuyProposal(@NonNull ProposalAction action) {
-        requireNotNullArgs(action);
-        Game game = gameRepository.getGame();
+    public void processBuyProposal(@NonNull UUID gameId, @NonNull ProposalAction action) {
+        requireNotNullArgs(gameId, action);
+        Game game = getGame(gameId);
         BuyProposal buyProposal = game.getBuyProposal();
         if (!GameStage.BUY_PROPOSAL.equals(game.getStage()) || buyProposal == null) {
             throw new WrongGameStageException("Cannot call buy proposal endpoint when there's no proposal");
@@ -94,19 +100,19 @@ public class GameService {
         }
     }
 
-    public void processAuctionBuyProposal(ProposalAction action) {
-        var game = gameRepository.getGame();
+    public void processAuctionBuyProposal(UUID gameId, ProposalAction action) {
+        var game = getGame(gameId);
         auctionManager.processAuctionBuyProposal(game, action);
     }
 
-    public void processAuctionRaiseProposal(ProposalAction action) {
-        var game = gameRepository.getGame();
+    public void processAuctionRaiseProposal(UUID gameId, ProposalAction action) {
+        var game = getGame(gameId);
         auctionManager.processAuctionRaiseProposal(game, action);
     }
 
-    public void processJailAction(@NonNull JailAction jailAction) {
-        requireNotNullArgs(jailAction);
-        Game game = gameRepository.getGame();
+    public void processJailAction(@NonNull UUID gameId, @NonNull JailAction jailAction) {
+        requireNotNullArgs(gameId, jailAction);
+        Game game = getGame(gameId);
         if (!GameStage.JAIL_RELEASE_START.equals(game.getStage())) {
             throw new WrongGameStageException("Cannot process jail action - wrong game stage");
         }
@@ -117,19 +123,19 @@ public class GameService {
             }
             currentPlayer.takeMoney(Rules.JAIL_BAIL);
             currentPlayer.releaseFromJail();
-            gameEventSender.sendToAllPlayers(new MoneyChangeEvent(Collections.singletonList(
+            gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(Collections.singletonList(
                     MoneyState.fromPlayer(currentPlayer))));
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                     currentPlayer.getName() + " is released on bail"));
             gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
-            gameEventSender.sendToPlayer(currentPlayer.getId(), new TurnStartEvent());
+            gameEventSender.sendToPlayer(gameId, currentPlayer.getId(), new TurnStartEvent());
         } else if (jailAction.equals(JailAction.LUCK)) {
             rollTheDice(game, this::afterDiceRollForJail);
         }
     }
 
-    public void processPayment() {
-        Game game = gameRepository.getGame();
+    public void processPayment(UUID gameId) {
+        Game game = getGame(gameId);
         GameStage currentGameStage = game.getStage();
         if (!GameStage.AWAITING_PAYMENT.equals(currentGameStage) && !GameStage.AWAITING_JAIL_FINE.equals(currentGameStage)) {
             throw new WrongGameStageException("Cannot process payment - wrong game stage");
@@ -144,41 +150,41 @@ public class GameService {
         }
     }
 
-    public void giveUp(UUID playerId) {
+    public void giveUp(UUID gameId, UUID playerId) {
         // TODO: check if game is in progress
-        Game game = gameRepository.getGame();
+        Game game = getGame(gameId);
         Player player = game.getPlayerById(playerId);
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(player.getName() + " gave up"));
+        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(player.getName() + " gave up"));
         gameLogicExecutor.bankruptPlayer(game, player);
     }
 
-    public void mortgageField(int fieldIndex, UUID playerId) {
-        var game = gameRepository.getGame();
+    public void mortgageField(UUID gameId, int fieldIndex, UUID playerId) {
+        var game = getGame(gameId);
         fieldManagementService.mortgageField(game, fieldIndex, playerId);
     }
 
-    public void redeemMortgagedProperty(int fieldIndex, UUID playerId) {
-        var game = gameRepository.getGame();
+    public void redeemMortgagedProperty(UUID gameId, int fieldIndex, UUID playerId) {
+        var game = getGame(gameId);
         fieldManagementService.redeemMortgagedProperty(game, fieldIndex, playerId);
     }
 
-    public void buyHouse(int fieldIndex, UUID playerId) {
-        var game = gameRepository.getGame();
+    public void buyHouse(UUID gameId, int fieldIndex, UUID playerId) {
+        var game = getGame(gameId);
         fieldManagementService.buyHouse(game, fieldIndex, playerId);
     }
 
-    public void sellHouse(int fieldIndex, UUID playerId) {
-        var game = gameRepository.getGame();
+    public void sellHouse(UUID gameId, int fieldIndex, UUID playerId) {
+        var game = getGame(gameId);
         fieldManagementService.sellHouse(game, fieldIndex, playerId);
     }
 
-    public void createOffer(UUID initiatorId, UUID addresseeId, DealOffer offer) {
-        var game = gameRepository.getGame();
+    public void createOffer(UUID gameId, UUID initiatorId, UUID addresseeId, DealOffer offer) {
+        var game = getGame(gameId);
         dealManager.createOffer(game, initiatorId, addresseeId, offer);
     }
 
-    public void processOfferAnswer(UUID callerId, ProposalAction proposalAction) {
-        var game = gameRepository.getGame();
+    public void processOfferAnswer(UUID gameId, UUID callerId, ProposalAction proposalAction) {
+        var game = getGame(gameId);
         dealManager.processOfferAnswer(game, callerId, proposalAction);
     }
 
@@ -194,6 +200,7 @@ public class GameService {
     }
 
     private void broadcastDiceResult(Game game, Consumer<Game> afterAction) {
+        var gameId = game.getId();
         var lastDice = game.getLastDice();
         Player currentPlayer = game.getCurrentPlayer();
         String message = String.format("%s rolled the dice and got %s : %s",
@@ -201,8 +208,8 @@ public class GameService {
         if (lastDice.isDoublet()) {
             message = message + " (doublet)";
         }
-        gameEventSender.sendToAllPlayers(DiceResultEvent.of(lastDice));
-        gameEventSender.sendToAllPlayers(new ChatMessageEvent(message));
+        gameEventSender.sendToAllPlayers(gameId, DiceResultEvent.of(lastDice));
+        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(message));
 
         scheduler.schedule(
                 () -> afterAction.accept(game),
@@ -213,7 +220,7 @@ public class GameService {
         Player currentPlayer = game.getCurrentPlayer();
         if (currentPlayer.getDoubletCount() == Rules.DOUBLETS_LIMIT) {
             currentPlayer.resetDoublets();
-            gameEventSender.sendToAllPlayers(
+            gameEventSender.sendToAllPlayers(game.getId(),
                     new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));
             gameLogicExecutor.sendToJail(game, currentPlayer);
             gameLogicExecutor.endTurn(game);
@@ -223,12 +230,13 @@ public class GameService {
     }
 
     private void afterDiceRollForJail(Game game) {
+        var gameId = game.getId();
         DiceResult lastDice = game.getLastDice();
         Player currentPlayer = game.getCurrentPlayer();
         if (lastDice.isDoublet()) {
             currentPlayer.amnesty();
             gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
-            gameEventSender.sendToAllPlayers(new ChatMessageEvent(
+            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
                     currentPlayer.getName() + " is pardoned under amnesty"));
             doRegularMove(game);
         } else {
@@ -237,7 +245,8 @@ public class GameService {
                 paymentService.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
             } else {
                 currentPlayer.doTime();
-                gameEventSender.sendToAllPlayers(new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
+                gameEventSender.sendToAllPlayers(gameId,
+                        new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
                 gameLogicExecutor.endTurn(game);
             }
         }
@@ -264,7 +273,7 @@ public class GameService {
                 ? GameStage.ROLLED_FOR_TURN
                 : GameStage.ROLLED_FOR_JAIL;
         gameLogicExecutor.changeGameStage(game, newStage);
-        gameEventSender.sendToAllPlayers(new DiceRollingStartEvent());
+        gameEventSender.sendToAllPlayers(game.getId(), new DiceRollingStartEvent());
     }
 
     private void processPlayerDoublets(Game game) {
@@ -276,5 +285,13 @@ public class GameService {
         } else {
             currentPlayer.resetDoublets();
         }
+    }
+
+    private Game getGame(UUID gameId) {
+        Game game = gameRepository.findGame(gameId);
+        if (game == null) {
+            throw new ClientBadRequestException("Game not found by id");
+        }
+        return game;
     }
 }

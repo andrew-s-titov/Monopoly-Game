@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
-import { BE_ENDPOINT } from "../../api/config";
+import { gameBaseUrl } from "../../config/api";
 import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
 import { useEventModalContext } from "../../context/EventModalProvider";
@@ -16,7 +16,7 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
 
   const { closeEventModal } = useEventModalContext();
   const loggedInUserId = useMemo(getLoggedInUserId, []);
-  const { gameState } = useGameState();
+  const { gameId, gameState } = useGameState();
   const playerState = gameState.playerStates[loggedInUserId];
 
   const payable = playerState.money >= proposal;
@@ -24,11 +24,11 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
 
   const { put } = useQuery();
   const { execute: buy, isLoading: isBuyLoading } = put({
-    url: `${BE_ENDPOINT}/game/auction/buy?action=ACCEPT`,
+    url: `${gameBaseUrl(gameId)}/auction/buy?action=ACCEPT`,
     onSuccess: closeAuctionBuyProposal,
   });
   const { execute: decline, isLoading: isDeclineLoading } = put({
-    url: `${BE_ENDPOINT}/game/auction/buy?action=DECLINE`,
+    url: `${gameBaseUrl(gameId)}/auction/buy?action=DECLINE`,
     onSuccess: closeAuctionBuyProposal,
   });
 

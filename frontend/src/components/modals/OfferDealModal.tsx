@@ -13,7 +13,7 @@ import { useMessageContext } from '../../context/MessageProvider';
 import PropertyOfferView from '../PropertyOfferView';
 import useQuery from "../../hooks/useQuery";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
-import { BE_ENDPOINT } from "../../api/config";
+import { gameBaseUrl } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 
 interface IOfferDealModalProps {
@@ -59,6 +59,7 @@ const onOfferMoneyChange = (newValue: number | undefined | null,
 
 const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
 
+  const { gameId } = useGameState();
   const checkedInitiatorFieldsUseStateReturn = useState<UPropertyIndex[]>([]);
   const checkedInitiatorFields = checkedInitiatorFieldsUseStateReturn[0];
   const checkedAddresseeFieldsUseStateReturn = useState<UPropertyIndex[]>([]);
@@ -74,7 +75,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
     closeEventModal();
   }
   const { execute: sendOffer, isLoading } = post({
-    url: `${BE_ENDPOINT}/game/offer/${addresseeId}`,
+    url: `${gameBaseUrl(gameId)}/offer/${addresseeId}`,
     onSuccess: closeAllModals,
   })
 
