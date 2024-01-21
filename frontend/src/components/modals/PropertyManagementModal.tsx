@@ -67,18 +67,6 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               onClick={() => redeem()}
             />
           }
-          {showMortgage &&
-            <Button
-              label='Mortgage'
-              outlined
-              severity="danger"
-              icon="pi pi-file-excel icon"
-              className="property-management-button"
-              loading={isMortgageLoading}
-              loadingIcon="pi pi-spin pi-box icon"
-              onClick={() => mortgage()}
-            />
-          }
           {showBuyHouse &&
             <Button
               label='Buy a house'
@@ -101,6 +89,18 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
               loading={isSellLoading}
               loadingIcon="pi pi-spin pi-box icon"
               onClick={() => sellHouse()}
+            />
+          }
+          {showMortgage &&
+            <Button
+              label='Mortgage'
+              outlined
+              severity="danger"
+              icon="pi pi-file-excel icon"
+              className="property-management-button"
+              loading={isMortgageLoading}
+              loadingIcon="pi pi-spin pi-box icon"
+              onClick={() => mortgage()}
             />
           }
         </div>
