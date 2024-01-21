@@ -13,6 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 import java.util.UUID;
 
+import static com.monopolynew.config.GlobalConfig.ALLOWED_ORIGINS_PATTERNS;
 import static com.monopolynew.config.GlobalConfig.GAME_ID_KEY;
 import static com.monopolynew.config.GlobalConfig.USER_ID_HEADER;
 
@@ -20,12 +21,6 @@ import static com.monopolynew.config.GlobalConfig.USER_ID_HEADER;
 @EnableWebSocket
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
-
-    private static final String[] ALLOWED_ORIGINS = new String[]{
-            "https://*.ngrok.io",
-            "https://*.ngrok-free.app",
-            "http://localhost:3000"
-    };
 
     private final GameWebSocketHandler gameWebsocketHandler;
     private final GameWsInterceptor handshakeInterceptor;
@@ -36,11 +31,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(gameWebsocketHandler, "/game/**")
-                .setAllowedOriginPatterns(ALLOWED_ORIGINS)
+                .setAllowedOriginPatterns(ALLOWED_ORIGINS_PATTERNS)
                 .addInterceptors(handshakeInterceptor);
 
         registry.addHandler(landingPageWebSocketHandler, "/start/**")
-                .setAllowedOriginPatterns(ALLOWED_ORIGINS)
+                .setAllowedOriginPatterns(ALLOWED_ORIGINS_PATTERNS)
                 .addInterceptors(landingPageWsInterceptor);
     }
 

@@ -13,14 +13,12 @@ import useQuery from "../hooks/useQuery";
 import { BE_ENDPOINT } from "../config/api";
 import { LoginResponse } from "../types/interfaces";
 import { setAuthData } from "../utils/auth";
-import { Navigate, useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
 
   const avatarOverlay = useRef<OverlayPanel>(null);
   const [avatar, setAvatar] = useState(getRandomAvatar());
   const { setLoggedIn, isLoggedIn } = useAuthContext();
-  const navigate = useNavigate();
   const [nameInputValue, setNameInputValue] = useState('');
 
   const { post } = useQuery();
@@ -29,7 +27,6 @@ const LoginPage = () => {
     responseHandler: (loginResponse: LoginResponse) => {
       setAuthData(loginResponse);
       setLoggedIn();
-      navigate('/');
     }
   });
 
@@ -53,57 +50,53 @@ const LoginPage = () => {
   };
 
   return (
-    isLoggedIn
-      ?
-      <Navigate to={'/'}/>
-      :
-      <StartPageBackground withHeader={false}>
-        <StartPageCenteredContent>
-          <PlayerAvatar
-            avatarName={avatar}
-            className="avatar-in-login"
-            onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
-            withPointer
-          />
-          <InputText
-            autoFocus
-            value={nameInputValue}
-            onChange={onInputChange}
-            className="player-name-input"
-            placeholder='Enter your nickname'
-            onKeyDown={onEnterKeyDown}
-          />
-          <StartPageButton
-            label='Create user'
-            icon="pi-user"
-            isLoading={isLoginInProgress}
-            isDisabled={isInputInvalid}
-            onClickHandler={onJoinClickHandler}
-          />
-        </StartPageCenteredContent>
-        <OverlayPanel
-          ref={avatarOverlay}
-          dismissable
-          closeOnEscape
-        >
-          {
-            <div className="avatar-picker">
-              {AVATAR_NAMES.map(
-                (avatar) =>
-                  <PlayerAvatar
-                    key={avatar}
-                    className="avatar-in-picker"
-                    avatarName={avatar}
-                    onClickHandler={() => {
-                      setAvatar(avatar);
-                    }}
-                    withPointer
-                  />
-              )}
-            </div>
-          }
-        </OverlayPanel>
-      </StartPageBackground>
+    <StartPageBackground withHeader={false}>
+      <StartPageCenteredContent>
+        <PlayerAvatar
+          avatarName={avatar}
+          className="avatar-in-login"
+          onClickHandler={(e) => avatarOverlay.current?.toggle(e)}
+          withPointer
+        />
+        <InputText
+          autoFocus
+          value={nameInputValue}
+          onChange={onInputChange}
+          className="player-name-input"
+          placeholder='Enter your nickname'
+          onKeyDown={onEnterKeyDown}
+        />
+        <StartPageButton
+          label='Create user'
+          icon="pi-user"
+          isLoading={isLoginInProgress}
+          isDisabled={isInputInvalid}
+          onClickHandler={onJoinClickHandler}
+        />
+      </StartPageCenteredContent>
+      <OverlayPanel
+        ref={avatarOverlay}
+        dismissable
+        closeOnEscape
+      >
+        {
+          <div className="avatar-picker">
+            {AVATAR_NAMES.map(
+              (avatar) =>
+                <PlayerAvatar
+                  key={avatar}
+                  className="avatar-in-picker"
+                  avatarName={avatar}
+                  onClickHandler={() => {
+                    setAvatar(avatar);
+                  }}
+                  withPointer
+                />
+            )}
+          </div>
+        }
+      </OverlayPanel>
+    </StartPageBackground>
   );
 }
 

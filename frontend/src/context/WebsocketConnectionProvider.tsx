@@ -30,7 +30,7 @@ import {
 } from "../components/modals";
 import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
-import { useNavigate } from "react-router-dom";
+import { useRouting } from "./Routing";
 
 interface IWebsocketContext {
   sendMessage: (chatMessage: string) => void;
@@ -40,7 +40,7 @@ const WebsocketContext = createContext<IWebsocketContext>({} as IWebsocketContex
 
 const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
 
-  const navigate = useNavigate();
+  const { navigate } = useRouting();
   const {
     gameId,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
@@ -260,7 +260,7 @@ const WebsocketConnectionProvider = ({ children }: PropsWithChildren) => {
           changeCurrentPlayer('');
           clearTimeouts();
           newTimeout(
-            () => navigate('/'),
+            () => navigate('home'),
             5000
           );
         },

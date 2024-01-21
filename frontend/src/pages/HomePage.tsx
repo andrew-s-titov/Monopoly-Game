@@ -1,5 +1,4 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
@@ -13,6 +12,7 @@ import StartPageCenteredContent from "../components/StartPageCenteredContent";
 import { AvailableGamesEvent, GameRoomParticipant } from "../types/events";
 
 import "../assets/styles/flags.css"
+import { useRouting } from "../context/Routing";
 
 interface GameRoomEntry {
   gameId: string,
@@ -30,12 +30,12 @@ const HomePage = () => {
 
   const websocket = useRef<WebSocket>();
   const { post } = useQuery();
-  const navigate = useNavigate();
+  const { navigateToGame } = useRouting();
   const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
 
   const { execute: createNewGame, isLoading: isCreateLoading } = post({
     url: `${BE_ENDPOINT}/game`,
-    responseHandler: ({ gameId }) => navigate(`/game/${gameId}`),
+    responseHandler: ({ gameId }) => navigateToGame(gameId),
   });
 
   const languageBody = ({ language }: GameRoomEntry) =>
@@ -60,7 +60,7 @@ const HomePage = () => {
         severity="secondary"
         label="Join"
         icon={'pi pi-caret-right icon'}
-        onClick={() => navigate(`/game/${gameId}`)}
+        onClick={() => navigateToGame(gameId)}
       />
       : null);
 

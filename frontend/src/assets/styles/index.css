@@ -61,20 +61,3 @@ code {
     justify-content: center;
     align-items: center;
 }
-
-.not-found-title {
-    font-size: 30vh;
-    text-shadow: -0.5vh -0.5vh 0.7vh rgba(255, 255, 255, 0.6),
-    0.5vh -0.5vh 0.7vh rgba(255, 255, 255, 0.6),
-    -0.5vh 0.5vh 0.7vh rgba(255, 255, 255, 0.6),
-    0.5vh 0.5vh 0.7vh rgba(255, 255, 255, 0.6);
-}
-
-.not-found-description {
-    font-size: 7vh;
-    text-shadow: 0.5vh 0.5vh 0.4vh rgba(255, 255, 255, 0.6);
-}
-
-.not-found-title, .not-found-description {
-    color: var(--gray-800);
-}

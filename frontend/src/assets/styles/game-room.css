@@ -73,18 +73,20 @@
 .gr-player-name {
     font-size: 1.5vw;
     padding: 1vh 0 1vh 0;
+    width: 100%;
 }
 
 .gr-overview-player-name {
     font-size: 2vh;
+    width: 13vh;
 }
 
 .gr-player-name, .gr-overview-player-name {
     text-align: center;
     font-weight: 500;
-    width: 100%;
     background: rgba(255, 255, 255, 0.4);
     border-radius: 10vh;
+    word-break: break-all;
 }
 
 .start-game-button {

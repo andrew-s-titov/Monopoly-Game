@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
-import PlayerAvatar from "./player/PlayerAvatar";
 import { useMemo } from "react";
+
+import PlayerAvatar from "./player/PlayerAvatar";
 import { getUserAvatar } from "../utils/auth";
+import { NavigatorLink } from "../context/Routing";
 
 const PageHeader = () => {
 
@@ -10,7 +11,7 @@ const PageHeader = () => {
   return (
     <div className="page-header">
       <div className="header-buttons">
-        <Link to='/'>Home</Link>
+        <NavigatorLink to='home'>Home</NavigatorLink>
       </div>
       <PlayerAvatar
         avatarName={avatarName}

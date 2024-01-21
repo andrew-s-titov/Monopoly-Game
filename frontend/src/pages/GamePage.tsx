@@ -3,11 +3,12 @@ import { PopUpModalProvider } from "../context/PopUpModalProvider";
 import WebsocketConnectionProvider from "../context/WebsocketConnectionProvider";
 import Game from "../components/Game";
 import { GameStateProvider } from "../context/GameStateProvider";
-import { useParams } from "react-router-dom";
 
-const GamePage = () => {
+interface IGamePageProps {
+  gameId: string,
+}
 
-  const gameId = useParams()['gameId'] || '';
+const GamePage = ({ gameId }: IGamePageProps) => {
 
   return (
     <GameStateProvider gameId={gameId}>
