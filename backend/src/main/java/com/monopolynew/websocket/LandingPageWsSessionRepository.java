@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class LandingPageWsSessionRepository {
 
-    private final Map<UUID, WebSocketSession> activeUserSessions = new HashMap<>();
+    private final Map<UUID, WebSocketSession> activeUserSessions = new ConcurrentHashMap<>();
 
     public void addUserSession(@NonNull WebSocketSession session) {
         activeUserSessions.put(WebSocketConfig.extractUserId(session), session);
