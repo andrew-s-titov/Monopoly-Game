@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   const avatarOverlay = useRef<OverlayPanel>(null);
   const [avatar, setAvatar] = useState(getRandomAvatar());
-  const { setLoggedIn, isLoggedIn } = useAuthContext();
+  const { setLoggedIn } = useAuthContext();
   const [nameInputValue, setNameInputValue] = useState('');
 
   const { post } = useQuery();
