@@ -37,6 +37,7 @@ const PropertyField = ({ position, index }: IFieldProps) => {
     openPopUpModal(
       {
         header: <PropertyManagementModal fieldIndex={index}/>,
+        isRounded: true,
       });
   };
 
