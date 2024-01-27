@@ -3,7 +3,6 @@ import { useGameState } from "../context/GameStateProvider";
 
 import GameRoomPlayer from "./GameRoomPlayer";
 import useQuery from "../hooks/useQuery";
-import { gameBaseUrl } from "../config/api";
 import StartPageButton from "./StartPageButton";
 import StartPageCenteredContent from "./StartPageCenteredContent";
 
@@ -14,7 +13,7 @@ const PreGameRoom = () => {
   const { post } = useQuery();
   const { execute: startGame, isLoading } = post(
     {
-      url: gameBaseUrl(gameId),
+      url: `/game/${gameId}`,
     });
 
   const canStartGame = connectedPlayers.length > 1;

@@ -1,6 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 
-import { BE_ENDPOINT } from "../config/api";
 import { useAuthContext } from "./AuthContextProvider";
 import useQuery from "../hooks/useQuery";
 import LoginPage from "../pages/LoginPage";
@@ -30,7 +29,7 @@ export const PageRoutingProvider = () => {
 
   const { get } = useQuery();
   const { execute: findSession } = get({
-    url: `${BE_ENDPOINT}/user`,
+    url: `/user`,
     responseHandler: ({ gameId }) => {
       if (gameId) {
         setActiveGameId(gameId);

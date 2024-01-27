@@ -8,14 +8,16 @@ export interface IModalProps {
   blurBackground?: boolean;
   isTransparent?: boolean,
   modalId?: ModalId,
+  isRounded?: boolean,
 }
 
 interface ModalState {
-  content?: React.JSX.Element,
   header?: React.JSX.Element,
+  content?: React.JSX.Element,
   blurBackground: boolean,
   isTransparent: boolean,
   isOpened: boolean,
+  isRounded: boolean,
 }
 
 const useModal = (isClosable?: boolean) => {
@@ -24,6 +26,7 @@ const useModal = (isClosable?: boolean) => {
     isOpened: false,
     isTransparent: false,
     blurBackground: true,
+    isRounded: false,
   }));
   const [isOpened, setIsOpened] = useState<boolean>();
 
@@ -32,7 +35,8 @@ const useModal = (isClosable?: boolean) => {
                        content,
                        blurBackground = true,
                        isTransparent = false,
-                       modalId
+                       modalId,
+                       isRounded = false,
                      }: IModalProps) => {
     lastModal.current = modalId;
     setModalState(() => ({
@@ -40,6 +44,7 @@ const useModal = (isClosable?: boolean) => {
       content,
       blurBackground,
       isTransparent,
+      isRounded,
       isOpened: true,
     }));
     setIsOpened(true);
@@ -61,8 +66,18 @@ const useModal = (isClosable?: boolean) => {
       header={headerWrapper}
       onHide={closeModal}
       visible={isOpened}
-      headerStyle={{ padding: '0', borderRadius: '0' }}
-      contentStyle={{ padding: '0' }}
+      headerStyle={{
+        padding: '0',
+        borderTopLeftRadius: modalState.isRounded ? '2vh' : '0',
+        borderTopRightRadius: modalState.isRounded ? '2vh' : '0',
+        borderBottomLeftRadius: modalState.isRounded && !modalState.content ? '2vh' : '0',
+        borderBottomRightRadius: modalState.isRounded && !modalState.content ? '2vh' : '0',
+    }}
+      contentStyle={{
+        padding: '0',
+        borderBottomLeftRadius: modalState.isRounded ? '2hv' : '0',
+        borderBottomRightRadius: modalState.isRounded ? '2hv' : '0',
+    }}
       dismissableMask={isClosable}
       closable={false}
       resizable={false}

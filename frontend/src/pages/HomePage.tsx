@@ -1,9 +1,9 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useState } from "react";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { BE_ENDPOINT, getLandingPageWebsocketUrl } from "../config/api";
+import { getLandingPageWebsocketUrl } from "../config/api";
 import useQuery from "../hooks/useQuery";
 import GameRoomPlayer from "../components/GameRoomPlayer";
 import StartPageBackground from "../components/StartPageBackground";
@@ -13,6 +13,7 @@ import { AvailableGamesEvent, GameRoomParticipant } from "../types/events";
 
 import "../assets/styles/flags.css"
 import { useRouting } from "../context/Routing";
+import useWebsocket from "../hooks/useWebsocket";
 
 interface GameRoomEntry {
   gameId: string,
@@ -28,13 +29,12 @@ const createRoomPlaceholders = (amount: number) => Array.from({ length: amount }
 
 const HomePage = () => {
 
-  const websocket = useRef<WebSocket>();
   const { post } = useQuery();
   const { navigateToGame } = useRouting();
   const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
 
   const { execute: createNewGame, isLoading: isCreateLoading } = post({
-    url: `${BE_ENDPOINT}/game`,
+    url: `/game`,
     responseHandler: ({ gameId }) => navigateToGame(gameId),
   });
 
@@ -64,36 +64,21 @@ const HomePage = () => {
       />
       : null);
 
-  useEffect(() => {
-      websocket.current = new WebSocket(getLandingPageWebsocketUrl());
-
-      websocket.current.onmessage = ({ data }: MessageEvent) => {
-        console.log(`websocket message is: ${data}`);
-        const rooms: AvailableGamesEvent[] = JSON.parse(data).rooms;
-        const roomsData: GameRoomEntry[] = rooms.map(room =>
-          ({
-            ...room,
-          }));
-        if (roomsData.length < perPage) {
-          roomsData.push(...createRoomPlaceholders(perPage - roomsData.length));
-        }
-        setRooms(roomsData);
-      };
-
-      websocket.current.onclose = (event: CloseEvent) => {
-        console.log(`websocket closed: ${JSON.stringify({
-          code: event.code,
-          reason: event.reason,
-        })}`);
+  useWebsocket({
+    url: getLandingPageWebsocketUrl(),
+    onMessage: ({ data }: MessageEvent) => {
+      console.log(`websocket message is: ${data}`);
+      const rooms: AvailableGamesEvent[] = JSON.parse(data).rooms;
+      const roomsData: GameRoomEntry[] = rooms.map(room =>
+        ({
+          ...room,
+        }));
+      if (roomsData.length < perPage) {
+        roomsData.push(...createRoomPlaceholders(perPage - roomsData.length));
       }
-
-      return () => {
-        websocket.current
-        && websocket.current?.readyState === websocket.current?.OPEN
-        && websocket.current.close(1000, 'player left the page');
-      }
-    }, []
-  );
+      setRooms(roomsData);
+    },
+  });
 
   return (
     <StartPageBackground>
