@@ -10,7 +10,7 @@
     "@types/jest": "^27.5.2",
     "@types/node": "^20.11.8",
     "@types/react": "^18.2.30",
-    "@types/react-dom": "^18.2.14",
+    "@types/react-dom": "^18.2.18",
     "emoji-picker-react": "^4.6.0",
     "fireworks-js": "^2.10.7",
     "primeicons": "^6.0.1",
