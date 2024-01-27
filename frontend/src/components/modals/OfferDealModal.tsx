@@ -14,6 +14,7 @@ import PropertyOfferView from '../PropertyOfferView';
 import useQuery from "../../hooks/useQuery";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { useEventModalContext } from "../../context/EventModalProvider";
+import { useTranslations } from "../../i18n/config";
 
 interface IOfferDealModalProps {
   addresseeId: string,
@@ -58,6 +59,7 @@ const onOfferMoneyChange = (newValue: number | undefined | null,
 
 const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
 
+  const { t } = useTranslations();
   const { gameId } = useGameState();
   const checkedInitiatorFieldsUseStateReturn = useState<UPropertyIndex[]>([]);
   const checkedInitiatorFields = checkedInitiatorFieldsUseStateReturn[0];
@@ -119,7 +121,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
     <div className='offer-content'>
       <div className='offer-sides-container'>
         <div className='offer-side'>
-          <span className='offer-side-title'>You:</span>
+          <span className='offer-side-title'>{t('deal.you')}</span>
           <InputNumber
             className='offer-money'
             prefix='$'
@@ -127,7 +129,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
             max={initiatorState.money}
             maxLength={5}
             value={selectedInitiatorMoney}
-            placeholder='money amount'
+            placeholder={t('placeholder.moneyAmount')}
             onChange={event => onOfferMoneyChange(event.value, setSelectedInitiatorMoney, initiatorState.money)}
             inputClassName='offer-money-input'
           />
@@ -154,7 +156,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
               </div>
             )}
           </div>
-          <div className='offer-total'>Total: ${initiatorTotal}</div>
+          <div className='offer-total'>{t('deal.total', { total: initiatorTotal })}</div>
         </div>
         <div className='offer-side'>
           <span className='offer-side-title'>{`${addresseeState ? addresseeState.name : ''}:`}</span>
@@ -165,7 +167,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
             max={addresseeState.money}
             maxLength={5}
             value={selectedAddresseeMoney}
-            placeholder='money amount'
+            placeholder={t('placeholder.moneyAmount')}
             onChange={event => onOfferMoneyChange(event.value, setSelectedAddresseeMoney, addresseeState.money)}
             inputClassName='offer-money-input'
           />
@@ -192,13 +194,13 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
               </div>
             )}
           </div>
-          <div className='offer-total'>Total: ${addresseeTotal}</div>
+          <div className='offer-total'>{t('deal.total', { total: addresseeTotal })}</div>
         </div>
       </div>
       <div className='modal-button-group'>
         <Button
           className='modal-button'
-          label='Cancel'
+          label={t('action.cancel')}
           severity='secondary'
           icon='pi pi-times modal-button-icon'
           onClick={closePopUpModal}
@@ -207,7 +209,7 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
           loading={isLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
-          label='Send offer'
+          label={t('deal.send')}
           severity='success'
           icon='pi pi-file-edit modal-button-icon'
           onClick={onSendOffer}

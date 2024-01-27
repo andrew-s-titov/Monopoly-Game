@@ -6,6 +6,7 @@ import { useGameState } from "../../context/GameStateProvider";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";
+import { useTranslations } from "../../i18n/config";
 
 interface IPayCommandModalProps {
   sum: number;
@@ -14,6 +15,7 @@ interface IPayCommandModalProps {
 
 const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
 
+  const { t } = useTranslations();
   const loggedInUser = useMemo(getLoggedInUserId, []);
   const { closeEventModal } = useEventModalContext();
   const { gameId, gameState } = useGameState();
@@ -38,7 +40,7 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
         loading={isPayLoading}
         loadingIcon="pi pi-spin pi-box modal-button-icon"
         className="modal-button"
-        label='Pay'
+        label={t('action.pay')}
         severity="secondary"
         icon="pi pi-money-bill modal-button-icon"
         onClick={() => pay()}
@@ -49,7 +51,7 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
           loading={isGiveUpLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           severity="danger"
-          label='Give up'
+          label={t('action.giveUp')}
           icon="pi pi-flag modal-button-icon"
           onClick={() => giveUp()}
         />

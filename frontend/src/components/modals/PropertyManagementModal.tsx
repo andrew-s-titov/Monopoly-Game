@@ -5,6 +5,7 @@ import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { Button } from "primereact/button";
 import { useGameState } from "../../context/GameStateProvider";
 import { PROPERTY_FIELDS_DATA } from "../../constants";
+import { useTranslations } from "../../i18n/config";
 
 interface IPropertyManagementProps {
   fieldIndex: UPropertyIndex;
@@ -12,6 +13,7 @@ interface IPropertyManagementProps {
 
 const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
 
+  const { t } = useTranslations();
   const { gameId } = useGameState();
   const { closePopUpModal } = usePopUpModalContext();
   const { put } = useQuery();
@@ -58,7 +60,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
         && <div className="property-management-buttons-container">
           {showRedeem &&
             <Button
-              label='Redeem'
+              label={t('action.redeem')}
               outlined
               severity="secondary"
               icon="pi pi-refresh icon"
@@ -70,7 +72,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
           }
           {showBuyHouse &&
             <Button
-              label='Buy a house'
+              label={t('action.buyHouse')}
               outlined
               severity="success"
               icon="pi pi-home icon"
@@ -82,7 +84,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
           }
           {showSellHouse &&
             <Button
-              label='Sell a house'
+              label={t('action.sellHouse')}
               outlined
               severity="warning"
               icon="pi pi-money-bill icon"
@@ -94,7 +96,7 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
           }
           {showMortgage &&
             <Button
-              label='Mortgage'
+              label={t('action.mortgage')}
               outlined
               severity="danger"
               icon="pi pi-file-excel icon"

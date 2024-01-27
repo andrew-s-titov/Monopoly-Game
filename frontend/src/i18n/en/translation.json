@@ -1,0 +1,48 @@
+{
+  "action": {
+    "cancel": "Cancel",
+    "buy": "Buy",
+    "accept": "Accept",
+    "decline": "Decline",
+    "raise": "Raise",
+    "auction": "Auction",
+    "giveUp": "Give up",
+    "pay": "Pay",
+    "buyHouse": "Buy a house",
+    "sellHouse": "Sell a house",
+    "redeem": "Redeem",
+    "mortgage": "Mortgage",
+    "createUser": "Create user",
+    "join": "Join",
+    "createNewGame": "Create new",
+    "startGame": "Start the game",
+    "rollDice": "Roll the dice!",
+    "payAmount": "Pay ${{amount}}",
+    "tryLuck": "Try luck"
+  },
+  "modal": {
+    "winner": "{{name}} is the winner!",
+    "buyProposal": "Do you want to buy {{fieldName}} for ${{price}}?",
+    "jailWayOut": "Choose a way out:",
+    "auctionRaise": "Do you want to raise {{fieldName}} price to ${{proposal}}?",
+    "dealOffer": "{{name}} offered you a deal:",
+    "pay": "Pay ${{amount}}"
+  },
+  "deal": {
+    "total": "Total: ${{total}}",
+    "you": "You:",
+    "send": "Send offer",
+    "offer": "Offer deal"
+  },
+  "placeholder": {
+    "message": "Enter your message here...",
+    "nickname": "Enter your nickname",
+    "moneyAmount": "money amount"
+  },
+  "header": {
+    "home": "Home"
+  },
+  "title": {
+    "availableRooms": "Available game rooms"
+  }
+}

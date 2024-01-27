@@ -32,6 +32,7 @@ import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
 import { useRouting } from "./Routing";
 import useWebsocket from "../hooks/useWebsocket";
+import { useTranslations } from "../i18n/config";
 
 interface IGameContextProvider {
   sendMessage: (chatMessage: string) => void;
@@ -41,6 +42,7 @@ const ActiveGameContext = createContext<IGameContextProvider>({} as IGameContext
 
 const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
+  const { t } = useTranslations();
   const { navigate } = useRouting();
   const {
     gameId,
@@ -145,7 +147,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
         modalId: ModalId.BUY_PROPOSAL,
         header:
           <div className='modal-title'>
-            {`Do you want to buy ${fieldName} for $${price}?`}
+            {t('modal.buyProposal', { fieldName, price })}
           </div>,
         content:
           <BuyProposalModal
@@ -176,7 +178,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
         modalId: ModalId.JAIL_RELEASE,
         header:
           <div className='modal-title'>
-            Choose a way out:
+            {t('modal.jailWayOut')}
           </div>,
         content:
           <JailReleaseModal/>,
@@ -189,7 +191,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
         modalId: ModalId.AUCTION,
         header:
           <div>
-            {`Do you want to raise ${fieldName} price to $${proposal}?`}
+            {t('modal.auctionRaise', { fieldName, proposal })}
           </div>,
         content:
           <AuctionModal
@@ -204,7 +206,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
         modalId: ModalId.AUCTION_BUY_PROPOSAL,
         header:
           <div>
-            {`Do you want to buy ${fieldName} for $${proposal}?`}
+            {t('modal.buyProposal', { fieldName, price: proposal })}
           </div>,
         content:
           <AuctionBuyProposalModal
@@ -228,7 +230,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
           modalId: ModalId.PAY_COMMAND,
           header:
             <div>
-              {`Pay $${sum}`}
+              {t('modal.pay', { amount: sum })}
             </div>,
           content:
             <PayCommandModal
@@ -270,7 +272,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
         modalId: ModalId.OFFER_PROPOSAL,
         header:
           <div className="offer-title">
-            {`${initiatorName} made you an offer:`}
+            {t('modal.dealOffer', { name: initiatorName })}
           </div>,
         content:
           <OfferProposalModal

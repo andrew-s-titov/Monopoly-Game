@@ -6,6 +6,7 @@ import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
+import { useTranslations } from "../../i18n/config";
 
 interface IAuctionBuyProposalProps {
   proposal: number,
@@ -13,6 +14,7 @@ interface IAuctionBuyProposalProps {
 
 const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
 
+  const { t } = useTranslations();
   const { closeEventModal } = useEventModalContext();
   const loggedInUserId = useMemo(getLoggedInUserId, []);
   const { gameId, gameState } = useGameState();
@@ -38,7 +40,7 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
         loadingIcon="pi pi-spin pi-box modal-button-icon"
         disabled={!payable}
         className='modal-button'
-        label='Buy'
+        label={t('action.buy')}
         severity='success'
         icon='pi pi-money-bill modal-button-icon'
         onClick={() => buy()}
@@ -47,7 +49,7 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
         loading={isDeclineLoading}
         loadingIcon="pi pi-spin pi-box modal-button-icon"
         className='modal-button'
-        label='Decline'
+        label={t('action.decline')}
         severity='secondary'
         icon='pi pi-times modal-button-icon'
         onClick={() => decline()}

@@ -8,6 +8,7 @@ import { useEventModalContext } from "../../context/EventModalProvider";
 import useQuery from "../../hooks/useQuery";
 import { ModalId } from "./index";
 import { useGameState } from "../../context/GameStateProvider";
+import { useTranslations } from "../../i18n/config";
 
 interface IOfferProposalModalProps {
   initiatorName: string,
@@ -25,6 +26,7 @@ const OfferProposalModal = ({
                               initiatorMoney
                             }: IOfferProposalModalProps) => {
 
+  const { t } = useTranslations();
   const { gameId } = useGameState();
   const { closeEventModal } = useEventModalContext();
   const closeProposal = () => closeEventModal(ModalId.OFFER_PROPOSAL);
@@ -49,7 +51,7 @@ const OfferProposalModal = ({
     <div className='offer-content'>
       <div className='offer-sides-container'>
         <div className='offer-side'>
-          <span className='offer-side-title'>You:</span>
+          <span className='offer-side-title'>{t('deal.you')}</span>
           <span>{`$${addresseeMoney}`}</span>
           <div className='offer-checkbox-container'>
             {addresseeFields.map(fieldIndex =>
@@ -61,7 +63,7 @@ const OfferProposalModal = ({
               </div>
             )}
           </div>
-          <div className='offer-total'>Total: ${addresseeTotal}</div>
+          <div className='offer-total'>{t('deal.total', { total: addresseeTotal })}</div>
         </div>
         <div className='offer-side'>
           <span className='offer-side-title'>{`${initiatorName}:`}</span>
@@ -76,7 +78,7 @@ const OfferProposalModal = ({
               </div>
             )}
           </div>
-          <div className='offer-total'>Total: ${initiatorTotal}</div>
+          <div className='offer-total'>{t('deal.total', { total: initiatorTotal })}</div>
         </div>
       </div>
       <div className='modal-button-group'>
@@ -84,7 +86,7 @@ const OfferProposalModal = ({
           loading={isAcceptLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
-          label='Accept'
+          label={t('action.accept')}
           severity='success'
           icon='pi pi-check modal-button-icon'
           onClick={() => accept()}
@@ -93,7 +95,7 @@ const OfferProposalModal = ({
           loading={isDeclineLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
           className='modal-button'
-          label='Decline'
+          label={t('action.decline')}
           severity='secondary'
           icon='pi pi-times modal-button-icon'
           onClick={() => decline()}

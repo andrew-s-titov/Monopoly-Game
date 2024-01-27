@@ -8,6 +8,7 @@ import { getLoggedInUserId } from "../../utils/auth";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { isTurnStartStage } from "../../utils/property";
 import PlayerAvatar from "./PlayerAvatar";
+import { useTranslations } from "../../i18n/config";
 
 interface IPlayerViewProps {
   playerId: string
@@ -15,6 +16,7 @@ interface IPlayerViewProps {
 
 const PlayerView = ({ playerId }: IPlayerViewProps) => {
 
+  const { t } = useTranslations();
   const { openPopUpModal } = usePopUpModalContext();
   const playerManagementOverlay = useRef<OverlayPanel>(null);
   const loggedInUser = useMemo(getLoggedInUserId, []);
@@ -91,7 +93,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
             ?
             <Button
               className='player-management-button'
-              label='Give up'
+              label={t('action.giveUp')}
               onClick={onPlayerGiveUp}
               icon='pi pi-flag modal-button-icon'
               text
@@ -99,7 +101,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
             :
             <Button
               className='player-management-button'
-              label='Offer deal'
+              label={t('deal.offer')}
               onClick={onOfferDeal}
               icon='pi pi-file-edit modal-button-icon'
               text

@@ -5,9 +5,11 @@ import { Button } from "primereact/button";
 import { useEventModalContext } from "../context/EventModalProvider";
 import { ModalId } from "./modals";
 import { useGameState } from "../context/GameStateProvider";
+import { useTranslations } from "../i18n/config";
 
 const RollDiceButton = () => {
 
+  const { t } = useTranslations();
   const { gameId } = useGameState();
   const { closeEventModal } = useEventModalContext();
   const { put } = useQuery();
@@ -20,7 +22,7 @@ const RollDiceButton = () => {
     <Button
       className="roll-dice-button"
       icon="pi pi-spin pi-box icon"
-      label="Roll the dice!"
+      label={t('action.rollDice')}
       severity="secondary"
       text
       raised

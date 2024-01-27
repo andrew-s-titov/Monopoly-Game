@@ -14,6 +14,7 @@ import { AvailableGamesEvent, GameRoomParticipant } from "../types/events";
 import "../assets/styles/flags.css"
 import { useRouting } from "../context/Routing";
 import useWebsocket from "../hooks/useWebsocket";
+import { useTranslations } from "../i18n/config";
 
 interface GameRoomEntry {
   gameId: string,
@@ -29,6 +30,7 @@ const createRoomPlaceholders = (amount: number) => Array.from({ length: amount }
 
 const HomePage = () => {
 
+  const { t } = useTranslations();
   const { post } = useQuery();
   const { navigateToGame } = useRouting();
   const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
@@ -58,7 +60,7 @@ const HomePage = () => {
         text
         className="join-button"
         severity="secondary"
-        label="Join"
+        label={t('action.join')}
         icon={'pi pi-caret-right icon'}
         onClick={() => navigateToGame(gameId)}
       />
@@ -83,7 +85,7 @@ const HomePage = () => {
   return (
     <StartPageBackground>
       <StartPageCenteredContent>
-        <div className="gr-table-overview-header">Available game rooms</div>
+        <div className="gr-table-overview-header">{t('title.availableRooms')}</div>
         <DataTable
           value={rooms}
           showHeaders={false}
@@ -95,7 +97,6 @@ const HomePage = () => {
         >
           <Column
             field="players"
-            header="Players"
             className="gr-overview-players-column"
             body={playersBody}
           />
@@ -111,7 +112,7 @@ const HomePage = () => {
         </DataTable>
         <StartPageButton
           icon={'pi pi-plus icon'}
-          label='Create new'
+          label={t('action.createNewGame')}
           isLoading={isCreateLoading}
           onClickHandler={() => createNewGame({
             "withTeleport": false,
