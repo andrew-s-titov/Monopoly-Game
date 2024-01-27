@@ -18,23 +18,28 @@ const GiveUpModal = () => {
   });
 
   return (
-    <div className='modal-button-group'>
-      <Button
-        className='modal-button'
-        label={t('action.cancel')}
-        severity='secondary'
-        icon='pi pi-times modal-button-icon'
-        onClick={closePopUpModal}
-      />
-      <Button
-        loading={isLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        className='modal-button'
-        label={t('action.giveUp')}
-        severity='danger'
-        icon='pi pi-flag modal-button-icon'
-        onClick={() => giveUp()}
-      />
+    <div className='modal-content'>
+      <div className='modal-title'>
+        {t('modal.giveUp')}
+      </div>
+      <div className='modal-button-group'>
+        <Button
+          className='modal-button'
+          label={t('action.cancel')}
+          severity='secondary'
+          icon='pi pi-times modal-button-icon'
+          onClick={closePopUpModal}
+        />
+        <Button
+          loading={isLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          className='modal-button'
+          label={t('action.giveUp')}
+          severity='danger'
+          icon='pi pi-flag modal-button-icon'
+          onClick={() => giveUp()}
+        />
+      </div>
     </div>
   );
 }

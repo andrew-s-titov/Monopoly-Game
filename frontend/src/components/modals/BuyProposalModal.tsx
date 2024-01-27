@@ -9,10 +9,11 @@ import { getLoggedInUserId } from "../../utils/auth";
 import { useTranslations } from "../../i18n/config";
 
 interface IBuyProposalProps {
+  fieldName: string,
   price: number,
 }
 
-const BuyProposalModal = ({ price }: IBuyProposalProps) => {
+const BuyProposalModal = ({ fieldName, price }: IBuyProposalProps) => {
 
   const { t } = useTranslations();
   const loggedInUser = useMemo(getLoggedInUserId, []);
@@ -34,26 +35,31 @@ const BuyProposalModal = ({ price }: IBuyProposalProps) => {
   });
 
   return (
-    <div className='modal-button-group'>
-      <Button
-        loading={isBuyLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        disabled={!payable}
-        className='modal-button'
-        label={t('action.buy')}
-        severity='success'
-        icon='pi pi-money-bill modal-button-icon'
-        onClick={() => buy()}
-      />
-      <Button
-        loading={isAuctionLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        className='modal-button'
-        label={t('action.auction')}
-        severity='danger'
-        icon='pi pi-users modal-button-icon'
-        onClick={() => auction()}
-      />
+    <div className='modal-content'>
+      <div className='modal-title'>
+        {t('modal.buyProposal', { fieldName, price })}
+      </div>
+      <div className='modal-button-group'>
+        <Button
+          loading={isBuyLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          disabled={!payable}
+          className='modal-button'
+          label={t('action.buy')}
+          severity='success'
+          icon='pi pi-money-bill modal-button-icon'
+          onClick={() => buy()}
+        />
+        <Button
+          loading={isAuctionLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          className='modal-button'
+          label={t('action.auction')}
+          severity='danger'
+          icon='pi pi-users modal-button-icon'
+          onClick={() => auction()}
+        />
+      </div>
     </div>
   );
 }

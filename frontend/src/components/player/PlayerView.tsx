@@ -38,26 +38,16 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
 
   const onPlayerGiveUp = useCallback(() => {
     hideManagementButton();
-    openPopUpModal(
-      {
-        header:
-          <div className='modal-title'>
-            Are you sure you want to give up?
-          </div>,
-        content: <GiveUpModal/>,
-      });
+    openPopUpModal({
+      content: <GiveUpModal/>,
+    });
   }, []);
 
   const onOfferDeal = useCallback(() => {
     hideManagementButton();
-    openPopUpModal(
-      {
-        header:
-          <div className='offer-title'>
-            Choose fields to buy or sell and enter money to exchange:
-          </div>,
-        content: <OfferDealModal addresseeId={playerId}/>,
-      });
+    openPopUpModal({
+      content: <OfferDealModal addresseeId={playerId}/>,
+    });
   }, []);
 
   return (

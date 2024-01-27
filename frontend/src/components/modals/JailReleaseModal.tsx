@@ -30,25 +30,30 @@ const JailReleaseModal = () => {
   });
 
   return (
-    <div className='modal-button-group'>
-      <Button
-        loading={isPayLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        disabled={!payable}
-        className='modal-button'
-        label={t('action.payAmount', { amount: 50 })}
-        severity='success'
-        icon='pi pi-money-bill modal-button-icon'
-        onClick={() => pay()}
-      />
-      <Button
-        loading={isLuckLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        className='modal-button'
-        label={t('action.tryLuck')}
-        icon='pi pi-box modal-button-icon'
-        onClick={() => tryLuck()}
-      />
+    <div className='modal-content'>
+      <div className='modal-title'>
+        {t('modal.jailWayOut')}
+      </div>
+      <div className='modal-button-group'>
+        <Button
+          loading={isPayLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          disabled={!payable}
+          className='modal-button'
+          label={t('action.payAmount', { amount: 50 })}
+          severity='success'
+          icon='pi pi-money-bill modal-button-icon'
+          onClick={() => pay()}
+        />
+        <Button
+          loading={isLuckLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          className='modal-button'
+          label={t('action.tryLuck')}
+          icon='pi pi-box modal-button-icon'
+          onClick={() => tryLuck()}
+        />
+      </div>
     </div>
   );
 }

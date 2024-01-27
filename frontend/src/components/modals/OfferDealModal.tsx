@@ -118,102 +118,107 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
   }
 
   return (
-    <div className='offer-content'>
-      <div className='offer-sides-container'>
-        <div className='offer-side'>
-          <span className='offer-side-title'>{t('deal.you')}</span>
-          <InputNumber
-            className='offer-money'
-            prefix='$'
-            min={0}
-            max={initiatorState.money}
-            maxLength={5}
-            value={selectedInitiatorMoney}
-            placeholder={t('placeholder.moneyAmount')}
-            onChange={event => onOfferMoneyChange(event.value, setSelectedInitiatorMoney, initiatorState.money)}
-            inputClassName='offer-money-input'
-          />
-          <div
-            className='offer-checkbox-container'
-          >
-            {initiatorFields.map(field =>
-              <div key={`${field.fieldIndex}-checkbox`}>
-                <Checkbox
-                  className='offer-checkbox'
-                  inputId={field.fieldIndex.toString()}
-                  value={field.fieldIndex}
-                  checked={checkedInitiatorFields.includes(field.fieldIndex)}
-                  onChange={event => onCheckedFieldsChange(event, checkedInitiatorFieldsUseStateReturn)}
-                />
-                <label
-                  htmlFor={field.fieldIndex.toString()}
-                >
-                  <PropertyOfferView
-                    name={field.name}
-                    group={field.group}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-          <div className='offer-total'>{t('deal.total', { total: initiatorTotal })}</div>
-        </div>
-        <div className='offer-side'>
-          <span className='offer-side-title'>{`${addresseeState ? addresseeState.name : ''}:`}</span>
-          <InputNumber
-            className='offer-money'
-            prefix='$'
-            min={0}
-            max={addresseeState.money}
-            maxLength={5}
-            value={selectedAddresseeMoney}
-            placeholder={t('placeholder.moneyAmount')}
-            onChange={event => onOfferMoneyChange(event.value, setSelectedAddresseeMoney, addresseeState.money)}
-            inputClassName='offer-money-input'
-          />
-          <div
-            className='offer-checkbox-container'
-          >
-            {addresseeFields.map(field =>
-              <div key={`${field.fieldIndex}-checkbox`}>
-                <Checkbox
-                  className='offer-checkbox'
-                  inputId={field.fieldIndex.toString()}
-                  value={field.fieldIndex}
-                  checked={checkedAddresseeFields.includes(field.fieldIndex)}
-                  onChange={event => onCheckedFieldsChange(event, checkedAddresseeFieldsUseStateReturn)}
-                />
-                <label
-                  htmlFor={field.fieldIndex.toString()}
-                >
-                  <PropertyOfferView
-                    name={field.name}
-                    group={field.group}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-          <div className='offer-total'>{t('deal.total', { total: addresseeTotal })}</div>
-        </div>
+    <div className='modal-content'>
+      <div className='offer-title'>
+        {t('modal.offerDeal')}
       </div>
-      <div className='modal-button-group'>
-        <Button
-          className='modal-button'
-          label={t('action.cancel')}
-          severity='secondary'
-          icon='pi pi-times modal-button-icon'
-          onClick={closePopUpModal}
-        />
-        <Button
-          loading={isLoading}
-          loadingIcon="pi pi-spin pi-box modal-button-icon"
-          className='modal-button'
-          label={t('deal.send')}
-          severity='success'
-          icon='pi pi-file-edit modal-button-icon'
-          onClick={onSendOffer}
-        />
+      <div className='offer-content'>
+        <div className='offer-sides-container'>
+          <div className='offer-side'>
+            <span className='offer-side-title'>{t('deal.you')}</span>
+            <InputNumber
+              className='offer-money'
+              prefix='$'
+              min={0}
+              max={initiatorState.money}
+              maxLength={5}
+              value={selectedInitiatorMoney}
+              placeholder={t('placeholder.moneyAmount')}
+              onChange={event => onOfferMoneyChange(event.value, setSelectedInitiatorMoney, initiatorState.money)}
+              inputClassName='offer-money-input'
+            />
+            <div
+              className='offer-checkbox-container'
+            >
+              {initiatorFields.map(field =>
+                <div key={`${field.fieldIndex}-checkbox`}>
+                  <Checkbox
+                    className='offer-checkbox'
+                    inputId={field.fieldIndex.toString()}
+                    value={field.fieldIndex}
+                    checked={checkedInitiatorFields.includes(field.fieldIndex)}
+                    onChange={event => onCheckedFieldsChange(event, checkedInitiatorFieldsUseStateReturn)}
+                  />
+                  <label
+                    htmlFor={field.fieldIndex.toString()}
+                  >
+                    <PropertyOfferView
+                      name={field.name}
+                      group={field.group}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+            <div className='offer-total'>{t('deal.total', { total: initiatorTotal })}</div>
+          </div>
+          <div className='offer-side'>
+            <span className='offer-side-title'>{`${addresseeState ? addresseeState.name : ''}:`}</span>
+            <InputNumber
+              className='offer-money'
+              prefix='$'
+              min={0}
+              max={addresseeState.money}
+              maxLength={5}
+              value={selectedAddresseeMoney}
+              placeholder={t('placeholder.moneyAmount')}
+              onChange={event => onOfferMoneyChange(event.value, setSelectedAddresseeMoney, addresseeState.money)}
+              inputClassName='offer-money-input'
+            />
+            <div
+              className='offer-checkbox-container'
+            >
+              {addresseeFields.map(field =>
+                <div key={`${field.fieldIndex}-checkbox`}>
+                  <Checkbox
+                    className='offer-checkbox'
+                    inputId={field.fieldIndex.toString()}
+                    value={field.fieldIndex}
+                    checked={checkedAddresseeFields.includes(field.fieldIndex)}
+                    onChange={event => onCheckedFieldsChange(event, checkedAddresseeFieldsUseStateReturn)}
+                  />
+                  <label
+                    htmlFor={field.fieldIndex.toString()}
+                  >
+                    <PropertyOfferView
+                      name={field.name}
+                      group={field.group}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+            <div className='offer-total'>{t('deal.total', { total: addresseeTotal })}</div>
+          </div>
+        </div>
+        <div className='modal-button-group'>
+          <Button
+            className='modal-button'
+            label={t('action.cancel')}
+            severity='secondary'
+            icon='pi pi-times modal-button-icon'
+            onClick={closePopUpModal}
+          />
+          <Button
+            loading={isLoading}
+            loadingIcon="pi pi-spin pi-box modal-button-icon"
+            className='modal-button'
+            label={t('deal.send')}
+            severity='success'
+            icon='pi pi-file-edit modal-button-icon'
+            onClick={onSendOffer}
+          />
+        </div>
       </div>
     </div>
   );

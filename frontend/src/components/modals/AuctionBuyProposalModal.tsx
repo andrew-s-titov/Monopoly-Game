@@ -9,10 +9,11 @@ import { ModalId } from "./index";
 import { useTranslations } from "../../i18n/config";
 
 interface IAuctionBuyProposalProps {
+  fieldName: string,
   proposal: number,
 }
 
-const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
+const AuctionBuyProposalModal = ({ fieldName, proposal }: IAuctionBuyProposalProps) => {
 
   const { t } = useTranslations();
   const { closeEventModal } = useEventModalContext();
@@ -34,26 +35,31 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
   });
 
   return (
-    <div className='modal-button-group'>
-      <Button
-        loading={isBuyLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        disabled={!payable}
-        className='modal-button'
-        label={t('action.buy')}
-        severity='success'
-        icon='pi pi-money-bill modal-button-icon'
-        onClick={() => buy()}
-      />
-      <Button
-        loading={isDeclineLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        className='modal-button'
-        label={t('action.decline')}
-        severity='secondary'
-        icon='pi pi-times modal-button-icon'
-        onClick={() => decline()}
-      />
+    <div className='modal-content'>
+      <div className='modal-title'>
+        {t('modal.buyProposal', { fieldName, price: proposal })}
+      </div>
+      <div className='modal-button-group'>
+        <Button
+          loading={isBuyLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          disabled={!payable}
+          className='modal-button'
+          label={t('action.buy')}
+          severity='success'
+          icon='pi pi-money-bill modal-button-icon'
+          onClick={() => buy()}
+        />
+        <Button
+          loading={isDeclineLoading}
+          loadingIcon="pi pi-spin pi-box modal-button-icon"
+          className='modal-button'
+          label={t('action.decline')}
+          severity='secondary'
+          icon='pi pi-times modal-button-icon'
+          onClick={() => decline()}
+        />
+      </div>
     </div>
   );
 }
