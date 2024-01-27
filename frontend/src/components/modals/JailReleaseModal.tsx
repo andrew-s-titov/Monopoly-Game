@@ -3,7 +3,6 @@ import { memo, useMemo } from "react";
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
-import { gameBaseUrl } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";
@@ -20,11 +19,11 @@ const JailReleaseModal = () => {
 
   const { put } = useQuery();
   const { execute: pay, isLoading: isPayLoading } = put({
-    url: `${gameBaseUrl(gameId)}/jail?action=PAY`,
+    url: `/game/${gameId}/jail?action=PAY`,
     onSuccess: closeJailRelease,
   });
   const { execute: tryLuck, isLoading: isLuckLoading } = put({
-    url: `${gameBaseUrl(gameId)}/jail?action=LUCK`,
+    url: `/game/${gameId}/jail?action=LUCK`,
     onSuccess: closeJailRelease,
   });
 

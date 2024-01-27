@@ -2,7 +2,6 @@ import { memo, useMemo } from "react";
 
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
-import { gameBaseUrl } from "../../config/api";
 import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
 import { useEventModalContext } from "../../context/EventModalProvider";
@@ -24,11 +23,11 @@ const AuctionBuyProposalModal = ({ proposal }: IAuctionBuyProposalProps) => {
 
   const { put } = useQuery();
   const { execute: buy, isLoading: isBuyLoading } = put({
-    url: `${gameBaseUrl(gameId)}/auction/buy?action=ACCEPT`,
+    url: `/game/${gameId}/auction/buy?action=ACCEPT`,
     onSuccess: closeAuctionBuyProposal,
   });
   const { execute: decline, isLoading: isDeclineLoading } = put({
-    url: `${gameBaseUrl(gameId)}/auction/buy?action=DECLINE`,
+    url: `/game/${gameId}/auction/buy?action=DECLINE`,
     onSuccess: closeAuctionBuyProposal,
   });
 

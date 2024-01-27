@@ -6,7 +6,6 @@ import { UPropertyIndex } from "../../types/unions";
 import PropertyOfferView from "../PropertyOfferView";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import useQuery from "../../hooks/useQuery";
-import { gameBaseUrl } from "../../config/api";
 import { ModalId } from "./index";
 import { useGameState } from "../../context/GameStateProvider";
 
@@ -31,11 +30,11 @@ const OfferProposalModal = ({
   const closeProposal = () => closeEventModal(ModalId.OFFER_PROPOSAL);
   const { put } = useQuery();
   const { execute: accept, isLoading: isAcceptLoading } = put({
-    url: `${gameBaseUrl(gameId)}/offer?action=ACCEPT`,
+    url: `/game/${gameId}/offer?action=ACCEPT`,
     onSuccess: closeProposal,
   });
   const { execute: decline, isLoading: isDeclineLoading } = put({
-    url: `${gameBaseUrl(gameId)}/offer?action=DECLINE`,
+    url: `/game/${gameId}/offer?action=DECLINE`,
     onSuccess: closeProposal,
   })
 

@@ -2,11 +2,11 @@ import { memo } from "react";
 import ChatHistory from "./ChatHistory";
 import ChatInput from "./ChatInput";
 import { useGameState } from "../../context/GameStateProvider";
-import { useWebsocketContext } from "../../context/WebsocketConnectionProvider";
+import { useActiveGameContext } from "../../context/ActiveGameContextProvider";
 
 const Chat = () => {
   const { messages } = useGameState();
-  const { sendMessage } = useWebsocketContext();
+  const { sendMessage } = useActiveGameContext();
 
   return (
     <>
