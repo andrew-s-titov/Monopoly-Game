@@ -1,0 +1,25 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, reopened, synchronize ]
+
+env:
+  CI: false
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Run mvn command
+        run: mvn clean verify
