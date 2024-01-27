@@ -3,7 +3,7 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { BE_ENDPOINT, getLandingPageWebsocketUrl } from "../config/api";
+import { getLandingPageWebsocketUrl } from "../config/api";
 import useQuery from "../hooks/useQuery";
 import GameRoomPlayer from "../components/GameRoomPlayer";
 import StartPageBackground from "../components/StartPageBackground";
@@ -34,7 +34,7 @@ const HomePage = () => {
   const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
 
   const { execute: createNewGame, isLoading: isCreateLoading } = post({
-    url: `${BE_ENDPOINT}/game`,
+    url: `/game`,
     responseHandler: ({ gameId }) => navigateToGame(gameId),
   });
 

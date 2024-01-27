@@ -3,7 +3,6 @@ import { memo, useMemo } from "react";
 import { Button } from "primereact/button";
 import useQuery from "../../hooks/useQuery";
 import { useGameState } from "../../context/GameStateProvider";
-import { gameBaseUrl } from "../../config/api";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";
@@ -24,11 +23,11 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
   const closePayCommand = () => closeEventModal(ModalId.PAY_COMMAND);
   const { put } = useQuery();
   const { execute: pay, isLoading: isPayLoading } = put({
-    url: `${gameBaseUrl(gameId)}/pay`,
+    url: `/game/${gameId}/pay`,
     onSuccess: closePayCommand,
   });
   const { execute: giveUp, isLoading: isGiveUpLoading } = put({
-    url: `${gameBaseUrl(gameId)}/give_up`,
+    url: `/game/${gameId}/give_up`,
     onSuccess: closePayCommand,
   });
 

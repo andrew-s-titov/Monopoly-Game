@@ -1,7 +1,6 @@
 import { memo } from "react";
 
 import useQuery from "../hooks/useQuery";
-import { gameBaseUrl } from "../config/api";
 import { Button } from "primereact/button";
 import { useEventModalContext } from "../context/EventModalProvider";
 import { ModalId } from "./modals";
@@ -13,7 +12,7 @@ const RollDiceButton = () => {
   const { closeEventModal } = useEventModalContext();
   const { put } = useQuery();
   const { execute: rollDice } = put({
-    url: `${gameBaseUrl(gameId)}/turn`,
+    url: `/game/${gameId}/turn`,
     onSuccess: () => closeEventModal(ModalId.ROLL_DICE),
   });
 

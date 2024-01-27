@@ -10,7 +10,6 @@ import { AVATAR_NAMES, getRandomAvatar } from "../utils/playerAvatar";
 import PlayerAvatar from "../components/player/PlayerAvatar";
 import StartPageCenteredContent from "../components/StartPageCenteredContent";
 import useQuery from "../hooks/useQuery";
-import { BE_ENDPOINT } from "../config/api";
 import { LoginResponse } from "../types/interfaces";
 import { setAuthData } from "../utils/auth";
 
@@ -23,7 +22,7 @@ const LoginPage = () => {
 
   const { post } = useQuery();
   const { execute: login, isLoading: isLoginInProgress } = post({
-    url: `${BE_ENDPOINT}`,
+    url: `/`,
     responseHandler: (loginResponse: LoginResponse) => {
       setAuthData(loginResponse);
       setLoggedIn();

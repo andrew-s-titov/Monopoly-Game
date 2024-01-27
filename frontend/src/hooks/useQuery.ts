@@ -1,6 +1,7 @@
 import { useMessageContext } from "../context/MessageProvider";
 import { useState } from "react";
 import { getLoggedInUserId } from "../utils/auth";
+import { BE_ENDPOINT } from "../config/api";
 
 const USER_ID_KEY_HEADER = 'user_id';
 
@@ -70,7 +71,7 @@ const useQuery = () => {
         ...prevState,
         [key]: true,
       }));
-      fetch(url, fetchParams(method, body))
+      fetch(`${BE_ENDPOINT}${url}`, fetchParams(method, body))
         .then(response => processResponse(response, onSuccess, responseHandler))
         .catch(handleError)
         .finally(() => setQueryStatuses(prevState => ({
