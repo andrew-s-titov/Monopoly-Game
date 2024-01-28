@@ -12,7 +12,6 @@ import StartPageCenteredContent from "../components/StartPageCenteredContent";
 import useQuery from "../hooks/useQuery";
 import { LoginResponse } from "../types/interfaces";
 import { setAuthData } from "../utils/auth";
-import { useTranslation } from "react-i18next";
 import { useTranslations } from "../i18n/config";
 
 const LoginPage = () => {
