@@ -52,7 +52,7 @@ const LoginPage = () => {
   };
 
   return (
-    <StartPageBackground withHeader={false}>
+    <StartPageBackground headerLangOnly={true}>
       <StartPageCenteredContent>
         <PlayerAvatar
           avatarName={avatar}

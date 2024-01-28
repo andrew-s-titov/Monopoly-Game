@@ -61,3 +61,17 @@ code {
     justify-content: center;
     align-items: center;
 }
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    position: absolute;
+    z-index: 1;
+}
+
+.hidden {
+    display: none;
+}

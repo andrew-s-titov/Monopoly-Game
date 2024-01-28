@@ -5,10 +5,10 @@ const initialBackgroundImageWidth = 1086;
 const initialBackgroundImageHeight = 610;
 
 interface IStartPageProps extends PropsWithChildren {
-  withHeader?: boolean;
+  headerLangOnly?: boolean;
 }
 
-const StartPageBackground = ({ children, withHeader = true }: IStartPageProps) => {
+const StartPageBackground = ({ children, headerLangOnly = false }: IStartPageProps) => {
 
   const background = useRef<HTMLDivElement>(null);
 
@@ -30,7 +30,9 @@ const StartPageBackground = ({ children, withHeader = true }: IStartPageProps) =
       ref={background}
       className="full-size-background"
     >
-      {withHeader && <PageHeader/>}
+      <PageHeader
+        langOnly={headerLangOnly}
+      />
       <div className="start-page-content">
         {children}
       </div>
