@@ -20,7 +20,7 @@ const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) =
   const { navigate } = useRouting();
 
   const maxRetries = retries ? retries : defaultRetries;
-  const sendToServer: WebSocket['send'] = websocket.current ? websocket.current.send : () => {};
+  const sendToServer = (message: string) => websocket.current && websocket.current.send(message);
 
   const connectWebSocket = () => {
     websocket.current = new WebSocket(url);
@@ -36,9 +36,9 @@ const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) =
       if (code === 1000 || code === 1001) {
         // do nothing - normal close
       } else if (code === 1006 && connectionRetries.current < maxRetries) {
-        console.log(`Unexpected WebSocket close, reconnecting in 1 sec...`);
+        console.log(`Unexpected WebSocket close, reconnecting in 2 sec...`);
         connectionRetries.current = connectionRetries.current + 1;
-        delayedRetry.current = setTimeout(connectWebSocket, 1000);
+        delayedRetry.current = setTimeout(connectWebSocket, 2000);
       } else {
         // any other close code or max retries are reached:
         showWarning('Server connection error. Please reload the page or try again later');

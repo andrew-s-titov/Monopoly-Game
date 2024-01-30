@@ -1,6 +1,7 @@
 .flag {
     width: 5vh;
     height: 3.5vh;
+    border-radius: 0.5vh;
     background-repeat: no-repeat no-repeat;
     background-position: center center;
     background-size: 100%;

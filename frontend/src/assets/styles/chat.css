@@ -75,7 +75,7 @@
     width: 10%;
     cursor: pointer;
     color: white;
-    background-color: var(--gray-700);
+    background-color: var(--gray-600);
     transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
     border: none;
     outline: none;
@@ -88,7 +88,7 @@
 }
 
 .send-message:hover {
-    background-color: var(--gray-800) !important;
+    background-color: var(--gray-700) !important;
 }
 
 .send-message:active {
@@ -116,26 +116,22 @@
     font-size: 5vh;
 }
 
-.emoji-picker-button {
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
+.emoji-button {
     margin-right: 1vh;
-    background-image: url('../images/smiley-face.png');
-    background-size: 3.5vh;
-    background-position: center center;
-    background-repeat: no-repeat no-repeat;
-    width: 4vh !important;
-    opacity: 0.6;
+    padding: 0 !important;
+    border: none;
 }
 
-.emoji-picker-button > span {
-    background-image: url('../images/smiley-face.png');
-    background-size: 3vh;
-    background-position: center center;
-    background-repeat: no-repeat no-repeat;
-    font-size: 3vh !important;
-    z-index: 1;
-    height: 3vh !important;
-    width: 3vh !important;
+.emoji {
+    width: 4.2vh !important;
+    fill: var(--gray-500);
+    transition: fill 0.2s;
+}
+
+.emoji:hover {
+    fill: var(--gray-700) !important;
+}
+
+.emoji:active {
+    fill: var(--map-background-color) !important;
 }

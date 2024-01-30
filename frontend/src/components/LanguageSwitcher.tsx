@@ -20,7 +20,7 @@ const LanguageSwitcher = () => {
             <Button
               key={lang}
               text
-              style={{ padding: '0' }}
+              className="flag-button"
               onClick={() => {
                 changeLanguage(lang);
                 hideContent();

@@ -73,6 +73,13 @@ code {
     z-index: 1;
 }
 
+.flag-button {
+    border: none;
+    overflow: visible;
+    border-radius: 0.2vh;
+    padding: 0 !important;
+}
+
 .hidden {
     display: none;
 }
