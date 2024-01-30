@@ -46,5 +46,16 @@
   },
   "title": {
     "availableRooms": "Available game rooms"
+  },
+  "emoji": {
+    "search": "Search",
+    "recent": "Recently used",
+    "people": "Smileys & people",
+    "nature": "Animals & nature",
+    "food": "Food & drinks",
+    "travel": "Travel & places",
+    "activities": "Activities",
+    "objects": "Objects",
+    "symbols": "Symbols"
   }
 }
