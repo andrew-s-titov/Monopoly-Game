@@ -5,9 +5,11 @@ import GameRoomPlayer from "./GameRoomPlayer";
 import useQuery from "../hooks/useQuery";
 import StartPageButton from "./StartPageButton";
 import StartPageCenteredContent from "./StartPageCenteredContent";
+import { useTranslations } from "../i18n/config";
 
 const PreGameRoom = () => {
 
+  const { t } = useTranslations();
   const { gameId } = useGameState();
   const { connectedPlayers } = useGameState();
   const { post } = useQuery();
@@ -35,7 +37,7 @@ const PreGameRoom = () => {
           )}
         </div>
         <StartPageButton
-          label='Start the game'
+          label={t('action.startGame')}
           icon="pi-play"
           isLoading={isLoading}
           isDisabled={!canStartGame}

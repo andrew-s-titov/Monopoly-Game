@@ -6,6 +6,7 @@ import { useGameState } from "../../context/GameStateProvider";
 import { useEventModalContext } from "../../context/EventModalProvider";
 import { ModalId } from "./index";
 import { getLoggedInUserId } from "../../utils/auth";
+import { useTranslations } from "../../i18n/config";
 
 interface IPayCommandModalProps {
   sum: number;
@@ -14,6 +15,7 @@ interface IPayCommandModalProps {
 
 const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
 
+  const { t } = useTranslations();
   const loggedInUser = useMemo(getLoggedInUserId, []);
   const { closeEventModal } = useEventModalContext();
   const { gameId, gameState } = useGameState();
@@ -32,28 +34,33 @@ const PayCommandModal = ({ sum, wiseToGiveUp }: IPayCommandModalProps) => {
   });
 
   return (
-    <div className='modal-button-group'>
-      <Button
-        disabled={!payable}
-        loading={isPayLoading}
-        loadingIcon="pi pi-spin pi-box modal-button-icon"
-        className="modal-button"
-        label='Pay'
-        severity="secondary"
-        icon="pi pi-money-bill modal-button-icon"
-        onClick={() => pay()}
-      />
-      {wiseToGiveUp &&
+    <div className='modal-content'>
+      <div className='modal-title'>
+        {t('modal.pay', { amount: sum })}
+      </div>
+      <div className='modal-button-group'>
         <Button
-          className="modal-button"
-          loading={isGiveUpLoading}
+          disabled={!payable}
+          loading={isPayLoading}
           loadingIcon="pi pi-spin pi-box modal-button-icon"
-          severity="danger"
-          label='Give up'
-          icon="pi pi-flag modal-button-icon"
-          onClick={() => giveUp()}
+          className="modal-button"
+          label={t('action.pay')}
+          severity="secondary"
+          icon="pi pi-money-bill modal-button-icon"
+          onClick={() => pay()}
         />
-      }
+        {wiseToGiveUp &&
+          <Button
+            className="modal-button"
+            loading={isGiveUpLoading}
+            loadingIcon="pi pi-spin pi-box modal-button-icon"
+            severity="danger"
+            label={t('action.giveUp')}
+            icon="pi pi-flag modal-button-icon"
+            onClick={() => giveUp()}
+          />
+        }
+      </div>
     </div>
   );
 }

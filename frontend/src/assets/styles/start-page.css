@@ -16,7 +16,7 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     font-size: 3.5vh !important;
     border-bottom: solid 0.4vh rgba(0, 0, 0, 0.4);
-    width: 30vh;
+    width: 40vh;
 }
 
 .player-name-input::placeholder {
@@ -90,7 +90,17 @@
     height: 6vh;
     width: 6vh;
     background-size: 6vh;
-    margin: 1vh 1vh 1vh auto;
+    margin: 1vh 1vh 1vh 1vh;
+}
+
+.header-lang {
+    margin: 1vh 1vh 1vh 1vh;
+}
+
+.header-right-block {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
 }
 
 .header-buttons {

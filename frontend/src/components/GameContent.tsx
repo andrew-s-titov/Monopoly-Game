@@ -1,6 +1,7 @@
 import GameMap from "./GameMap";
 import PlayerContainer from "./player/PlayerContainer";
 import Snowfall from "react-snowfall";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const GameContent = () => {
 
@@ -11,6 +12,11 @@ const GameContent = () => {
       />
       <PlayerContainer/>
       <GameMap/>
+      <div className='header-right-block' style={{ height: '8vh' }}>
+        <div className='header-lang'>
+          <LanguageSwitcher/>
+        </div>
+      </div>
     </div>
   );
 }

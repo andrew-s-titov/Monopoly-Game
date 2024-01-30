@@ -13,6 +13,8 @@ import "./assets/styles/start-page.css";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
 
+import "./i18n/config";
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

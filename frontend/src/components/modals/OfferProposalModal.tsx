@@ -8,6 +8,7 @@ import { useEventModalContext } from "../../context/EventModalProvider";
 import useQuery from "../../hooks/useQuery";
 import { ModalId } from "./index";
 import { useGameState } from "../../context/GameStateProvider";
+import { useTranslations } from "../../i18n/config";
 
 interface IOfferProposalModalProps {
   initiatorName: string,
@@ -25,6 +26,7 @@ const OfferProposalModal = ({
                               initiatorMoney
                             }: IOfferProposalModalProps) => {
 
+  const { t } = useTranslations();
   const { gameId } = useGameState();
   const { closeEventModal } = useEventModalContext();
   const closeProposal = () => closeEventModal(ModalId.OFFER_PROPOSAL);
@@ -46,58 +48,63 @@ const OfferProposalModal = ({
     .reduce((a, b) => a + b, 0) + addresseeMoney;
 
   return (
-    <div className='offer-content'>
-      <div className='offer-sides-container'>
-        <div className='offer-side'>
-          <span className='offer-side-title'>You:</span>
-          <span>{`$${addresseeMoney}`}</span>
-          <div className='offer-checkbox-container'>
-            {addresseeFields.map(fieldIndex =>
-              <div key={`${fieldIndex}`}>
-                <PropertyOfferView
-                  name={PROPERTY_FIELDS_DATA[fieldIndex].name}
-                  group={PROPERTY_FIELDS_DATA[fieldIndex].group}
-                />
-              </div>
-            )}
-          </div>
-          <div className='offer-total'>Total: ${addresseeTotal}</div>
-        </div>
-        <div className='offer-side'>
-          <span className='offer-side-title'>{`${initiatorName}:`}</span>
-          <span>{`$${initiatorMoney}`}</span>
-          <div className='offer-checkbox-container'>
-            {initiatorFields.map(fieldIndex =>
-              <div key={`${fieldIndex}`}>
-                <PropertyOfferView
-                  name={PROPERTY_FIELDS_DATA[fieldIndex].name}
-                  group={PROPERTY_FIELDS_DATA[fieldIndex].group}
-                />
-              </div>
-            )}
-          </div>
-          <div className='offer-total'>Total: ${initiatorTotal}</div>
-        </div>
+    <div className='modal-content'>
+      <div className="offer-title">
+        {t('modal.dealOffer', { name: initiatorName })}
       </div>
-      <div className='modal-button-group'>
-        <Button
-          loading={isAcceptLoading}
-          loadingIcon="pi pi-spin pi-box modal-button-icon"
-          className='modal-button'
-          label='Accept'
-          severity='success'
-          icon='pi pi-check modal-button-icon'
-          onClick={() => accept()}
-        />
-        <Button
-          loading={isDeclineLoading}
-          loadingIcon="pi pi-spin pi-box modal-button-icon"
-          className='modal-button'
-          label='Decline'
-          severity='secondary'
-          icon='pi pi-times modal-button-icon'
-          onClick={() => decline()}
-        />
+      <div className='offer-content'>
+        <div className='offer-sides-container'>
+          <div className='offer-side'>
+            <span className='offer-side-title'>{t('deal.you')}</span>
+            <span>{`$${addresseeMoney}`}</span>
+            <div className='offer-checkbox-container'>
+              {addresseeFields.map(fieldIndex =>
+                <div key={`${fieldIndex}`}>
+                  <PropertyOfferView
+                    name={PROPERTY_FIELDS_DATA[fieldIndex].name}
+                    group={PROPERTY_FIELDS_DATA[fieldIndex].group}
+                  />
+                </div>
+              )}
+            </div>
+            <div className='offer-total'>{t('deal.total', { total: addresseeTotal })}</div>
+          </div>
+          <div className='offer-side'>
+            <span className='offer-side-title'>{`${initiatorName}:`}</span>
+            <span>{`$${initiatorMoney}`}</span>
+            <div className='offer-checkbox-container'>
+              {initiatorFields.map(fieldIndex =>
+                <div key={`${fieldIndex}`}>
+                  <PropertyOfferView
+                    name={PROPERTY_FIELDS_DATA[fieldIndex].name}
+                    group={PROPERTY_FIELDS_DATA[fieldIndex].group}
+                  />
+                </div>
+              )}
+            </div>
+            <div className='offer-total'>{t('deal.total', { total: initiatorTotal })}</div>
+          </div>
+        </div>
+        <div className='modal-button-group'>
+          <Button
+            loading={isAcceptLoading}
+            loadingIcon="pi pi-spin pi-box modal-button-icon"
+            className='modal-button'
+            label={t('action.accept')}
+            severity='success'
+            icon='pi pi-check modal-button-icon'
+            onClick={() => accept()}
+          />
+          <Button
+            loading={isDeclineLoading}
+            loadingIcon="pi pi-spin pi-box modal-button-icon"
+            className='modal-button'
+            label={t('action.decline')}
+            severity='secondary'
+            icon='pi pi-times modal-button-icon'
+            onClick={() => decline()}
+          />
+        </div>
       </div>
     </div>
   );

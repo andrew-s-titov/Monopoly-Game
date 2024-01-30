@@ -3,8 +3,7 @@ import { Dialog } from "primereact/dialog";
 import { ModalId } from "../components/modals";
 
 export interface IModalProps {
-  header: React.JSX.Element;
-  content?: React.JSX.Element;
+  content: React.JSX.Element;
   blurBackground?: boolean;
   isTransparent?: boolean,
   modalId?: ModalId,
@@ -12,7 +11,6 @@ export interface IModalProps {
 }
 
 interface ModalState {
-  header?: React.JSX.Element,
   content?: React.JSX.Element,
   blurBackground: boolean,
   isTransparent: boolean,
@@ -31,7 +29,6 @@ const useModal = (isClosable?: boolean) => {
   const [isOpened, setIsOpened] = useState<boolean>();
 
   const openModal = ({
-                       header,
                        content,
                        blurBackground = true,
                        isTransparent = false,
@@ -40,7 +37,6 @@ const useModal = (isClosable?: boolean) => {
                      }: IModalProps) => {
     lastModal.current = modalId;
     setModalState(() => ({
-      header,
       content,
       blurBackground,
       isTransparent,
@@ -57,27 +53,15 @@ const useModal = (isClosable?: boolean) => {
     setIsOpened(false);
   };
 
-  const headerWrapper = modalState.content
-    ? <div className='modal-header'>{modalState.header}</div>
-    : modalState.header;
-
   const dialogElement =
     <Dialog
-      header={headerWrapper}
+      header={modalState.content}
       onHide={closeModal}
       visible={isOpened}
       headerStyle={{
         padding: '0',
-        borderTopLeftRadius: modalState.isRounded ? '2vh' : '0',
-        borderTopRightRadius: modalState.isRounded ? '2vh' : '0',
-        borderBottomLeftRadius: modalState.isRounded && !modalState.content ? '2vh' : '0',
-        borderBottomRightRadius: modalState.isRounded && !modalState.content ? '2vh' : '0',
-    }}
-      contentStyle={{
-        padding: '0',
-        borderBottomLeftRadius: modalState.isRounded ? '2hv' : '0',
-        borderBottomRightRadius: modalState.isRounded ? '2hv' : '0',
-    }}
+        borderRadius: modalState.isRounded ? '2vh' : '0',
+      }}
       dismissableMask={isClosable}
       closable={false}
       resizable={false}
@@ -86,11 +70,6 @@ const useModal = (isClosable?: boolean) => {
       className={modalState.isTransparent ? "transparent-dialog" : ""}
       headerClassName={modalState.isTransparent ? "transparent-dialog" : ""}
     >
-      {modalState.content &&
-        <div className='modal-content'>
-          {modalState.content}
-        </div>
-      }
     </Dialog>;
 
   return {
