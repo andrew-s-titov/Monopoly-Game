@@ -12,9 +12,11 @@ import StartPageCenteredContent from "../components/StartPageCenteredContent";
 import useQuery from "../hooks/useQuery";
 import { LoginResponse } from "../types/interfaces";
 import { setAuthData } from "../utils/auth";
+import { useTranslations } from "../i18n/config";
 
 const LoginPage = () => {
 
+  const { t } = useTranslations();
   const avatarOverlay = useRef<OverlayPanel>(null);
   const [avatar, setAvatar] = useState(getRandomAvatar());
   const { setLoggedIn } = useAuthContext();
@@ -49,7 +51,7 @@ const LoginPage = () => {
   };
 
   return (
-    <StartPageBackground withHeader={false}>
+    <StartPageBackground headerLangOnly={true}>
       <StartPageCenteredContent>
         <PlayerAvatar
           avatarName={avatar}
@@ -62,11 +64,11 @@ const LoginPage = () => {
           value={nameInputValue}
           onChange={onInputChange}
           className="player-name-input"
-          placeholder='Enter your nickname'
+          placeholder={t('placeholder.nickname')}
           onKeyDown={onEnterKeyDown}
         />
         <StartPageButton
-          label='Create user'
+          label={t('action.createUser')}
           icon="pi-user"
           isLoading={isLoginInProgress}
           isDisabled={isInputInvalid}

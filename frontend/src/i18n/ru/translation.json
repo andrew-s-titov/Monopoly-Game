@@ -1,0 +1,50 @@
+{
+  "action": {
+    "cancel": "Отмена",
+    "buy": "Купить",
+    "accept": "Принять",
+    "decline": "Отказаться",
+    "raise": "Поднять",
+    "auction": "Аукцион",
+    "giveUp": "Сдаться",
+    "pay": "Заплатить",
+    "buyHouse": "Купить дом",
+    "sellHouse": "Продать дом",
+    "redeem": "Выкупить",
+    "mortgage": "Заложить",
+    "createUser": "Создать игрока",
+    "join": "Войти",
+    "createNewGame": "Создать новую",
+    "startGame": "Начать игру",
+    "rollDice": "Бросай кубики!",
+    "payAmount": "Заплатить ${{amount}}",
+    "tryLuck": "Рискнуть"
+  },
+  "modal": {
+    "winner": "{{name}} - победитель!",
+    "buyProposal": "Хочешь купить {{fieldName}} за ${{price}}?",
+    "jailWayOut": "Выбери способ выхода из тюрьмы:",
+    "auctionRaise": "Хочешь поднять цену аукциона на {{fieldName}} на ${{proposal}}?",
+    "dealOffer": "{{name}} предложил тебе сделку:",
+    "pay": "Заплати ${{amount}}",
+    "giveUp": "Точно хочешь сдаться?",
+    "offerDeal": "Выбери поля для покупки/продажи и введи сумму денег для обмена:"
+  },
+  "deal": {
+    "total": "Всего: {{total}}",
+    "you": "Ты:",
+    "send": "Отправить",
+    "offer": "Предложить сделку"
+  },
+  "placeholder": {
+    "message": "Введи сюда своё сообщение...",
+    "nickname": "Введи имя пользователя",
+    "moneyAmount": "сумма денег"
+  },
+  "header": {
+    "home": "Главная"
+  },
+  "title": {
+    "availableRooms": "Доступные игровые комнаты"
+  }
+}

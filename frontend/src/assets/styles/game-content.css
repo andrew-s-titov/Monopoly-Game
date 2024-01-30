@@ -111,15 +111,13 @@
 }
 
 .modal-content {
-    padding: 0 5vh 5vh 5vh;
-}
-
-.modal-header {
-    padding: 5vh 5vh 0 5vh;
-}
-
-.modal-header, .modal-content {
+    padding: 5vh 5vh 5vh 5vh;
     width: 70vh;
+}
+
+.modal-title {
+    font-size: 3vh;
+    margin-bottom: 5vh;
 }
 
 .offer-content {
@@ -127,11 +125,6 @@
     flex-direction: column;
     justify-content: center;
     min-height: 50vh;
-}
-
-.modal-title {
-    font-size: 3vh;
-    margin-bottom: 5vh;
 }
 
 .offer-title {

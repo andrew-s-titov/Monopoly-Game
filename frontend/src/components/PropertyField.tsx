@@ -34,11 +34,10 @@ const PropertyField = ({ position, index }: IFieldProps) => {
     [position]);
 
   const onFieldClick = () => {
-    openPopUpModal(
-      {
-        header: <PropertyManagementModal fieldIndex={index}/>,
-        isRounded: true,
-      });
+    openPopUpModal({
+      content: <PropertyManagementModal fieldIndex={index}/>,
+      isRounded: true,
+    });
   };
 
   const houseAmount = useMemo(() => {

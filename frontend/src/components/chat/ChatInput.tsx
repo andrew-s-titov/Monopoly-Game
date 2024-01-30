@@ -2,6 +2,7 @@ import { KeyboardEvent, memo, useRef, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import EmojiPicker, { EmojiStyle, SuggestionMode } from "emoji-picker-react";
 import { OverlayPanel } from "primereact/overlaypanel";
+import { useTranslations } from "../../i18n/config";
 
 interface IChatInputProps {
   sendMessage: (message: string) => void;
@@ -9,6 +10,7 @@ interface IChatInputProps {
 
 const ChatInput = ({ sendMessage }: IChatInputProps) => {
 
+  const { t } = useTranslations();
   const emojiPickerRef = useRef<OverlayPanel>(null);
   const [message, setMessage] = useState('');
 
@@ -33,7 +35,7 @@ const ChatInput = ({ sendMessage }: IChatInputProps) => {
         className='chat-input'
         value={message}
         onChange={e => setMessage(e.target.value)}
-        placeholder='Enter your message here...'
+        placeholder={t('placeholder.message')}
       />
 
       <div

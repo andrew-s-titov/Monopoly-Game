@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from "react";
 import { Fireworks} from "fireworks-js";
+import { useTranslations } from "../../i18n/config";
 
 interface IWinnerModalProps {
   name: string,
@@ -7,6 +8,7 @@ interface IWinnerModalProps {
 
 const WinnerModal = ({ name }: IWinnerModalProps) => {
 
+  const { t } = useTranslations();
   const fireworksContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,7 +60,7 @@ const WinnerModal = ({ name }: IWinnerModalProps) => {
     <div className="winner-modal" id="winner-modal">
       <div className="fireworks" id="fireworks" ref={fireworksContainer}/>
       <i className="pi pi-star-fill pi-spin icon"/>
-        <span>{`${name} is the winner!`}</span>
+        <span>{t('modal.winner', { name })}</span>
       <i className="pi pi-star-fill pi-spin animation-backwards"/>
     </div>
   );

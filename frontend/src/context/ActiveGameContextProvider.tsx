@@ -100,14 +100,14 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     301: () => {
       openEventModal({
         modalId: ModalId.ROLL_DICE,
-        header: <RollDiceButton/>,
+        content: <RollDiceButton/>,
         blurBackground: false,
       });
     },
     302: () => {
       openEventModal({
         modalId: ModalId.DICE,
-        header: <Dice/>,
+        content: <Dice/>,
         blurBackground: false,
         isTransparent: true,
       })
@@ -115,7 +115,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     303: ({ firstDice, secondDice }) => {
       openEventModal({
         modalId: ModalId.DICE,
-        header: <Dice result={[firstDice, secondDice]}/>,
+        content: <Dice result={[firstDice, secondDice]}/>,
         blurBackground: false,
         isTransparent: true,
       })
@@ -143,12 +143,9 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
       const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
       openEventModal({
         modalId: ModalId.BUY_PROPOSAL,
-        header:
-          <div className='modal-title'>
-            {`Do you want to buy ${fieldName} for $${price}?`}
-          </div>,
         content:
           <BuyProposalModal
+            fieldName={fieldName}
             price={price}
           />,
         blurBackground: false,
@@ -174,12 +171,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     308: () => {
       openEventModal({
         modalId: ModalId.JAIL_RELEASE,
-        header:
-          <div className='modal-title'>
-            Choose a way out:
-          </div>,
-        content:
-          <JailReleaseModal/>,
+        content: <JailReleaseModal/>,
         blurBackground: false,
       });
     },
@@ -187,12 +179,9 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
       const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
       openEventModal({
         modalId: ModalId.AUCTION,
-        header:
-          <div>
-            {`Do you want to raise ${fieldName} price to $${proposal}?`}
-          </div>,
         content:
           <AuctionModal
+            fieldName={fieldName}
             proposal={proposal}
           />,
         blurBackground: false,
@@ -202,12 +191,9 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
       const fieldName = PROPERTY_FIELDS_DATA[fieldIndex].name;
       openEventModal({
         modalId: ModalId.AUCTION_BUY_PROPOSAL,
-        header:
-          <div>
-            {`Do you want to buy ${fieldName} for $${proposal}?`}
-          </div>,
         content:
           <AuctionBuyProposalModal
+            fieldName={fieldName}
             proposal={proposal}
           />,
         blurBackground: false,
@@ -223,13 +209,8 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
       })
     },
     312: ({ sum, wiseToGiveUp }: PayCommandEvent) => {
-      openEventModal(
-        {
+      openEventModal({
           modalId: ModalId.PAY_COMMAND,
-          header:
-            <div>
-              {`Pay $${sum}`}
-            </div>,
           content:
             <PayCommandModal
               sum={sum}
@@ -249,7 +230,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     315: ({ winnerName }) => {
       openEventModal({
         modalId: ModalId.WINNER,
-        header: <WinnerModal name={winnerName}/>,
+        content: <WinnerModal name={winnerName}/>,
         blurBackground: true,
       });
       changeCurrentPlayer('');
@@ -268,10 +249,6 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
           }: OfferProposalEvent) => {
       openEventModal({
         modalId: ModalId.OFFER_PROPOSAL,
-        header:
-          <div className="offer-title">
-            {`${initiatorName} made you an offer:`}
-          </div>,
         content:
           <OfferProposalModal
             initiatorName={initiatorName}
