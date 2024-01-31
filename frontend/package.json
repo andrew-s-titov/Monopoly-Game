@@ -13,7 +13,7 @@
     "@types/react-dom": "^18.2.18",
     "emoji-picker-react": "^4.6.0",
     "fireworks-js": "^2.10.7",
-    "i18next": "^23.7.20",
+    "i18next": "^23.8.2",
     "i18next-http-backend": "^2.4.2",
     "primeicons": "^6.0.1",
     "primereact": "^10.0.5",
