@@ -1,7 +1,7 @@
-import { createContext, PropsWithChildren, useContext, useRef } from "react";
+import { createContext, PropsWithChildren, useContext, useMemo, useRef } from "react";
 
 import { getGameWebsocketUrl } from "../config/api";
-import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
+import { ChatMessageBody, PlayerState, PropertyState, SystemMessageBody } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,
   AuctionRaiseProposalEvent,
@@ -32,6 +32,10 @@ import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
 import { useRouting } from "./Routing";
 import useWebsocket from "../hooks/useWebsocket";
+import { useTranslations } from "../i18n/config";
+import ChatMessage from "../components/chat/ChatMessage";
+import { getLoggedInUserId } from "../utils/auth";
+import SystemMessage from "../components/chat/SystemMessage";
 
 interface IGameContextProvider {
   sendMessage: (chatMessage: string) => void;
@@ -41,11 +45,14 @@ const ActiveGameContext = createContext<IGameContextProvider>({} as IGameContext
 
 const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
+  const { t } = useTranslations();
   const { navigate } = useRouting();
+  const loggedInUserId = useMemo(getLoggedInUserId, []);
   const {
-    gameId,
+    gameId, gameState,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
+  const playerStates = gameState.playerStates;
   const { openEventModal, closeEventModal } = useEventModalContext();
   const { showCenterPopUp } = useMessageContext();
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -63,8 +70,25 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     100: ({ players }) => {
       setConnectedPlayers(players);
     },
-    200: (message: ChatMessageBody) => {
-      addChatMessage(message);
+    200: ({ message, playerId }: ChatMessageBody) => {
+      addChatMessage(
+        <ChatMessage
+          text={message}
+          author={playerStates[playerId]?.name}
+          color={playerStates[playerId]?.color}
+          ownMessage={loggedInUserId === playerId}
+        />
+      );
+    },
+    201: ({ translationKey, params }: SystemMessageBody) => {
+      addChatMessage(
+        <SystemMessage
+          translationKey={translationKey}
+          params={params}
+        />);
+    },
+    202: ({ text }) => {
+      showCenterPopUp(<ChanceCard text={text}/>);
     },
     300: ({ players, fields, currentPlayer }: GameMapRefreshEvent) => {
       setGameState(prevState => ({
@@ -219,9 +243,6 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
           blurBackground: false,
         }
       );
-    },
-    313: ({ text }) => {
-      showCenterPopUp(<ChanceCard text={text}/>);
     },
     314: ({ playerId }) => {
       changeCurrentPlayer(playerId);

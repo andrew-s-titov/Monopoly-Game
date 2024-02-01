@@ -1,13 +1,10 @@
-import { memo, useEffect, useRef, useState } from 'react';
-
-import { ChatMessageBody } from '../../types/interfaces';
-import ChatMessage from './ChatMessage';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
 
 interface IChatContainerProps {
-  messages: ChatMessageBody[],
+  messages: ReactNode[],
 }
 
 const ChatHistory = ({ messages }: IChatContainerProps) => {
@@ -55,16 +52,7 @@ const ChatHistory = ({ messages }: IChatContainerProps) => {
       onScroll={handleScroll}
     >
       <div className='chat-filler'></div>
-      {messages.map((message, index) => {
-        return (
-          <ChatMessage
-            key={index}
-            text={message.message}
-            author={message.playerId ? gameState.playerStates[message.playerId]?.name : undefined}
-            color={message.playerId ? gameState.playerStates[message.playerId]?.color : undefined}
-            ownMessage={loggedInUserId === message.playerId}
-          />)
-      })}
+      {messages.map((message, index) => <div key={index}>{message}</div>)}
       {showScrollButton &&
         <Button
           className='scroll-down'
@@ -79,4 +67,4 @@ const ChatHistory = ({ messages }: IChatContainerProps) => {
     </div>);
 }
 
-export default memo(ChatHistory);
+export default ChatHistory;

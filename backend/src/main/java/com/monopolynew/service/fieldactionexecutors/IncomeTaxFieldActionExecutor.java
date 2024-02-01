@@ -19,6 +19,6 @@ public class IncomeTaxFieldActionExecutor extends TaxFieldActionExecutor {
 
     @Override
     public void executeAction(Game game) {
-        prepareTaxPayment(game, Rules.INCOME_TAX, FieldAction.INCOME_TAX.getName());
+        prepareTaxPayment(game, Rules.INCOME_TAX, "event.incomeTax");
     }
 }

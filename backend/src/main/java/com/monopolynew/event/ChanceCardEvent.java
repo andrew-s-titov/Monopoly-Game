@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChanceCardEvent implements GameEvent {
 
-    private final int code = 313;
+    private final int code = 202;
 
     private final String text;
 }

@@ -1,8 +1,11 @@
 package com.monopolynew.service.fieldactionexecutors;
 
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.service.PaymentService;
+
+import java.util.Map;
 
 public abstract class TaxFieldActionExecutor implements FieldActionExecutor {
 
@@ -12,9 +15,11 @@ public abstract class TaxFieldActionExecutor implements FieldActionExecutor {
         this.paymentService = paymentService;
     }
 
-    protected void prepareTaxPayment(Game game, int tax, String taxName) {
+    protected void prepareTaxPayment(Game game, int tax, String translationKey) {
         Player currentPlayer = game.getCurrentPlayer();
-        String paymentComment = String.format("%s is paying $%s as %s", currentPlayer.getName(), tax, taxName);
-        paymentService.startPaymentProcess(game, currentPlayer, null, tax, paymentComment);
+        var systemMessage = new SystemMessageEvent(translationKey, Map.of(
+                "name", currentPlayer.getName(),
+                "amount", tax));
+        paymentService.startPaymentProcess(game, currentPlayer, null, tax, systemMessage);
     }
 }

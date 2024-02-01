@@ -1,4 +1,3 @@
-import { memo } from "react";
 import ChatHistory from "./ChatHistory";
 import ChatInput from "./ChatInput";
 import { useGameState } from "../../context/GameStateProvider";
@@ -16,4 +15,4 @@ const Chat = () => {
   );
 }
 
-export default memo(Chat);
+export default Chat;

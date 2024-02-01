@@ -2,21 +2,21 @@ package com.monopolynew.service;
 
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
-import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.PayCommandEvent;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.procedure.CheckToPay;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -26,7 +26,7 @@ public class PaymentService {
     private final GameEventSender gameEventSender;
 
     public void startPaymentProcess(Game game, @NonNull Player player, Player beneficiary,
-                                    int amount, String paymentComment) {
+                                    int amount, SystemMessageEvent paymentComment) {
         var gameId = game.getId();
         var currentGameStage = game.getStage();
         verifyCheckCreationAvailable(currentGameStage);
@@ -59,7 +59,8 @@ public class PaymentService {
                 gameLogicExecutor.changeGameStage(game, newGameStage);
                 gameEventSender.sendToPlayer(gameId, player.getId(), PayCommandEvent.of(checkToPay));
             } else {
-                gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(player.getName() + " went bankrupt"));
+                gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.bankrupt", Map.of(
+                        "name", player.getName())));
                 gameLogicExecutor.bankruptPlayer(game, player);
             }
         }
@@ -85,9 +86,9 @@ public class PaymentService {
             moneyStates.add(MoneyState.fromPlayer(beneficiary));
         }
         gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(moneyStates));
-        var paymentComment = checkToPay.getComment();
-        if (StringUtils.isNotBlank(paymentComment)) {
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(paymentComment));
+        var paymentCompleteSystemMessage = checkToPay.getComment();
+        if (paymentCompleteSystemMessage != null) {
+            gameEventSender.sendToAllPlayers(gameId, paymentCompleteSystemMessage);
         }
         game.setCheckToPay(null);
         return debtor;

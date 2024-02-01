@@ -1,5 +1,6 @@
 package com.monopolynew.game.procedure;
 
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,5 +19,5 @@ public class CheckToPay {
 
     private final boolean wiseToGiveUp;
 
-    private final String comment;
+    private final SystemMessageEvent comment;
 }

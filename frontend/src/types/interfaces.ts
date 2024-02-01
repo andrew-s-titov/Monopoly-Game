@@ -8,7 +8,12 @@ export interface LoginData {
 
 export interface ChatMessageBody {
   message: string,
-  playerId?: string,
+  playerId: string,
+}
+
+export interface SystemMessageBody {
+  translationKey: string,
+  params: Map<string, string>,
 }
 
 export interface PropertyStaticData {

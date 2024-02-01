@@ -1,3 +1,10 @@
 {
-  "test": "test message"
+  "event": {
+    "dice": "{{name}} выбросил на кубиках {{firstDice}} : {{secondDice}}",
+    "diceDoublet": "{{name}} выбросил на кубиках {{firstDice}} : {{secondDice}} (дубль)",
+    "buy": "{{name}} покупает {{property}} за ${{price}}",
+    "newCircle": "{{name}} получает ${{amount}} за начало нового круга",
+    "hitStart": "{{name}} получает ${{amount}} за попадание на клетку Старт",
+    "skipping": "{{name}} пропускает ход"
+  }
 }

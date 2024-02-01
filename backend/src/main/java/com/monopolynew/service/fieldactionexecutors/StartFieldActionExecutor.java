@@ -1,8 +1,8 @@
 package com.monopolynew.service.fieldactionexecutors;
 
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
@@ -13,9 +13,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.rmi.server.UID;
 import java.util.Collections;
-import java.util.UUID;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -32,9 +31,9 @@ public class StartFieldActionExecutor implements FieldActionExecutor {
         Player currentPlayer = game.getCurrentPlayer();
         currentPlayer.addMoney(Rules.CIRCLE_MONEY);
         var gameId = game.getId();
-        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                String.format("%s received $%s for hitting the %s field",
-                        currentPlayer.getName(), Rules.CIRCLE_MONEY, FieldAction.START.getName())));
+        gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.hitStart", Map.of(
+                "name", currentPlayer.getName(),
+                "amount", Rules.CIRCLE_MONEY)));
         gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                 Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
         gameLogicExecutor.endTurn(game);

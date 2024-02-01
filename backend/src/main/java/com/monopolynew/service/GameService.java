@@ -11,6 +11,7 @@ import com.monopolynew.event.DiceResultEvent;
 import com.monopolynew.event.DiceRollingStartEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.NewPlayerTurn;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.UserInvalidInputException;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -125,8 +127,8 @@ public class GameService {
             currentPlayer.releaseFromJail();
             gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(Collections.singletonList(
                     MoneyState.fromPlayer(currentPlayer))));
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                    currentPlayer.getName() + " is released on bail"));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.jail.bail", Map.of(
+                    "name", currentPlayer.getName())));
             gameLogicExecutor.changeGameStage(game, GameStage.TURN_START);
             gameEventSender.sendToPlayer(gameId, currentPlayer.getId(), new TurnStartEvent());
         } else if (jailAction.equals(JailAction.LUCK)) {
@@ -154,7 +156,8 @@ public class GameService {
         // TODO: check if game is in progress
         Game game = getGame(gameId);
         Player player = game.getPlayerById(playerId);
-        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(player.getName() + " gave up"));
+        gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.giveUp", Map.of(
+                "name", player.getName())));
         gameLogicExecutor.bankruptPlayer(game, player);
     }
 
@@ -203,13 +206,15 @@ public class GameService {
         var gameId = game.getId();
         var lastDice = game.getLastDice();
         Player currentPlayer = game.getCurrentPlayer();
-        String message = String.format("%s rolled the dice and got %s : %s",
-                currentPlayer.getName(), lastDice.getFirstDice(), lastDice.getSecondDice());
+        String eventTranslationKey = "event.dice";
         if (lastDice.isDoublet()) {
-            message = message + " (doublet)";
+            eventTranslationKey = "event.diceDoublet";
         }
         gameEventSender.sendToAllPlayers(gameId, DiceResultEvent.of(lastDice));
-        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(message));
+        gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent(eventTranslationKey, Map.of(
+                "name", currentPlayer.getName(),
+                "firstDice", lastDice.getFirstDice(),
+                "secondDice", lastDice.getSecondDice())));
 
         scheduler.schedule(
                 () -> afterAction.accept(game),
@@ -220,8 +225,8 @@ public class GameService {
         Player currentPlayer = game.getCurrentPlayer();
         if (currentPlayer.getDoubletCount() == Rules.DOUBLETS_LIMIT) {
             currentPlayer.resetDoublets();
-            gameEventSender.sendToAllPlayers(game.getId(),
-                    new ChatMessageEvent(currentPlayer.getName() + " was sent to jail for fraud"));
+            gameEventSender.sendToAllPlayers(game.getId(), new SystemMessageEvent("event.jail.doublets", Map.of(
+                            "name", currentPlayer.getName())));
             gameLogicExecutor.sendToJail(game, currentPlayer);
             gameLogicExecutor.endTurn(game);
         } else {
@@ -236,17 +241,18 @@ public class GameService {
         if (lastDice.isDoublet()) {
             currentPlayer.amnesty();
             gameLogicExecutor.changeGameStage(game, GameStage.ROLLED_FOR_TURN);
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                    currentPlayer.getName() + " is pardoned under amnesty"));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.jail.amnesty", Map.of(
+                    "name", currentPlayer.getName())));
             doRegularMove(game);
         } else {
             if (currentPlayer.lastTurnInPrison()) {
-                String message = currentPlayer.getName() + " served time and paid a criminal fine";
-                paymentService.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, message);
+                var systemChatMessage = new SystemMessageEvent("event.jail.served", Map.of(
+                        "name", currentPlayer.getName()));
+                paymentService.startPaymentProcess(game, currentPlayer, null, Rules.JAIL_BAIL, systemChatMessage);
             } else {
                 currentPlayer.doTime();
-                gameEventSender.sendToAllPlayers(gameId,
-                        new ChatMessageEvent(currentPlayer.getName() + " is doing time"));
+                gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.jail.continue", Map.of(
+                        "name", currentPlayer.getName())));
                 gameLogicExecutor.endTurn(game);
             }
         }

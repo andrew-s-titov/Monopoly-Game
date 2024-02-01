@@ -2,7 +2,7 @@ package com.monopolynew.service;
 
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
-import com.monopolynew.event.ChatMessageEvent;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.exception.WrongGameStageException;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -14,6 +14,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.monopolynew.util.CommonUtils.requireNotNullArgs;
 
@@ -29,7 +30,9 @@ public class AuctionManager {
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         var currentPlayer = game.getCurrentPlayer();
         game.setAuction(new Auction(game, field));
-        gameEventSender.sendToAllPlayers(game.getId(), new ChatMessageEvent(currentPlayer.getName() + " started an auction"));
+        gameEventSender.sendToAllPlayers(game.getId(),
+                new SystemMessageEvent("event.auction.start", Map.of(
+                        "name", currentPlayer.getName())));
         auctionStep(game);
     }
 
@@ -39,7 +42,7 @@ public class AuctionManager {
         List<Player> participants = auction.getParticipants();
         if (participants.isEmpty()) {
             // there's no one who wanted to or could take part in the auction
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent("No one took part in the auction"));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.auction.noParticipants"));
             finishAuction(game);
         } else if (participants.size() > 1) {
             // propose to raise the stake
@@ -76,7 +79,7 @@ public class AuctionManager {
             var buyerId = auction.getCurrentParticipant().getId();
             gameLogicExecutor.doBuyField(game, auction.getField(), auction.getAuctionPrice(), buyerId);
         } else {
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent("No one took part in the auction"));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.auction.noParticipants"));
         }
         finishAuction(game);
     }
@@ -89,10 +92,10 @@ public class AuctionManager {
         gameLogicExecutor.changeGameStage(game, GameStage.AUCTION_IN_PROGRESS);
         if (ProposalAction.ACCEPT.equals(action)) {
             auction.raiseTheStake();
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                    String.format("%s raised lot price to $%s",
-                            auction.getCurrentParticipant().getName(),
-                            auction.getAuctionPrice())));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent(
+                    "event.auction.raise", Map.of(
+                            "name", auction.getCurrentParticipant().getName(),
+                            "price", auction.getAuctionPrice())));
         } else if (ProposalAction.DECLINE.equals(action)) {
             auction.removeParticipant();
         }

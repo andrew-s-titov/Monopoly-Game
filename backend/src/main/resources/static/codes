@@ -1,6 +1,8 @@
 Websocket codes:
 100 - connected players info
 200 - chat message
+201 - system message
+202 - chance card
 300 - game map refresh
 301 - usual turn starts
 302 - dice rolling start
@@ -14,7 +16,6 @@ Websocket codes:
 310 - auction buy proposal
 311 - bankruptcy
 312 - pay command
-313 - chance card
 314 - next player turn
 315 - game over
 316 - offer received
