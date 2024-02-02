@@ -87,8 +87,11 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
           params={params}
         />);
     },
-    202: ({ text }) => {
-      showCenterPopUp(<ChanceCard text={text}/>);
+    202: ({ translationKey, params }) => {
+      showCenterPopUp(<ChanceCard
+        translationKey={translationKey}
+        params={params}
+      />);
     },
     300: ({ players, fields, currentPlayer }: GameMapRefreshEvent) => {
       setGameState(prevState => ({
