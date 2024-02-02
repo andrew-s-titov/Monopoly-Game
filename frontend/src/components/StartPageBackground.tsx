@@ -1,8 +1,8 @@
 import { memo, PropsWithChildren, useEffect, useRef } from "react";
 import PageHeader from "./PageHeader";
 
-const initialBackgroundImageWidth = 1086;
-const initialBackgroundImageHeight = 610;
+const initialBackgroundImageWidth = 1366;
+const initialBackgroundImageHeight = 768;
 
 interface IStartPageProps extends PropsWithChildren {
   headerLangOnly?: boolean;

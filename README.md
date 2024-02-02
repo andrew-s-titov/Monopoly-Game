@@ -41,6 +41,5 @@ To launch application to play via internet on separate computers do the followin
 4. open url provided by ngrok in your browser
 
 - - -
-### _Special thanks:_
+### _Special thanks to:_
 - _Denis Vasilkov_ - for game map and property cards images
-- _Freepik from Flaticon_ - for player avatars and flags images (<a href="https://www.flaticon.com/free-icons/modern" title="modern icons">Modern icons created by Freepik - Flaticon</a>)

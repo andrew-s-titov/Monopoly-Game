@@ -11,7 +11,7 @@ export const getLoggedInUserId = (): string => {
 }
 
 export const getUserAvatar = (): string => {
-  return getPlayerAuthData()?.avatar || 'unknown';
+  return getPlayerAuthData()?.avatar || 'male1';
 }
 
 export const isAuthenticated = () => !!getPlayerAuthData();

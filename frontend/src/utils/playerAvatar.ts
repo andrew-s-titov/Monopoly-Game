@@ -19,7 +19,6 @@ export const AVATAR_NAMES = [
   'female8',
   'female9',
   'female10',
-  'unknown',
 ] as const;
 
 export const getRandomAvatar = () => AVATAR_NAMES[Math.floor(Math.random() * (AVATAR_NAMES.length - 1))];
