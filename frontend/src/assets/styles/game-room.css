@@ -24,9 +24,8 @@
 .gr-table-overview-header {
     font-size: 3vh;
     margin-bottom: 1.5vh;
-    color: var(--gray-800);
-    font-weight: 500;
-    text-shadow: 0.2vh 0.2vh 0.3vh rgba(0,0,0,0.2);
+    color: white;
+    text-shadow: 0.2vh 0.2vh 0.3vh rgba(0,0,0,0.3);
 }
 
 .gr-overview-table {

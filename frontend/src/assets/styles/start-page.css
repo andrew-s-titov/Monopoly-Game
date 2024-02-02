@@ -15,8 +15,9 @@
     text-align: center;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     font-size: 3.5vh !important;
-    border-bottom: solid 0.4vh rgba(0, 0, 0, 0.4);
+    border-bottom: solid 0.4vh rgba(255, 255, 255, 0.3);
     width: 40vh;
+    transition: border-bottom 0.3s, box-shadow 0.3s;
 }
 
 .player-name-input::placeholder {
@@ -28,7 +29,7 @@
 .player-name-input:focus {
     outline: none;
     box-shadow: none;
-    border-bottom: solid 0.4vh rgba(0, 0, 0);
+    border-bottom: solid 0.4vh rgba(255, 255, 255, 0.7);
 }
 
 .non-game-button {
