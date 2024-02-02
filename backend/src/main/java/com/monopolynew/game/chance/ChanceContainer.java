@@ -33,7 +33,7 @@ import static com.monopolynew.map.PurchasableFieldGroups.UTILITY_FIELD_GROUP;
 @UtilityClass
 public class ChanceContainer {
 
-    private static final String YOU = "You";
+    private static final String CARD_POSTFIX = "_card";
 
     public static final List<ChanceCard> CHANCES = List.of(
             moneyChance(50, true, "chance.money.get.pavement"),
@@ -90,11 +90,12 @@ public class ChanceContainer {
         return (game, eventSender) -> {
             var currentPlayer = game.getCurrentPlayer();
             skipTurns(turns, currentPlayer);
+            Map<String, Object> messageParams = Map.of(
+                    "name", currentPlayer.getName(),
+                    "turns", turns);
             sendChanceMessages(game, eventSender,
-                    new SystemMessageEvent(translationKey, Map.of(
-                            "name", currentPlayer.getName(),
-                            "turns", turns)),
-                    translationKey.formatted(YOU, turns));
+                    new SystemMessageEvent(translationKey, messageParams),
+                    new ChanceCardEvent(translationKey + CARD_POSTFIX, messageParams));
             return null;
         };
     }
@@ -107,11 +108,12 @@ public class ChanceContainer {
             } else {
                 currentPlayer.takeMoney(amount);
             }
+            Map<String, Object> messageParams = Map.of(
+                    "name", currentPlayer.getName(),
+                    "amount", amount);
             sendChanceMessages(game, eventSender,
-                    new SystemMessageEvent(translationKey, Map.of(
-                            "name", currentPlayer.getName(),
-                            "amount", amount)),
-                    translationKey);
+                    new SystemMessageEvent(translationKey, messageParams),
+                    new ChanceCardEvent(translationKey + CARD_POSTFIX, messageParams));
             eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
             return null;
@@ -132,11 +134,12 @@ public class ChanceContainer {
                     .map(MoneyState::fromPlayer)
                     .collect(Collectors.toCollection(ArrayList::new));
             moneyStates.add(MoneyState.fromPlayer(currentPlayer));
+            Map<String, Object> messageParams = Map.of(
+                    "name", currentPlayer.getName(),
+                    "amount", payment);
             sendChanceMessages(game, eventSender,
-                    new SystemMessageEvent(translationKey, Map.of(
-                            "name", currentPlayer.getName(),
-                            "amount", payment)),
-                    translationKey);
+                    new SystemMessageEvent(translationKey, messageParams),
+                    new ChanceCardEvent(translationKey + CARD_POSTFIX, messageParams));
             eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(moneyStates));
             return null;
         };
@@ -161,11 +164,12 @@ public class ChanceContainer {
             }
             moneyStates.add(MoneyState.fromPlayer(currentPlayer));
             eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(moneyStates));
+            Map<String, Object> messageParams = Map.of(
+                    "name", currentPlayer.getName(),
+                    "amount", rewardRate);
             sendChanceMessages(game, eventSender,
-                    new SystemMessageEvent("chance.payEveryone", Map.of(
-                            "name", currentPlayer.getName(),
-                            "amount", rewardRate)),
-                    "chance.payEveryone");
+                    new SystemMessageEvent("chance.payEveryone", messageParams),
+                    new ChanceCardEvent("chance.payEveryone_card", messageParams));
             return null;
         };
     }
@@ -186,11 +190,13 @@ public class ChanceContainer {
                 eventSender.sendToAllPlayers(game.getId(), new MoneyChangeEvent(
                         Collections.singletonList(MoneyState.fromPlayer(currentPlayer))));
             }
-            var systemMessage = new SystemMessageEvent(translationKey, Map.of(
+            Map<String, Object> messageParams = Map.of(
                     "name", currentPlayer.getName(),
                     "perHouse", perHouse,
-                    "perHotel", perHotel));
-            sendChanceMessages(game, eventSender, systemMessage, translationKey);
+                    "perHotel", perHotel);
+            sendChanceMessages(game, eventSender,
+                    new SystemMessageEvent(translationKey, messageParams),
+                    new ChanceCardEvent(translationKey + CARD_POSTFIX, messageParams));
             return null;
         };
     }
@@ -203,35 +209,29 @@ public class ChanceContainer {
             if (!whereTo.isFree() && !currentPlayer.equals(whereTo.getOwner())) {
                 game.setLastDice(new DiceResult(12, 0));
             }
-            var message = "%s must proceed to the nearest Utility and pay full price for overdue payment";
             return goTo(game, eventSender,
                     whereTo.getId(), true,
                     new SystemMessageEvent("chance.goTo.utility", Map.of("name", currentPlayer.getName())),
-                    message.formatted(YOU));
+                    new ChanceCardEvent("chance.goTo.utility_card"));
         };
     }
 
     private static ChanceCard advanceToAirport() {
         return (game, eventSender) -> {
             var nearestForwardAirport = nearestForward(game, AIRPORT_FIELD_GROUP);
-            var message = "%s missed the train on business trip and must proceed to the nearest Airport";
             return goTo(game, eventSender,
                     nearestForwardAirport.getId(), true,
                     new SystemMessageEvent("chance.goTo.airport", Map.of(
                             "name", game.getCurrentPlayer().getName())),
-                    message.formatted(YOU));
+                    new ChanceCardEvent("chance.goTo.airport_card"));
         };
     }
 
     private static ChanceCard advanceToPurchasableField(int fieldIndex, String translationKey) {
-        return (game, eventSender) -> {
-            var field = (PurchasableField) game.getGameMap().getField(fieldIndex);
-            String fieldName = field.getName();
-            var message = "%s must advance to %s %s";
-            return goTo(game, eventSender, field.getId(), true,
+        return (game, eventSender) -> goTo(
+                game, eventSender, fieldIndex, true,
                     new SystemMessageEvent(translationKey, Map.of("name", game.getCurrentPlayer().getName())),
-                    message.formatted(YOU, fieldName, translationKey));
-        };
+                    new ChanceCardEvent(translationKey + CARD_POSTFIX));
     }
 
     private static ChanceCard goToStartAfterBooze() {
@@ -241,10 +241,9 @@ public class ChanceContainer {
             if (currentPlayer.getDoubletCount() > 0) {
                 currentPlayer.resetDoublets();
             }
-            var messageTemplate = "%s got drunk and landed on the Start field, missing 1 turn";
             return goTo(game, eventSender, 0, false,
                     new SystemMessageEvent("chance.goTo.start", Map.of("name", currentPlayer.getName())),
-                    messageTemplate.formatted(YOU));
+                    new ChanceCardEvent("chance.goTo.start_card"));
         };
     }
 
@@ -255,12 +254,11 @@ public class ChanceContainer {
             int newPosition = positionComputation < 0
                     ? positionComputation + Rules.NUMBER_OF_FIELDS
                     : positionComputation;
-            var messageTemplate = "%s forgot a card inside an ATM and must go back for 3 fields";
             return goTo(game, eventSender,
                     newPosition, false,
                     new SystemMessageEvent("chance.threeStepsBack", Map.of(
                             "name", currentPlayer.getName())),
-                    messageTemplate.formatted(YOU));
+                    new ChanceCardEvent("chance.threeStepsBack_card"));
         };
     }
 
@@ -275,22 +273,20 @@ public class ChanceContainer {
             var random = new Random();
             var randomArrayIndex = random.nextInt(purchasableFieldsIndexes.size());
             Integer randomFieldIndex = purchasableFieldsIndexes.get(randomArrayIndex);
-            var messageTemplate = "%s got kidnapped and teleported by aliens";
             return goTo(game, eventSender,
                     randomFieldIndex, false,
                     new SystemMessageEvent("chance.teleport", Map.of(
                             "name", currentPlayer.getName())),
-                    messageTemplate.formatted(YOU));
+                    new ChanceCardEvent("chance.teleport_card"));
         };
     }
 
     private static ChanceCard goToJail(String translationKey) {
         return (game, eventSender) -> {
             var currentPlayer = game.getCurrentPlayer();
-            var messageTemplate = "%s got sent to jail %s";
             return goTo(game, eventSender, Rules.JAIL_FIELD_NUMBER, false,
                     new SystemMessageEvent(translationKey, Map.of("name", currentPlayer.getName())),
-                    messageTemplate.formatted(YOU, translationKey));
+                    new ChanceCardEvent(translationKey + CARD_POSTFIX));
         };
     }
 
@@ -312,16 +308,17 @@ public class ChanceContainer {
     }
 
     private static GoTo goTo(Game game, GameEventSender eventSender,
-                             int whereTo, boolean forward, SystemMessageEvent systemMessage, String cardMessage) {
+                             int whereTo, boolean forward,
+                             SystemMessageEvent systemMessage, ChanceCardEvent cardMessage) {
         sendChanceMessages(game, eventSender, systemMessage, cardMessage);
         return new GoTo(whereTo, forward);
     }
 
     private static void sendChanceMessages(Game game, GameEventSender eventSender,
-                                           SystemMessageEvent systemMessage, String cardMessage) {
+                                           SystemMessageEvent systemMessage, ChanceCardEvent chanceCardMessage) {
         UUID gameId = game.getId();
         eventSender.sendToAllPlayers(gameId, systemMessage);
-        eventSender.sendToPlayer(gameId, game.getCurrentPlayer().getId(), new ChanceCardEvent(cardMessage));
+        eventSender.sendToPlayer(gameId, game.getCurrentPlayer().getId(), chanceCardMessage);
     }
 
     private static void skipTurns(int amount, Player currentPlayer) {
