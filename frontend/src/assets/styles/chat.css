@@ -31,13 +31,13 @@
 }
 
 .own-message {
-    align-self: end;
+    margin-left: auto;
 }
 
 .system-message {
     align-self: start;
     font-style: italic;
-    background: var(--gray-400);
+    background: rgba(180, 180, 180);
     font-size: 1.8vh;
 }
 

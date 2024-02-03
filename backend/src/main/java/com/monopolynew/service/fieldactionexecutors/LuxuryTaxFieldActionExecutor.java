@@ -19,6 +19,6 @@ public class LuxuryTaxFieldActionExecutor extends TaxFieldActionExecutor {
 
     @Override
     public void executeAction(Game game) {
-        prepareTaxPayment(game, Rules.LUXURY_TAX, FieldAction.LUXURY_TAX.getName());
+        prepareTaxPayment(game, Rules.LUXURY_TAX, "event.luxuryTax");
     }
 }

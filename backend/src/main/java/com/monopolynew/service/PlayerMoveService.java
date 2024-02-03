@@ -3,6 +3,7 @@ package com.monopolynew.service;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
 import com.monopolynew.game.Rules;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -45,9 +47,9 @@ public class PlayerMoveService {
         gameLogicExecutor.changePlayerPosition(gameId, player, newPositionIndex);
         if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                    String.format("%s received $%s for starting a new circle",
-                            player.getName(), Rules.CIRCLE_MONEY)));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.newCircle", Map.of(
+                    "name", player.getName(),
+                    "amount", Rules.CIRCLE_MONEY)));
             gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(
                     Collections.singletonList(MoneyState.fromPlayer(player))));
         }
@@ -122,9 +124,12 @@ public class PlayerMoveService {
 
     private void initiateRentPayment(Game game, Player player, PurchasableField field, int rent) {
         Player owner = field.getOwner();
-        String paymentComment = String.format("%s is paying %s $%s rent for %s",
-                player.getName(), owner.getName(), rent, field.getName());
-        paymentService.startPaymentProcess(game, player, owner, rent, paymentComment);
+        var systemMessage = new SystemMessageEvent("event.rent", Map.of(
+                "name", player.getName(),
+                "owner", owner.getName(),
+                "amount", rent,
+                "property", field.getName()));
+        paymentService.startPaymentProcess(game, player, owner, rent, systemMessage);
     }
 
     public int computeNewPlayerPosition(Player player, DiceResult diceResult) {

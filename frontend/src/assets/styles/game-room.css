@@ -94,7 +94,7 @@
 
 .join-button {
     margin-left: 5vh;
-    background-color: rgba(150, 150, 150, 0.4);
+    background-color: rgba(255, 30, 0, 0.3);
     text-shadow: 0.3vh 0.3vh 0.3vh rgba(0, 0, 0, 0.5);
     color: white;
     min-width: 12vh;
@@ -103,11 +103,11 @@
 }
 
 .join-button:hover {
-    background-color: rgba(150, 150, 150, 0.7);
+    background-color: rgba(255, 30, 0, 0.45);
 }
 
 .join-button:active {
-    background-color: rgba(150, 150, 150);
+    background-color: rgba(255, 30, 0, 0.6);
 }
 
 .join-button .p-button-icon-left {

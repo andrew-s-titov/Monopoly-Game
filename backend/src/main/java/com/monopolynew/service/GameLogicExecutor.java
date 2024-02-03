@@ -12,6 +12,7 @@ import com.monopolynew.event.GameStageEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.NewPlayerTurn;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.game.Game;
 import com.monopolynew.game.Player;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -63,8 +65,10 @@ public class GameLogicExecutor {
         var buyer = game.getPlayerById(buyerId);
         field.newOwner(buyer);
         buyer.takeMoney(price);
-        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                String.format("%s is buying %s for $%s", buyer.getName(), field.getName(), price)));
+        gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.buy", Map.of(
+                "name", buyer.getName(),
+                "property", field.getName(),
+                "price", price)));
         gameEventSender.sendToAllPlayers(gameId, new MoneyChangeEvent(Collections.singletonList(
                 MoneyState.fromPlayer(buyer))));
 
@@ -253,7 +257,8 @@ public class GameLogicExecutor {
         if (nextPlayer.isBankrupt() || nextPlayer.isSkipping()) {
             if (nextPlayer.isSkipping()) {
                 gameEventSender.sendToAllPlayers(game.getId(),
-                        new ChatMessageEvent(nextPlayer.getName() + " is skipping a turn"));
+                        new SystemMessageEvent("event.skipping", Map.of(
+                        "name", nextPlayer.getName())));
                 nextPlayer.skip();
             }
             nextPlayer = toNextPlayer(game);

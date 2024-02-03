@@ -1,14 +1,18 @@
 import { memo } from "react";
+import { useTranslations } from "../i18n/config";
 
 interface IChanceCardProps {
-  text: string,
+  translationKey: string,
+  params: Map<string, string>,
 }
 
-const ChanceCard = ({ text }: IChanceCardProps) => {
+const ChanceCard = ({ translationKey, params }: IChanceCardProps) => {
+
+  const { t } = useTranslations();
 
   return (
     <div className="chance-card">
-      {text}
+      {t(translationKey, params)}
     </div>
   );
 }

@@ -5,10 +5,10 @@ import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.enums.ProposalAction;
-import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.JailReleaseProcessEvent;
 import com.monopolynew.event.MoneyChangeEvent;
+import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.event.TurnStartEvent;
 import com.monopolynew.exception.ClientBadRequestException;
 import com.monopolynew.exception.UserInvalidInputException;
@@ -25,12 +25,14 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
@@ -71,8 +73,9 @@ public class DealManager {
                 .stageToReturnTo(currentGameStage)
                 .build();
         game.setOffer(newOffer);
-        gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(
-                String.format("%s offered %s a deal", currentPlayer.getName(), offerAddressee.getName())));
+        gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.deal.offer", Map.of(
+                "initiator", currentPlayer.getName(),
+                "addressee", offerAddressee.getName())));
         gameEventSender.sendToPlayer(gameId, addresseeId, gameEventGenerator.offerProposalEvent(game));
     }
 
@@ -90,9 +93,10 @@ public class DealManager {
         }
         var initiator = offer.getInitiator();
         if (ProposalAction.DECLINE.equals(proposalAction)) {
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(addressee.getName() + " declined the offer"));
+            gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.deal.declined", Map.of(
+                    "addressee", addressee.getName())));
         } else {
-            gameEventSender.sendToAllPlayers(gameId, new ChatMessageEvent(createOfferAcceptMessage(offer)));
+            gameEventSender.sendToAllPlayers(gameId, createOfferAcceptMessage(offer));
             processOfferPayments(gameId, offer, initiator, addressee);
             processOfferPropertyExchange(game, offer, initiator, addressee);
         }
@@ -237,44 +241,36 @@ public class DealManager {
         }
     }
 
-    private String createOfferAcceptMessage(Offer offer) {
-        Integer initiatorMoney = offer.getInitiatorMoney();
-        Integer addresseeMoney = offer.getAddresseeMoney();
-        List<PurchasableField> initiatorFields = offer.getInitiatorFields();
-        List<PurchasableField> addresseeFields = offer.getAddresseeFields();
-        var strBuilder = new StringBuilder();
-        var shouldAddInitiatorResult = (addresseeMoney != null && addresseeMoney > 0)
-                || CollectionUtils.isNotEmpty(addresseeFields);
-        var shouldAddAddresseeResult = (initiatorMoney != null && initiatorMoney > 0)
-                || CollectionUtils.isNotEmpty(initiatorFields);
-        if (shouldAddInitiatorResult) {
-            addReceivedInfo(offer.getInitiator().getName(), addresseeFields, addresseeMoney,
-                    strBuilder);
-        }
-        if (shouldAddInitiatorResult && shouldAddAddresseeResult) {
-            strBuilder.append(". ");
-        }
-        if (shouldAddAddresseeResult) {
-            addReceivedInfo(offer.getAddressee().getName(), initiatorFields, initiatorMoney,
-                    strBuilder);
-        }
-        return strBuilder.append(".").toString();
+    private SystemMessageEvent createOfferAcceptMessage(Offer offer) {
+        var initiatorResult = buildDealSideResult(offer, Offer::getInitiatorFields, Offer::getInitiatorMoney);
+        var addresseeResult = buildDealSideResult(offer, Offer::getAddresseeFields, Offer::getAddresseeMoney);
+        var translationKey = defineDealResultTranslationKey(initiatorResult, addresseeResult);
+        return new SystemMessageEvent(translationKey, Map.of(
+                "initiator", offer.getInitiator().getName(),
+                "initiatorResult", initiatorResult,
+                "addressee", offer.getAddressee().getName(),
+                "addresseeResult", addresseeResult));
     }
 
-    private void addReceivedInfo(String partyName, List<PurchasableField> fields, Integer money,
-                                 StringBuilder builder) {
-        builder.append(partyName).append(" received: ");
-        if (CollectionUtils.isNotEmpty(fields)) {
-            builder.append(fields.stream()
-                    .map(PurchasableField::getName)
-                    .collect(Collectors.joining(", ")));
-
-            if (money != null && money > 0) {
-                builder.append(" and ");
-            }
+    private List<String> buildDealSideResult(Offer offer, Function<Offer, List<PurchasableField>> fieldsGetter,
+                                             Function<Offer, Integer> moneyGetter) {
+        Integer sideMoney = moneyGetter.apply(offer);
+        var sideResult = new ArrayList<>(fieldsGetter.apply(offer).stream()
+                .map(PurchasableField::getName)
+                .toList());
+        if (sideMoney != null && sideMoney > 0) {
+            sideResult.add("$" + sideMoney);
         }
-        if (money != null && money > 0) {
-            builder.append("$").append(money);
+        return sideResult;
+    }
+
+    private String defineDealResultTranslationKey(List<String> initiatorResult, List<String> addresseeResult) {
+        if (CollectionUtils.isNotEmpty(initiatorResult) && CollectionUtils.isNotEmpty(addresseeResult)) {
+            return "event.deal.bothGet";
+        } else if (CollectionUtils.isNotEmpty(initiatorResult)) {
+            return "event.deal.initiatorGets";
+        } else {
+            return "event.deal.addresseeGets";
         }
     }
 }

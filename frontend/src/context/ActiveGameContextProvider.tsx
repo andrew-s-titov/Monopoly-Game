@@ -1,7 +1,7 @@
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
 
 import { getGameWebsocketUrl } from "../config/api";
-import { ChatMessageBody, PlayerState, PropertyState } from "../types/interfaces";
+import { ChatMessageBody, PlayerState, PropertyState, SystemMessageBody } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,
   AuctionRaiseProposalEvent,
@@ -32,6 +32,8 @@ import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
 import { useRouting } from "./Routing";
 import useWebsocket from "../hooks/useWebsocket";
+import PlayerChatMessage from "../components/chat/PlayerChatMessage";
+import SystemMessage from "../components/chat/SystemMessage";
 
 interface IGameContextProvider {
   sendMessage: (chatMessage: string) => void;
@@ -43,7 +45,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
   const { navigate } = useRouting();
   const {
-    gameId,
+    gameId, gameState,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
   const { openEventModal, closeEventModal } = useEventModalContext();
@@ -63,8 +65,27 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     100: ({ players }) => {
       setConnectedPlayers(players);
     },
-    200: (message: ChatMessageBody) => {
-      addChatMessage(message);
+    200: ({ message, playerId }: ChatMessageBody) => {
+      addChatMessage(
+        <PlayerChatMessage
+          message={message}
+          playerId={playerId}
+        />
+      );
+    },
+    201: ({ translationKey, params }: SystemMessageBody) => {
+      addChatMessage(
+        <SystemMessage
+          translationKey={translationKey}
+          params={params}
+        />);
+    },
+    202: ({ translationKey, params }) => {
+      showCenterPopUp(
+        <ChanceCard
+          translationKey={translationKey}
+          params={params}
+        />);
     },
     300: ({ players, fields, currentPlayer }: GameMapRefreshEvent) => {
       setGameState(prevState => ({
@@ -219,9 +240,6 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
           blurBackground: false,
         }
       );
-    },
-    313: ({ text }) => {
-      showCenterPopUp(<ChanceCard text={text}/>);
     },
     314: ({ playerId }) => {
       changeCurrentPlayer(playerId);
