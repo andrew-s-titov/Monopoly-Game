@@ -1,9 +1,4 @@
-# Monopoly-Game
-
-This is a pet-project - online Monopoly game.  
-Here you can find both backend and frontend, using **Java** with Spring for the first 
-and **React.js** with TypeScript for the second.  
-> Previously the whole frontend was implemented using pure (vanilla) JavaScript.
+# Online Monopoly Game
 
 #### Classic Monopoly game features:
 - dice rolling;
@@ -18,27 +13,31 @@ and **React.js** with TypeScript for the second.
 - giving up at any time during the game.
 
 #### Additional features:
-- in-game chat
+- in-game chat  
 
-Multiple game rooms are available (max 5 players for each).  
-Most of the communication between frontend and backend happens through Websocket for real-time view changes
-for all connected players (clients) and for an in-game chat.
+- - -
+Multiple game rooms are available (max 5 players each).  
+
+Language support:  
+<img src="frontend/src/assets/images/flags/en.png" alt="English" width="30"/>
+<img src="frontend/src/assets/images/flags/ru.png" alt="Russian" width="30"/>
 
 - - -
 ## Launch
 
 To launch application locally do the following steps:
-1. run `mvn clean install` (or `./mvnw clean install` if you don't have locally installed Maven)
-2. run spring application class `MonopolyNewApplication.java` from IDE or run `monopoly-new-{version}.jar` from `/target` 
-3. open `htpp://localhost:8080` in your browser  
+1. Make sure Java is installed on your computer
+2. Download the [latest game release](https://github.com/andrew-s-titov/Monopoly-Game/releases/latest) (`*.jar` archive)
+3. Run application via CLI using `java -jar path-to-downloaded-jar` command
+4. Open http://localhost:8080 in your browser
 
 This local run will allow you to play the game from different browsers on the same computer.
 
-To launch application to play via internet on separate computers do the following:
-1. download [ngrok](https://ngrok.com/download)
-2. run ngrok with command `ngrok http 8080`
-3. re-do steps 1-2 from local run
-4. open url provided by ngrok in your browser
+To launch application to play via Internet on separate computers do the following:
+1. Download [ngrok](https://ngrok.com/download)
+2. Open ngrok, execute command `ngrok http 8080`
+3. Re-do steps 1-3 from local run on one of the computers (server)
+4. Open url provided by ngrok
 
 - - -
 ### _Special thanks to:_
