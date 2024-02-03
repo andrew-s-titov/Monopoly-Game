@@ -2,8 +2,8 @@ import i18next from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import HttpBackend from 'i18next-http-backend';
 
-import ru from './ru/translation.json';
-import en from './en/translation.json';
+import ru from './ru.json';
+import en from './en.json';
 import { BE_ENDPOINT } from "../config/api";
 
 const NAMESPACE = 'main';
