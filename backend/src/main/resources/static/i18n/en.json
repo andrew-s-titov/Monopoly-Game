@@ -35,12 +35,12 @@
     }
   },
   "chance": {
-    "teleport": "{{name}} was kidnapped and teleported by aliens",
+    "teleport": "{{name}} was kidnapped and dropped by aliens in random place",
     "teleport_card": "You was kidnapped and teleported by aliens",
     "threeStepsBack": "{{name}} forgot a card inside an ATM and must go 3 fields back",
     "threeStepsBack_card": "You forgot a card inside an ATM and must go 3 fields back",
-    "payEveryone": "{{name}} must pay everyone ${{amount}} for help with the election campaign",
-    "payEveryone_card": "You must pay everyone ${{amount}} for help with the election campaign",
+    "payEveryone": "{{name}} payed everyone ${{amount}} for help with the election campaign",
+    "payEveryone_card": "You payed everyone ${{amount}} for help with the election campaign",
     "jail": {
       "drunk": "{{name}} was sent to jail for drunken indecent behavior",
       "drunk_card": "You was sent to jail for drunken indecent behavior",
@@ -58,8 +58,8 @@
       "birthday_card": "You received ${{amount}} from every player as birthday present",
       "party": "{{name}} received ${{amount}} from every player for tickets to a private party",
       "party_card": "You received ${{amount}} from every player for tickets to a private party",
-      "concert": "{{name}} received ${{amount}} from every player for a street music concert",
-      "concert_card": "You received ${{amount}} from every player for a street music concert"
+      "concert": "{{name}} received ${{amount}} from every player for a street music performance",
+      "concert_card": "You received ${{amount}} from every player for a street music performance"
     },
     "goTo": {
       "start": "{{name}} got drunk and landed on the Start field, missing 1 turn",
@@ -101,26 +101,26 @@
         "fee_card": "You received ${{amount}} consultancy fee",
         "inheritance": "{{name}} inherited ${{amount}}",
         "inheritance_card": "You inherited ${{amount}}",
-        "insurance": "{{name}} received ${{amount}} life insurance payment for injury",
-        "insurance_card": "You received ${{amount}} life insurance payment for injury",
+        "insurance": "{{name}} received ${{amount}} life insurance payment due to injury",
+        "insurance_card": "You received ${{amount}} life insurance payment due to injury",
         "donation": "{{name}} received ${{amount}} for blood donation",
         "donation_card": "You received ${{amount}} for blood donation"
       },
       "give": {
         "lost": "{{name}} lost ${{amount}} somewhere",
         "lost_card": "You lost ${{amount}} somewhere",
-        "medicine": "{{name}} must pay ${{amount}} for medical services",
-        "medicine_card": "You must pay ${{amount}} for medical services",
-        "education": "{{name}} must pay ${{amount}} for additional education",
-        "education_card": "You must pay ${{amount}} for additional education",
+        "medicine": "{{name}} payed ${{amount}} for medical services",
+        "medicine_card": "You payed ${{amount}} for medical services",
+        "education": "{{name}} payed ${{amount}} for additional education",
+        "education_card": "You payed ${{amount}} for additional education",
         "casino": "{{name}} lost ${{amount}} in a casino",
         "casino_card": "You lost ${{amount}} in a casino",
-        "fine": "{{name}} must pay ${{amount}} speeding fine",
-        "fine_card": "You must pay ${{amount}} speeding fine",
-        "repairs": "{{name}} must pay ${{amount}} for car repairs",
-        "repairs_card": "You must pay ${{amount}} for car repairs",
-        "bet": "{{name}} must pay ${{amount}} to a friend for a lost bet",
-        "bet_card": "You must pay ${{amount}} to a friend for a lost bet"
+        "fine": "{{name}} payed ${{amount}} speeding fine",
+        "fine_card": "You payed ${{amount}} speeding fine",
+        "repairs": "{{name}} payed ${{amount}} for car repairs",
+        "repairs_card": "You payed ${{amount}} for car repairs",
+        "bet": "{{name}} payed ${{amount}} to a friend for a lost bet",
+        "bet_card": "You payed ${{amount}} to a friend for a lost bet"
       }
     },
     "payForProperty": {
