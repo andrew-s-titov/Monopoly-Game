@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useMemo, useRef } from "react";
+import { createContext, PropsWithChildren, useContext, useRef } from "react";
 
 import { getGameWebsocketUrl } from "../config/api";
 import { ChatMessageBody, PlayerState, PropertyState, SystemMessageBody } from "../types/interfaces";
@@ -32,9 +32,7 @@ import { useMessageContext } from "./MessageProvider";
 import ChanceCard from "../components/ChanceCard";
 import { useRouting } from "./Routing";
 import useWebsocket from "../hooks/useWebsocket";
-import { useTranslations } from "../i18n/config";
-import ChatMessage from "../components/chat/ChatMessage";
-import { getLoggedInUserId } from "../utils/auth";
+import PlayerChatMessage from "../components/chat/PlayerChatMessage";
 import SystemMessage from "../components/chat/SystemMessage";
 
 interface IGameContextProvider {
@@ -45,14 +43,11 @@ const ActiveGameContext = createContext<IGameContextProvider>({} as IGameContext
 
 const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
-  const { t } = useTranslations();
   const { navigate } = useRouting();
-  const loggedInUserId = useMemo(getLoggedInUserId, []);
   const {
     gameId, gameState,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
-  const playerStates = gameState.playerStates;
   const { openEventModal, closeEventModal } = useEventModalContext();
   const { showCenterPopUp } = useMessageContext();
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -72,11 +67,9 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     },
     200: ({ message, playerId }: ChatMessageBody) => {
       addChatMessage(
-        <ChatMessage
-          text={message}
-          author={playerStates[playerId]?.name}
-          color={playerStates[playerId]?.color}
-          ownMessage={loggedInUserId === playerId}
+        <PlayerChatMessage
+          message={message}
+          playerId={playerId}
         />
       );
     },
@@ -88,10 +81,11 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
         />);
     },
     202: ({ translationKey, params }) => {
-      showCenterPopUp(<ChanceCard
-        translationKey={translationKey}
-        params={params}
-      />);
+      showCenterPopUp(
+        <ChanceCard
+          translationKey={translationKey}
+          params={params}
+        />);
     },
     300: ({ players, fields, currentPlayer }: GameMapRefreshEvent) => {
       setGameState(prevState => ({

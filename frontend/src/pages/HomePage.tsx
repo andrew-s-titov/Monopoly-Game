@@ -40,8 +40,6 @@ const HomePage = () => {
     responseHandler: ({ gameId }) => navigateToGame(gameId),
   });
 
-  const languageBody = ({ language }: GameRoomEntry) =>
-    language && <div className={`flag flag-${language}`}></div>;
   const playersBody = ({ players }: GameRoomEntry) =>
     (players && <div className="gr-players-container">
       {players.map(({ name, avatar }) =>
@@ -99,11 +97,6 @@ const HomePage = () => {
             field="players"
             className="gr-overview-players-column"
             body={playersBody}
-          />
-          <Column
-            field="language"
-            body={languageBody}
-            align="center"
           />
           <Column
             body={joinBody}

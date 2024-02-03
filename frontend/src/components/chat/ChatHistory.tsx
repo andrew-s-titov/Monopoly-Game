@@ -1,7 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
-import { useGameState } from "../../context/GameStateProvider";
-import { getLoggedInUserId } from "../../utils/auth";
 
 interface IChatContainerProps {
   messages: ReactNode[],
@@ -10,8 +8,6 @@ interface IChatContainerProps {
 const ChatHistory = ({ messages }: IChatContainerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const { gameState } = useGameState();
-  const loggedInUserId = getLoggedInUserId();
 
   useEffect(() => {
     const container = containerRef.current;

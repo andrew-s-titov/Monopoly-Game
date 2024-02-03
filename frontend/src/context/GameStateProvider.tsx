@@ -30,7 +30,7 @@ export const GameStateProvider = ({ gameId, children }: IGameContextProps) => {
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const [housePurchases, setHousePurchases] = useState<PropertyGroup[]>([]);
 
-  const addChatMessage = (messageBody: ReactNode) => setMessages(array => [...array, messageBody]);
+  const addChatMessage = (messageElement: ReactNode) => setMessages(array => [...array, messageElement]);
   const addHousePurchase = (group: PropertyGroup) => {
     setHousePurchases(prevState => ([...prevState, group]));
   }
