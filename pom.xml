@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.monopoly-new</groupId>
     <artifactId>monopoly-new</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <name>monopoly-new</name>
     <properties>
         <src.dir>backend/src/main/java</src.dir>
