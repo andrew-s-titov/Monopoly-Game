@@ -6,6 +6,7 @@ import {
   AuctionBuyProposalEvent,
   AuctionRaiseProposalEvent,
   BuyProposalEvent,
+  ChipMoveEvent,
   FieldChangeEvent,
   GameMapRefreshEvent,
   MoneyChangeEvent,
@@ -45,7 +46,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
   const { navigate } = useRouting();
   const {
-    gameId, gameState,
+    gameId, setChipMove,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
   const { openEventModal, closeEventModal } = useEventModalContext();
@@ -142,14 +143,15 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
       })
       newTimeout(() => closeEventModal(ModalId.DICE), 1500);
     },
-    304: ({ playerId, field }: any) => {
+    304: (chipMove: ChipMoveEvent) => {
       setGameState(prevState => {
         const newState = {
           ...prevState
         }
-        newState.playerStates[playerId].position = field;
+        newState.playerStates[chipMove.playerId].position = chipMove.field;
         return newState;
       });
+      setChipMove(chipMove);
     },
     305: ({ changes }: MoneyChangeEvent) => {
       setGameState(prevState => {
