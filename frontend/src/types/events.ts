@@ -37,6 +37,12 @@ export interface AuctionBuyProposalEvent {
   proposal: number,
 }
 
+export interface ChipMoveEvent {
+  playerId: string,
+  field: number,
+  forward: boolean,
+}
+
 export interface MoneyChangeEvent {
   changes: {
     playerId: string,

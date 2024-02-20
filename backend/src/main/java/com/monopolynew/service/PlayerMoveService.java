@@ -1,7 +1,6 @@
 package com.monopolynew.service;
 
 import com.monopolynew.dto.MoneyState;
-import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.MoneyChangeEvent;
 import com.monopolynew.event.SystemMessageEvent;
 import com.monopolynew.game.Game;
@@ -44,7 +43,7 @@ public class PlayerMoveService {
     private void movePlayerToPosition(Game game, Player player, int newPositionIndex, boolean forward) {
         var gameId = game.getId();
         int currentPosition = player.getPosition();
-        gameLogicExecutor.changePlayerPosition(gameId, player, newPositionIndex);
+        gameLogicExecutor.changePlayerPosition(gameId, player, newPositionIndex, forward);
         if (forward && newPositionIndex < currentPosition) {
             player.addMoney(Rules.CIRCLE_MONEY);
             gameEventSender.sendToAllPlayers(gameId, new SystemMessageEvent("event.newCircle", Map.of(

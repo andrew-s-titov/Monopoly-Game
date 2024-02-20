@@ -4,7 +4,6 @@ import com.monopolynew.dto.GameFieldState;
 import com.monopolynew.dto.MoneyState;
 import com.monopolynew.enums.GameStage;
 import com.monopolynew.event.BankruptcyEvent;
-import com.monopolynew.event.ChatMessageEvent;
 import com.monopolynew.event.ChipMoveEvent;
 import com.monopolynew.event.FieldStateChangeEvent;
 import com.monopolynew.event.GameOverEvent;
@@ -49,7 +48,7 @@ public class GameLogicExecutor {
     public void sendToJail(Game game, Player player) {
         player.resetDoublets();
         player.imprison();
-        changePlayerPosition(game.getId(), player, Rules.JAIL_FIELD_NUMBER);
+        changePlayerPosition(game.getId(), player, Rules.JAIL_FIELD_NUMBER, false);
     }
 
     public void sendBuyProposal(Game game, Player player, PurchasableField field) {
@@ -247,9 +246,9 @@ public class GameLogicExecutor {
         return false;
     }
 
-    public void changePlayerPosition(UUID gameId, Player player, int fieldIndex) {
+    public void changePlayerPosition(UUID gameId, Player player, int fieldIndex, boolean forward) {
         player.changePosition(fieldIndex);
-        gameEventSender.sendToAllPlayers(gameId, new ChipMoveEvent(player.getId(), fieldIndex));
+        gameEventSender.sendToAllPlayers(gameId, new ChipMoveEvent(player.getId(), fieldIndex, forward));
     }
 
     private Player toNextPlayer(Game game) {

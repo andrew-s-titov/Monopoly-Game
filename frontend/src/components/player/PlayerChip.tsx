@@ -1,23 +1,27 @@
-import { memo } from "react";
-
-interface IPlayerChipProps {
-  playerColor: string,
+export interface IPlayerChipProps {
+  color: string,
   top: string,
   left: string,
+  transitionMs: number,
 }
 
-const PlayerChip = ({ playerColor, top, left }: IPlayerChipProps) => {
+const PlayerChip = ({ color, top, left, transitionMs }: IPlayerChipProps) => {
   return (
     <div
       className="player-chip"
       style={{
         top,
         left,
-        backgroundColor: playerColor,
+        backgroundColor: color,
+        transition: `
+          left ${transitionMs}ms linear, 
+          top ${transitionMs}ms linear,
+          right ${transitionMs}ms linear,
+          down ${transitionMs}ms linear`,
       }}
     >
     </div>
   );
 }
 
-export default memo(PlayerChip);
+export default PlayerChip;

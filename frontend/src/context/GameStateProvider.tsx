@@ -3,6 +3,7 @@ import { createContext, Dispatch, PropsWithChildren, ReactNode, SetStateAction, 
 import { ConnectedPlayer, GameState } from "../types/interfaces";
 import { INITIAL_GAME_STATE } from "../constants/mapData";
 import { PropertyGroup } from "../types/enums";
+import { ChipMoveEvent } from "../types/events";
 
 interface IGameContextProps extends PropsWithChildren {
   gameId: string,
@@ -19,6 +20,8 @@ interface IGameStateContext {
   housePurchases: PropertyGroup[];
   addHousePurchase: (group: PropertyGroup) => void;
   clearHousePurchaseRecords: () => void;
+  chipMove?: ChipMoveEvent;
+  setChipMove: (move: ChipMoveEvent) => void;
 }
 
 const GameStateContext = createContext<IGameStateContext>({} as IGameStateContext);
@@ -29,6 +32,7 @@ export const GameStateProvider = ({ gameId, children }: IGameContextProps) => {
   const [messages, setMessages] = useState<ReactNode[]>([]);
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const [housePurchases, setHousePurchases] = useState<PropertyGroup[]>([]);
+  const [chipMove, setChipMove] = useState<ChipMoveEvent>();
 
   const addChatMessage = (messageElement: ReactNode) => setMessages(array => [...array, messageElement]);
   const addHousePurchase = (group: PropertyGroup) => {
@@ -49,6 +53,8 @@ export const GameStateProvider = ({ gameId, children }: IGameContextProps) => {
         housePurchases,
         addHousePurchase,
         clearHousePurchaseRecords,
+        chipMove,
+        setChipMove,
       }}
     >
       {children}
