@@ -4,23 +4,23 @@
   "private": true,
   "dependencies": {
     "@fireworks-js/react": "^2.10.7",
-    "@testing-library/jest-dom": "^6.3.0",
-    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
-    "@types/jest": "^29.5.11",
-    "@types/node": "^20.11.10",
-    "@types/react": "^18.2.30",
-    "@types/react-dom": "^18.2.18",
-    "emoji-picker-react": "^4.6.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.57",
+    "@types/react-dom": "^18.2.19",
+    "emoji-picker-react": "^4.7.18",
     "fireworks-js": "^2.10.7",
-    "i18next": "^23.7.20",
-    "i18next-http-backend": "^2.4.2",
+    "i18next": "^23.9.0",
+    "i18next-http-backend": "^2.4.3",
     "primeicons": "^6.0.1",
-    "primereact": "^10.0.5",
+    "primereact": "^10.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-i18next": "^14.0.1",
-    "react-scripts": "5.0.1",
+    "react-i18next": "^14.0.5",
+    "react-scripts": "^5.0.1",
     "typescript": "^5.3.3",
     "web-vitals": "^3.5.2"
   },
@@ -47,5 +47,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "yarn-upgrade-all": "^0.7.2"
   }
 }
