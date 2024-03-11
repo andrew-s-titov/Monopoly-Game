@@ -242,8 +242,8 @@ public class DealManager {
     }
 
     private SystemMessageEvent createOfferAcceptMessage(Offer offer) {
-        var initiatorResult = buildDealSideResult(offer, Offer::getInitiatorFields, Offer::getInitiatorMoney);
-        var addresseeResult = buildDealSideResult(offer, Offer::getAddresseeFields, Offer::getAddresseeMoney);
+        var initiatorResult = buildDealSideResult(offer, Offer::getAddresseeFields, Offer::getAddresseeMoney);
+        var addresseeResult = buildDealSideResult(offer, Offer::getInitiatorFields, Offer::getInitiatorMoney);
         var translationKey = defineDealResultTranslationKey(initiatorResult, addresseeResult);
         return new SystemMessageEvent(translationKey, Map.of(
                 "initiator", offer.getInitiator().getName(),
