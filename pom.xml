@@ -18,7 +18,7 @@
         <java.version>17</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok-binding.version>0.2.0</lombok-binding.version>
-        <compiler-plugin.version>3.12.1</compiler-plugin.version>
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <frontend-src-dir>${project.basedir}/frontend</frontend-src-dir>
         <node.version>v20.11.0</node.version>
         <yarn.version>v1.22.21</yarn.version>
