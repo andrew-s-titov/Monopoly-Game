@@ -13,9 +13,9 @@ const defaultRetries = 5;
 
 const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) => {
 
-  const websocket = useRef<WebSocket>();
+  const websocket = useRef<WebSocket>(null);
   const connectionRetries = useRef(0);
-  const delayedRetry = useRef<ReturnType<typeof setTimeout>>();
+  const delayedRetry = useRef<ReturnType<typeof setTimeout>>(null);
   const { showWarning } = useMessageContext();
   const { navigate } = useRouting();
 

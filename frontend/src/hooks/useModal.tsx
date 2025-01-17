@@ -19,7 +19,7 @@ interface ModalState {
 }
 
 const useModal = (isClosable?: boolean) => {
-  const lastModal = useRef<ModalId>();
+  const lastModal = useRef<ModalId>(undefined);
   const [modalState, setModalState] = useState<ModalState>(() => ({
     isOpened: false,
     isTransparent: false,
