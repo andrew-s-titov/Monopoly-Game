@@ -1,10 +1,13 @@
 import { memo, useState } from "react";
+
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
+import { navigateToGame } from "../store/slice/navigation";
 import { getLandingPageWebsocketUrl } from "../config/api";
-import useQuery from "../hooks/useQuery";
+import { useQuery, useWebsocket, useStateDispatch } from "../hooks";
+import { useTranslations } from "../i18n/config";
 import GameRoomPlayer from "../components/GameRoomPlayer";
 import StartPageBackground from "../components/StartPageBackground";
 import StartPageButton from "../components/StartPageButton";
@@ -12,9 +15,6 @@ import StartPageCenteredContent from "../components/StartPageCenteredContent";
 import { AvailableGamesEvent, GameRoomParticipant } from "../types/events";
 
 import "../assets/styles/flags.css"
-import { useRouting } from "../context/Routing";
-import useWebsocket from "../hooks/useWebsocket";
-import { useTranslations } from "../i18n/config";
 
 interface GameRoomEntry {
   gameId: string,
@@ -32,12 +32,13 @@ const HomePage = () => {
 
   const { t } = useTranslations();
   const { post } = useQuery();
-  const { navigateToGame } = useRouting();
-  const [rooms, setRooms] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
+  const dispatch = useStateDispatch();
+  const navigateToCurrentGame = (gameId: string) => dispatch(navigateToGame(gameId));
+  const [ rooms, setRooms ] = useState<GameRoomEntry[]>(() => createRoomPlaceholders(perPage));
 
   const { execute: createNewGame, isLoading: isCreateLoading } = post({
     url: `/game`,
-    responseHandler: ({ gameId }) => navigateToGame(gameId),
+    responseHandler: ({ gameId }) => navigateToCurrentGame(gameId),
   });
 
   const playersBody = ({ players }: GameRoomEntry) =>
@@ -60,7 +61,7 @@ const HomePage = () => {
         severity="secondary"
         label={t('action.join')}
         icon={'pi pi-caret-right icon'}
-        onClick={() => navigateToGame(gameId)}
+        onClick={() => navigateToCurrentGame(gameId)}
       />
       : null);
 

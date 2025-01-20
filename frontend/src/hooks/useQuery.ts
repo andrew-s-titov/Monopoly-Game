@@ -1,4 +1,4 @@
-import { useMessageContext } from "../context/MessageProvider";
+import { useToastMessageContext } from "../context/ToastMessageProvider";
 import { useState } from "react";
 import { getLoggedInUserId } from "../utils/auth";
 import { BE_ENDPOINT } from "../config/api";
@@ -36,7 +36,7 @@ const fetchParams = (method: string, body?: any): RequestInit => {
 
 const useQuery = () => {
 
-  const { showError, showWarning } = useMessageContext();
+  const { showError, showWarning } = useToastMessageContext();
   const [queryStatuses, setQueryStatuses] = useState<Record<string, boolean>>({});
 
   const showDefaultError = () => {

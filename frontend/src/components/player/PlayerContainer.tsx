@@ -3,7 +3,7 @@ import PlayerView from "./PlayerView";
 
 const PlayerContainer = () => {
 
-  const {gameState} = useGameState();
+  const { gameState } = useGameState();
 
   return (
     <div className='player-container'>

@@ -1,7 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
 
 import App from "./layouts/App";
+import store from "./store";
 
 import "./assets/styles/index.css";
 import "./assets/styles/chat.css";
@@ -21,6 +23,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App/>
+    </Provider>
   </React.StrictMode>
 );

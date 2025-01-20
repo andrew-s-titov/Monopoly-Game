@@ -1,7 +1,7 @@
 import { createContext, PropsWithChildren, ReactNode, useContext, useRef } from 'react';
 import { Toast, ToastMessage } from 'primereact/toast';
 
-interface IMessageContext {
+interface IToastContext {
   showWarning: (text: string) => void,
   showError: (text: string) => void,
   showCenterPopUp: (content: ReactNode) => void,
@@ -9,9 +9,9 @@ interface IMessageContext {
 
 type Severity = Exclude<ToastMessage['severity'], undefined>;
 
-const MessageContext = createContext({} as IMessageContext);
+const ToastMessageContext = createContext({} as IToastContext);
 
-export const MessageProvider = ({ children }: PropsWithChildren) => {
+export const ToastMessageProvider = ({ children }: PropsWithChildren) => {
 
   const popUpToast = useRef<Toast>(null);
   const centerToast = useRef<Toast>(null);
@@ -34,7 +34,7 @@ export const MessageProvider = ({ children }: PropsWithChildren) => {
   });
 
   return (
-    <MessageContext.Provider value={{ showWarning, showError, showCenterPopUp }}>
+    <ToastMessageContext.Provider value={{ showWarning, showError, showCenterPopUp }}>
       <Toast ref={popUpToast}/>
       <Toast
         className="center-popup"
@@ -43,8 +43,8 @@ export const MessageProvider = ({ children }: PropsWithChildren) => {
         onClick={message => centerToast.current?.remove(message)}
       />
       {children}
-    </MessageContext.Provider>
+    </ToastMessageContext.Provider>
   );
 }
 
-export const useMessageContext = () => useContext(MessageContext);
+export const useToastMessageContext = () => useContext(ToastMessageContext);

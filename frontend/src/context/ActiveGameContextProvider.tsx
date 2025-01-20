@@ -29,12 +29,13 @@ import {
   PayCommandModal,
   WinnerModal
 } from "../components/modals";
-import { useMessageContext } from "./MessageProvider";
+import { useToastMessageContext } from "./ToastMessageProvider";
 import ChanceCard from "../components/ChanceCard";
-import { useRouting } from "./Routing";
 import useWebsocket from "../hooks/useWebsocket";
 import PlayerChatMessage from "../components/chat/PlayerChatMessage";
 import SystemMessage from "../components/chat/SystemMessage";
+import { useStateDispatch } from "../hooks";
+import { AppPage, navigate } from "../store/slice/navigation";
 
 interface IGameContextProvider {
   sendMessage: (chatMessage: string) => void;
@@ -44,13 +45,14 @@ const ActiveGameContext = createContext<IGameContextProvider>({} as IGameContext
 
 const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
-  const { navigate } = useRouting();
+  const dispatch = useStateDispatch();
+  const navigateHome = () => dispatch(navigate(AppPage.HOME));
   const {
     gameId, setChipMove,
     setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
   } = useGameState();
   const { openEventModal, closeEventModal } = useEventModalContext();
-  const { showCenterPopUp } = useMessageContext();
+  const { showCenterPopUp } = useToastMessageContext();
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
   const newTimeout = (action: () => void, delay: number) => timeouts.current.push(setTimeout(action, delay));
   const clearTimeouts = () => timeouts.current.forEach(timer => clearTimeout(timer));
@@ -137,7 +139,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     303: ({ firstDice, secondDice }) => {
       openEventModal({
         modalId: ModalId.DICE,
-        content: <Dice result={[firstDice, secondDice]}/>,
+        content: <Dice result={[ firstDice, secondDice ]}/>,
         blurBackground: false,
         isTransparent: true,
       })
@@ -255,10 +257,7 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
       });
       changeCurrentPlayer('');
       clearTimeouts();
-      newTimeout(
-        () => navigate('home'),
-        5000
-      );
+      newTimeout(navigateHome, 5000);
     },
     316: ({
             initiatorName,

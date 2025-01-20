@@ -1,6 +1,5 @@
 import { UPropertyIndex } from "../../types/unions";
-import usePropertyActions from "../../hooks/usePropertyAction";
-import useQuery from "../../hooks/useQuery";
+import { useQuery, usePropertyActions } from "../../hooks";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
 import { Button } from "primereact/button";
 import { useGameState } from "../../context/GameStateProvider";
@@ -59,54 +58,54 @@ const PropertyManagementModal = ({ fieldIndex }: IPropertyManagementProps) => {
       {canManage
         && <div className="property-management-buttons-container">
           {showRedeem &&
-            <Button
-              label={t('action.redeem')}
-              outlined
-              severity="secondary"
-              icon="pi pi-refresh icon"
-              className="property-management-button"
-              loading={isRedeemLoading}
-              loadingIcon="pi pi-spin pi-box icon"
-              onClick={() => redeem()}
-            />
+              <Button
+                  label={t('action.redeem')}
+                  outlined
+                  severity="secondary"
+                  icon="pi pi-refresh icon"
+                  className="property-management-button"
+                  loading={isRedeemLoading}
+                  loadingIcon="pi pi-spin pi-box icon"
+                  onClick={() => redeem()}
+              />
           }
           {showBuyHouse &&
-            <Button
-              label={t('action.buyHouse')}
-              outlined
-              severity="success"
-              icon="pi pi-home icon"
-              className="property-management-button"
-              loading={isBuyLoading}
-              loadingIcon="pi pi-spin pi-box icon"
-              onClick={() => onBuyHouse()}
-            />
+              <Button
+                  label={t('action.buyHouse')}
+                  outlined
+                  severity="success"
+                  icon="pi pi-home icon"
+                  className="property-management-button"
+                  loading={isBuyLoading}
+                  loadingIcon="pi pi-spin pi-box icon"
+                  onClick={() => onBuyHouse()}
+              />
           }
           {showSellHouse &&
-            <Button
-              label={t('action.sellHouse')}
-              outlined
-              severity="warning"
-              icon="pi pi-money-bill icon"
-              className="property-management-button"
-              loading={isSellLoading}
-              loadingIcon="pi pi-spin pi-box icon"
-              onClick={() => sellHouse()}
-            />
+              <Button
+                  label={t('action.sellHouse')}
+                  outlined
+                  severity="warning"
+                  icon="pi pi-money-bill icon"
+                  className="property-management-button"
+                  loading={isSellLoading}
+                  loadingIcon="pi pi-spin pi-box icon"
+                  onClick={() => sellHouse()}
+              />
           }
           {showMortgage &&
-            <Button
-              label={t('action.mortgage')}
-              outlined
-              severity="danger"
-              icon="pi pi-file-excel icon"
-              className="property-management-button"
-              loading={isMortgageLoading}
-              loadingIcon="pi pi-spin pi-box icon"
-              onClick={() => mortgage()}
-            />
+              <Button
+                  label={t('action.mortgage')}
+                  outlined
+                  severity="danger"
+                  icon="pi pi-file-excel icon"
+                  className="property-management-button"
+                  loading={isMortgageLoading}
+                  loadingIcon="pi pi-spin pi-box icon"
+                  onClick={() => mortgage()}
+              />
           }
-        </div>
+          </div>
       }
     </div>
   );

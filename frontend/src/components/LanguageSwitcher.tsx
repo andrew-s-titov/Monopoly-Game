@@ -1,12 +1,19 @@
-import { useLanguageContext } from "../context/LanguageContextProvider";
-import { Button } from "primereact/button";
-import { supportedLanguages } from "../i18n/config";
 import { useState } from "react";
+import { Button } from "primereact/button";
+import { langStorageKey, supportedLanguages, useTranslations } from "../i18n/config";
 
 const LanguageSwitcher = () => {
 
-  const { currentLanguage, changeLanguage } = useLanguageContext();
-  const [contentHidden, setContentHidden] = useState(true);
+  const { i18n } = useTranslations();
+  const [ contentHidden, setContentHidden ] = useState(true);
+
+  const currentLanguage: string = i18n.language;
+  const changeLanguage = (language: string) => {
+    if (supportedLanguages.includes(language)) {
+      localStorage.setItem(langStorageKey, language);
+      i18n.changeLanguage(language);
+    }
+  }
   const showContent = () => setContentHidden(false);
   const hideContent = () => setContentHidden(true);
 

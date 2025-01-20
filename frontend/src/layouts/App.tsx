@@ -1,19 +1,13 @@
 import React from "react";
 
-import { MessageProvider } from "../context/MessageProvider";
-import { AuthContextProvider } from "../context/AuthContextProvider";
-import { PageRoutingProvider } from "../context/Routing";
-import { LanguageContextProvider } from "../context/LanguageContextProvider";
+import { ToastMessageProvider } from "../context/ToastMessageProvider";
+import { PageSwitcher } from "../pages";
 
 const App = () => {
   return (
-    <LanguageContextProvider>
-      <AuthContextProvider>
-        <MessageProvider>
-          <PageRoutingProvider/>
-        </MessageProvider>
-      </AuthContextProvider>
-    </LanguageContextProvider>
+    <ToastMessageProvider>
+      <PageSwitcher/>
+    </ToastMessageProvider>
   );
 }
 

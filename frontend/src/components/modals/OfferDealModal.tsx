@@ -9,7 +9,7 @@ import { Deal, PropertyShortInfo, PropertyState } from '../../types/interfaces';
 import { PROPERTY_FIELDS_DATA } from '../../constants';
 import { getEntries } from '../../utils/global';
 import { UPropertyIndex } from '../../types/unions';
-import { useMessageContext } from '../../context/MessageProvider';
+import { useToastMessageContext } from '../../context/ToastMessageProvider';
 import PropertyOfferView from '../PropertyOfferView';
 import useQuery from "../../hooks/useQuery";
 import { usePopUpModalContext } from "../../context/PopUpModalProvider";
@@ -23,9 +23,9 @@ interface IOfferDealModalProps {
 const extractPlayerFields = (propertyStates: Record<UPropertyIndex, PropertyState>, playerId: string)
   : PropertyShortInfo[] =>
   getEntries(propertyStates)
-    .filter(([_, propertyState]) => playerId === propertyState.ownerId)
-    .filter(([_, propertyState]) => !propertyState.houses)
-    .map(([fieldIndex]) => {
+    .filter(([ _, propertyState ]) => playerId === propertyState.ownerId)
+    .filter(([ _, propertyState ]) => !propertyState.houses)
+    .map(([ fieldIndex ]) => {
       return {
         fieldIndex,
         name: PROPERTY_FIELDS_DATA[fieldIndex].name,
@@ -34,9 +34,9 @@ const extractPlayerFields = (propertyStates: Record<UPropertyIndex, PropertyStat
     });
 
 const onCheckedFieldsChange = (event: CheckboxChangeEvent,
-                               useStateReturn: [UPropertyIndex[], Dispatch<SetStateAction<UPropertyIndex[]>>]) => {
-  const [state, setState] = useStateReturn;
-  let checkedFields = [...state];
+                               useStateReturn: [ UPropertyIndex[], Dispatch<SetStateAction<UPropertyIndex[]>> ]) => {
+  const [ state, setState ] = useStateReturn;
+  let checkedFields = [ ...state ];
 
   event.checked
     ? checkedFields.push(event.value)
@@ -65,9 +65,9 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
   const checkedInitiatorFields = checkedInitiatorFieldsUseStateReturn[0];
   const checkedAddresseeFieldsUseStateReturn = useState<UPropertyIndex[]>([]);
   const checkedAddresseeFields = checkedAddresseeFieldsUseStateReturn[0];
-  const [selectedInitiatorMoney, setSelectedInitiatorMoney] = useState(0);
-  const [selectedAddresseeMoney, setSelectedAddresseeMoney] = useState(0);
-  const { showWarning } = useMessageContext();
+  const [ selectedInitiatorMoney, setSelectedInitiatorMoney ] = useState(0);
+  const [ selectedAddresseeMoney, setSelectedAddresseeMoney ] = useState(0);
+  const { showWarning } = useToastMessageContext();
   const { post } = useQuery();
   const { closePopUpModal } = usePopUpModalContext();
   const { closeEventModal } = useEventModalContext();
@@ -87,11 +87,11 @@ const OfferDealModal = ({ addresseeId }: IOfferDealModalProps) => {
 
   const initiatorFields = useMemo(
     () => extractPlayerFields(gameState.propertyStates, initiatorId),
-    [gameState.propertyStates]
+    [ gameState.propertyStates ]
   );
   const addresseeFields = useMemo(
     () => extractPlayerFields(gameState.propertyStates, addresseeId),
-    [gameState.propertyStates]);
+    [ gameState.propertyStates ]);
 
   const initiatorTotal = checkedInitiatorFields
     .map(index => PROPERTY_FIELDS_DATA[index].price)

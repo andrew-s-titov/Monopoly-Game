@@ -11,7 +11,7 @@ import PlayerAvatar from "./PlayerAvatar";
 import { useTranslations } from "../../i18n/config";
 
 interface IPlayerViewProps {
-  playerId: string
+  playerId: string,
 }
 
 const PlayerView = ({ playerId }: IPlayerViewProps) => {
@@ -34,21 +34,28 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
 
   const hideManagementButton = useCallback(
     () => playerManagementOverlay.current?.hide(),
-    []);
+    [],
+  );
 
-  const onPlayerGiveUp = useCallback(() => {
-    hideManagementButton();
-    openPopUpModal({
-      content: <GiveUpModal/>,
-    });
-  }, []);
+  const onPlayerGiveUp = useCallback(
+    () => {
+      hideManagementButton();
+      openPopUpModal({
+        content: <GiveUpModal/>,
+      });
+    },
+    [],
+  );
 
-  const onOfferDeal = useCallback(() => {
-    hideManagementButton();
-    openPopUpModal({
-      content: <OfferDealModal addresseeId={playerId}/>,
-    });
-  }, []);
+  const onOfferDeal = useCallback(
+    () => {
+      hideManagementButton();
+      openPopUpModal({
+        content: <OfferDealModal addresseeId={playerId}/>,
+      });
+    },
+    [],
+  );
 
   return (
     <div className='player-view'>
@@ -57,12 +64,12 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
         onClick={(e) => shouldRenderOverlayOnClick && playerManagementOverlay.current?.toggle(e)}
       >
         {!playerState.bankrupt && <div
-          className={`player-icon-outline`}
-          style={
-            {
-              "--player-color": `${playerColor}`
-            } as CSSProperties
-          }
+            className={`player-icon-outline`}
+            style={
+              {
+                "--player-color": `${playerColor}`
+              } as CSSProperties
+            }
         ></div>}
         <PlayerAvatar
           withPointer={shouldRenderOverlayOnClick}
@@ -70,9 +77,7 @@ const PlayerView = ({ playerId }: IPlayerViewProps) => {
           className={`avatar-in-game ${isPlayersTurn ? 'flashing-icon' : ''} ${playerState.bankrupt ? 'bankrupt-player' : ''}`}
         />
         {
-          playerState.bankrupt && <div
-            className="broke-stamp"
-          />
+          playerState.bankrupt && <div className="broke-stamp"/>
         }
         <OverlayPanel
           ref={playerManagementOverlay}

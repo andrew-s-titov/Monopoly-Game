@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useMessageContext } from "../context/MessageProvider";
-import { useRouting } from "../context/Routing";
+import { useToastMessageContext } from "../context/ToastMessageProvider";
+import { useStateDispatch } from "./";
+import { AppPage, navigate } from "../store/slice/navigation";
 
 interface IWebsocketProps {
   url: string,
@@ -16,8 +17,9 @@ const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) =
   const websocket = useRef<WebSocket>(null);
   const connectionRetries = useRef(0);
   const delayedRetry = useRef<ReturnType<typeof setTimeout>>(null);
-  const { showWarning } = useMessageContext();
-  const { navigate } = useRouting();
+  const { showWarning } = useToastMessageContext();
+  const dispatch = useStateDispatch();
+  const navigateHome = () => dispatch(navigate(AppPage.HOME));
 
   const maxRetries = retries ? retries : defaultRetries;
   const sendToServer = (message: string) => websocket.current && websocket.current.send(message);
@@ -42,7 +44,7 @@ const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) =
       } else {
         // any other close code or max retries are reached:
         showWarning('Server connection error. Please reload the page or try again later');
-        navigate('home');
+        navigateHome();
       }
     }
   }

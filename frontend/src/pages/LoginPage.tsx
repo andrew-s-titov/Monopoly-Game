@@ -5,7 +5,6 @@ import { InputText } from "primereact/inputtext";
 
 import StartPageBackground from "../components/StartPageBackground";
 import StartPageButton from "../components/StartPageButton";
-import { useAuthContext } from "../context/AuthContextProvider";
 import { AVATAR_NAMES, getRandomAvatar } from "../utils/playerAvatar";
 import PlayerAvatar from "../components/player/PlayerAvatar";
 import StartPageCenteredContent from "../components/StartPageCenteredContent";
@@ -13,21 +12,24 @@ import useQuery from "../hooks/useQuery";
 import { LoginResponse } from "../types/interfaces";
 import { setAuthData } from "../utils/auth";
 import { useTranslations } from "../i18n/config";
+import { useStateDispatch } from "../hooks";
+import { completeLogin } from "../store/slice/auth";
 
 const LoginPage = () => {
 
   const { t } = useTranslations();
   const avatarOverlay = useRef<OverlayPanel>(null);
-  const [avatar, setAvatar] = useState(getRandomAvatar());
-  const { setLoggedIn } = useAuthContext();
-  const [nameInputValue, setNameInputValue] = useState('');
+  const [ avatar, setAvatar ] = useState(getRandomAvatar());
+  const dispatch = useStateDispatch();
+  const handleLogin = () => dispatch(completeLogin());
+  const [ nameInputValue, setNameInputValue ] = useState('');
 
   const { post } = useQuery();
   const { execute: login, isLoading: isLoginInProgress } = post({
     url: `/`,
     responseHandler: (loginResponse: LoginResponse) => {
       setAuthData(loginResponse);
-      setLoggedIn();
+      handleLogin();
     }
   });
 
