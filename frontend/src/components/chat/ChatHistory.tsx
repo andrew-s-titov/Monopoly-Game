@@ -1,13 +1,14 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
-import { Button } from 'primereact/button';
+import { useEffect, useRef, useState } from 'react';
+import { useStateSelector } from "../../hooks";
+import PlayerChatMessage from "./PlayerChatMessage";
+import SystemMessage from "./SystemMessage";
+import { Button } from "primereact/button";
 
-interface IChatContainerProps {
-  messages: ReactNode[],
-}
+const ChatHistory = () => {
+  const messages = useStateSelector(state => state.chatHistory.messages);
 
-const ChatHistory = ({ messages }: IChatContainerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [ showScrollButton, setShowScrollButton ] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -24,7 +25,14 @@ const ChatHistory = ({ messages }: IChatContainerProps) => {
       }
     }
     defineShowScrollButtonVisibility(container);
-  }, [messages]);
+  }, [ messages ]);
+
+  const renderedMessages = messages.map((messageBody, index) => {
+    const renderedMessage = 'message' in messageBody
+      ? <PlayerChatMessage {...messageBody} />
+      : <SystemMessage {...messageBody} />
+    return <div key={index}>{renderedMessage}</div>
+  });
 
   const defineShowScrollButtonVisibility = (div: HTMLDivElement | null) => {
     div && setShowScrollButton(
@@ -48,17 +56,17 @@ const ChatHistory = ({ messages }: IChatContainerProps) => {
       onScroll={handleScroll}
     >
       <div className='chat-filler'></div>
-      {messages.map((message, index) => <div key={index}>{message}</div>)}
+      {renderedMessages}
       {showScrollButton &&
-        <Button
-          className='scroll-down'
-          severity='secondary'
-          icon='pi pi-angle-down icon'
-          onClick={scrollDown}
-          rounded
-          text
-          raised
-        />
+          <Button
+              className='scroll-down'
+              severity='secondary'
+              icon='pi pi-angle-down icon'
+              onClick={scrollDown}
+              rounded
+              text
+              raised
+          />
       }
     </div>);
 }

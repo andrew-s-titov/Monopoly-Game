@@ -2,13 +2,9 @@ import { memo, useMemo } from 'react';
 import { Message } from "primereact/message";
 import { useGameState } from "../../context/GameStateProvider";
 import { getLoggedInUserId } from "../../utils/auth";
+import { ChatMessageBody } from "../../types/interfaces";
 
-interface IProps {
-  message: string,
-  playerId: string,
-}
-
-const PlayerChatMessage = ({message, playerId}: IProps) => {
+const PlayerChatMessage = ({ message, playerId }: ChatMessageBody) => {
 
   const loggedInUser = useMemo(getLoggedInUserId, []);
   const { gameState } = useGameState();
@@ -20,7 +16,7 @@ const PlayerChatMessage = ({message, playerId}: IProps) => {
     return <Message
       className='chat-message own-message'
       content={textContent}
-      style={{background: color}}
+      style={{ background: color }}
     />
   } else {
     const content = (
@@ -33,7 +29,7 @@ const PlayerChatMessage = ({message, playerId}: IProps) => {
       <Message
         className="chat-message player-message"
         content={content}
-        style={{background: color}}
+        style={{ background: color }}
       />
     )
   }

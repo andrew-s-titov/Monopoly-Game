@@ -1,7 +1,7 @@
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
 
 import { getGameWebsocketUrl } from "../config/api";
-import { ChatMessageBody, PlayerState, PropertyState, SystemMessageBody } from "../types/interfaces";
+import { PlayerState, PropertyState } from "../types/interfaces";
 import {
   AuctionBuyProposalEvent,
   AuctionRaiseProposalEvent,
@@ -32,10 +32,9 @@ import {
 import { useToastMessageContext } from "./ToastMessageProvider";
 import ChanceCard from "../components/ChanceCard";
 import useWebsocket from "../hooks/useWebsocket";
-import PlayerChatMessage from "../components/chat/PlayerChatMessage";
-import SystemMessage from "../components/chat/SystemMessage";
 import { useStateDispatch } from "../hooks";
 import { AppPage, navigate } from "../store/slice/navigation";
+import { ChatMessage, addToChatHistory } from "../store/slice/chatHistory";
 
 interface IGameContextProvider {
   sendMessage: (chatMessage: string) => void;
@@ -47,9 +46,10 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
 
   const dispatch = useStateDispatch();
   const navigateHome = () => dispatch(navigate(AppPage.HOME));
+  const onNewChatMessage = (message: ChatMessage) => dispatch(addToChatHistory(message))
   const {
     gameId, setChipMove,
-    setGameState, setConnectedPlayers, addChatMessage, clearHousePurchaseRecords
+    setGameState, setConnectedPlayers, clearHousePurchaseRecords
   } = useGameState();
   const { openEventModal, closeEventModal } = useEventModalContext();
   const { showCenterPopUp } = useToastMessageContext();
@@ -68,21 +68,8 @@ const ActiveGameContextProvider = ({ children }: PropsWithChildren) => {
     100: ({ players }) => {
       setConnectedPlayers(players);
     },
-    200: ({ message, playerId }: ChatMessageBody) => {
-      addChatMessage(
-        <PlayerChatMessage
-          message={message}
-          playerId={playerId}
-        />
-      );
-    },
-    201: ({ translationKey, params }: SystemMessageBody) => {
-      addChatMessage(
-        <SystemMessage
-          translationKey={translationKey}
-          params={params}
-        />);
-    },
+    200: onNewChatMessage,
+    201: onNewChatMessage,
     202: ({ translationKey, params }) => {
       showCenterPopUp(
         <ChanceCard

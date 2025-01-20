@@ -10,8 +10,7 @@ import { useTranslations } from "../i18n/config";
 const PreGameRoom = () => {
 
   const { t } = useTranslations();
-  const { gameId } = useGameState();
-  const { connectedPlayers } = useGameState();
+  const { gameId, connectedPlayers } = useGameState();
   const { post } = useQuery();
   const { execute: startGame, isLoading } = post(
     {

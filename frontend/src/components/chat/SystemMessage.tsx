@@ -1,14 +1,9 @@
 import { memo } from 'react';
 import { Message } from "primereact/message";
 import { useTranslations } from "../../i18n/config";
+import { SystemMessageBody } from "../../types/interfaces";
 
-interface IProps {
-  translationKey: string,
-  params: Map<string, string>,
-}
-
-const SystemMessage = ({ translationKey, params }: IProps) => {
-
+const SystemMessage = ({ translationKey, params }: SystemMessageBody) => {
   const { t } = useTranslations();
 
   const textContent = <span>{t(translationKey, params)}</span>

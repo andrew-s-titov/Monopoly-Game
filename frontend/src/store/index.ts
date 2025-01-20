@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import auth from './slice/auth';
 import navigation from './slice/navigation';
+import chatHistory from './slice/chatHistory';
 
 const store = configureStore({
   reducer: {
     auth,
     navigation,
+    chatHistory,
   },
 });
 

@@ -4,13 +4,11 @@ import EmojiPicker, { Categories, EmojiStyle, SuggestionMode } from "emoji-picke
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useTranslations } from "../../i18n/config";
 import { Button } from "primereact/button";
+import { useActiveGameContext } from "../../context/ActiveGameContextProvider";
 
-interface IChatInputProps {
-  sendMessage: (message: string) => void;
-}
+const ChatInput = () => {
 
-const ChatInput = ({ sendMessage }: IChatInputProps) => {
-
+  const { sendMessage } = useActiveGameContext();
   const { t } = useTranslations();
   const emojiPickerRef = useRef<OverlayPanel>(null);
   const [message, setMessage] = useState('');

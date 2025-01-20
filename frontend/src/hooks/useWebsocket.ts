@@ -11,6 +11,7 @@ interface IWebsocketProps {
 }
 
 const defaultRetries = 5;
+const reconnectDelaySec = 2;
 
 const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) => {
 
@@ -38,9 +39,9 @@ const useWebsocket = ({ url, onMessage, onDestroy, retries }: IWebsocketProps) =
       if (code === 1000 || code === 1001) {
         // do nothing - normal close
       } else if (code === 1006 && connectionRetries.current < maxRetries) {
-        console.log(`Unexpected WebSocket close, reconnecting in 2 sec...`);
+        console.log(`Unexpected WebSocket close, reconnecting in ${reconnectDelaySec} sec...`);
         connectionRetries.current = connectionRetries.current + 1;
-        delayedRetry.current = setTimeout(connectWebSocket, 2000);
+        delayedRetry.current = setTimeout(connectWebSocket, reconnectDelaySec * 1000);
       } else {
         // any other close code or max retries are reached:
         showWarning('Server connection error. Please reload the page or try again later');
