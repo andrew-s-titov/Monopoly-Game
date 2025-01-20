@@ -16,7 +16,7 @@
         <src.dir>backend/src/main/java</src.dir>
         <test.src.dir>backend/src/test/java</test.src.dir>
         <java.version>17</java.version>
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-binding.version>0.2.0</lombok-binding.version>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <frontend-src-dir>${project.basedir}/frontend</frontend-src-dir>
